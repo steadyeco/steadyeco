@@ -9,7 +9,7 @@
   {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
-    "name": "Steady Eco Expansion",
+    "name": "Steady Eco",
     "telephone": "+61456190202",
     "url": "https://steadyeco.com",
     "address": {
@@ -24,73 +24,101 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        #1A1A1A;
-      --bg-alt:    #242424;
-      --bg-card:   #2C2C2C;
-      --accent:    #E8690B;
-      --accent-hover: #CF5A08;
-      --text:      #F2F0EB;
-      --muted:     #A0A0A0;
-      --border:    #3A3A3A;
+      --black:        #080808;
+      --dark:         #0F0F0F;
+      --card:         #141414;
+      --card-hover:   #181818;
+      --green-deep:   #1A3D2B;
+      --green-mid:    #2D6A4F;
+      --green-accent: #52B788;
+      --green-bright: #74C69D;
+      --text:         #F0EEE9;
+      --muted:        #666666;
+      --muted-light:  #999999;
+      --border:       #1C1C1C;
+      --border-light: #242424;
     }
 
     html { scroll-behavior: smooth; }
 
     body {
-      background: var(--bg);
+      background: var(--black);
       color: var(--text);
       font-family: 'Inter', sans-serif;
       font-size: 16px;
       line-height: 1.6;
+      font-weight: 300;
+      overflow-x: hidden;
     }
 
     h1, h2, h3, h4 {
       font-family: 'Barlow Condensed', sans-serif;
-      line-height: 1.1;
-      letter-spacing: 0.5px;
+      line-height: 1.05;
+      font-weight: 700;
     }
 
     a { color: inherit; text-decoration: none; }
 
     .container {
       width: 100%;
-      max-width: 1100px;
+      max-width: 1080px;
       margin: 0 auto;
-      padding: 0 24px;
+      padding: 0 32px;
     }
+
+    /* ── FADE IN ANIMATIONS ── */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .fade-in-delay-1 { transition-delay: 0.1s; }
+    .fade-in-delay-2 { transition-delay: 0.2s; }
+    .fade-in-delay-3 { transition-delay: 0.3s; }
+    .fade-in-delay-4 { transition-delay: 0.4s; }
 
     /* ── BUTTONS ── */
     .btn {
-      display: inline-block;
-      padding: 14px 28px;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 1.1rem;
-      font-weight: 700;
-      letter-spacing: 1px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 32px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 2px;
       text-transform: uppercase;
-      border-radius: 4px;
+      border-radius: 2px;
       cursor: pointer;
-      transition: background 0.2s, color 0.2s, border-color 0.2s;
-      border: 2px solid transparent;
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
     }
     .btn-primary {
-      background: var(--accent);
-      color: #fff;
+      background: var(--green-accent);
+      color: var(--black);
+      border-color: var(--green-accent);
     }
-    .btn-primary:hover { background: var(--accent-hover); }
-    .btn-ghost {
+    .btn-primary:hover {
+      background: var(--green-bright);
+      border-color: var(--green-bright);
+    }
+    .btn-outline {
       background: transparent;
       color: var(--text);
-      border-color: var(--text);
+      border-color: var(--border-light);
     }
-    .btn-ghost:hover {
-      background: var(--text);
-      color: var(--bg);
+    .btn-outline:hover {
+      border-color: var(--green-accent);
+      color: var(--green-accent);
     }
 
     /* ── NAV ── */
@@ -98,80 +126,86 @@
       position: fixed;
       top: 0; left: 0; right: 0;
       z-index: 100;
-      background: rgba(26,26,26,0.96);
-      backdrop-filter: blur(8px);
-      border-bottom: 1px solid var(--border);
+      padding: 24px 0;
+      transition: background 0.4s ease, padding 0.4s ease, border-color 0.4s ease;
+      border-bottom: 1px solid transparent;
+    }
+    nav.scrolled {
+      background: rgba(8,8,8,0.97);
+      backdrop-filter: blur(12px);
+      padding: 16px 0;
+      border-bottom-color: var(--border);
     }
     .nav-inner {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 64px;
     }
     .nav-logo {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 1.6rem;
-      font-weight: 800;
-      letter-spacing: 1px;
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 3px;
       text-transform: uppercase;
     }
-    .nav-logo span { color: var(--accent); }
+    .nav-logo span { color: var(--green-accent); }
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 32px;
+      gap: 40px;
       list-style: none;
     }
     .nav-links a {
-      font-size: 0.9rem;
-      font-weight: 500;
-      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: var(--muted-light);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 2px;
       transition: color 0.2s;
     }
     .nav-links a:hover { color: var(--text); }
-    .nav-call {
-      background: var(--accent);
-      color: #fff !important;
-      padding: 8px 18px;
-      border-radius: 4px;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 1rem !important;
-      font-weight: 700 !important;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      transition: background 0.2s;
+    .nav-cta {
+      font-size: 0.75rem !important;
+      color: var(--green-accent) !important;
+      letter-spacing: 2px;
+      border: 1px solid var(--green-deep);
+      padding: 8px 20px;
+      border-radius: 2px;
+      transition: all 0.3s ease !important;
     }
-    .nav-call:hover { background: var(--accent-hover) !important; color: #fff !important; }
+    .nav-cta:hover {
+      background: var(--green-deep) !important;
+      color: var(--green-bright) !important;
+    }
     .hamburger {
       display: none;
       flex-direction: column;
-      gap: 5px;
+      gap: 6px;
       cursor: pointer;
       padding: 4px;
     }
     .hamburger span {
       display: block;
-      width: 24px;
-      height: 2px;
+      width: 22px;
+      height: 1px;
       background: var(--text);
       transition: 0.3s;
     }
     .mobile-menu {
       display: none;
       flex-direction: column;
-      background: var(--bg-alt);
+      background: var(--dark);
       border-top: 1px solid var(--border);
-      padding: 16px 24px 24px;
-      gap: 16px;
+      padding: 24px 32px 32px;
+      gap: 20px;
     }
     .mobile-menu a {
-      font-size: 1.1rem;
-      font-weight: 500;
-      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: var(--muted-light);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 2px;
+      transition: color 0.2s;
     }
     .mobile-menu a:hover { color: var(--text); }
     .mobile-menu.open { display: flex; }
@@ -182,395 +216,496 @@
       min-height: 100vh;
       display: flex;
       align-items: center;
-      background: linear-gradient(135deg, #0f0f0f 0%, #1e1e1e 50%, #0a0a0a 100%);
+      background: var(--black);
       overflow: hidden;
     }
-    .hero-bg-pattern {
+    .hero-bg {
       position: absolute;
       inset: 0;
-      background-image:
-        repeating-linear-gradient(
-          45deg,
-          transparent,
-          transparent 40px,
-          rgba(232,105,11,0.03) 40px,
-          rgba(232,105,11,0.03) 41px
-        );
+      background:
+        radial-gradient(ellipse 60% 60% at 80% 50%, rgba(26,61,43,0.25) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 20% 80%, rgba(82,183,136,0.04) 0%, transparent 60%);
     }
-    .hero-accent-bar {
+    .hero-line {
       position: absolute;
-      top: 0; left: 0;
-      width: 6px;
-      height: 100%;
-      background: var(--accent);
+      left: 0; top: 0; bottom: 0;
+      width: 1px;
+      background: linear-gradient(to bottom, transparent, var(--green-deep), transparent);
+      margin-left: 32px;
     }
     .hero-content {
       position: relative;
       z-index: 2;
-      padding: 120px 0 80px;
-      max-width: 700px;
+      padding: 140px 0 100px;
+      max-width: 800px;
     }
-    .hero-eyebrow {
-      display: inline-block;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 0.9rem;
-      font-weight: 700;
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.72rem;
+      font-weight: 400;
       letter-spacing: 3px;
       text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 20px;
+      color: var(--green-accent);
+      margin-bottom: 32px;
+    }
+    .hero-tag::before {
+      content: '';
+      display: block;
+      width: 24px;
+      height: 1px;
+      background: var(--green-accent);
     }
     .hero-content h1 {
-      font-size: clamp(3rem, 8vw, 5.5rem);
+      font-size: clamp(3.5rem, 9vw, 7rem);
       font-weight: 800;
       text-transform: uppercase;
-      margin-bottom: 24px;
-      line-height: 1;
+      letter-spacing: -1px;
+      margin-bottom: 32px;
+      line-height: 0.95;
     }
-    .hero-content h1 span { color: var(--accent); }
-    .hero-content p {
-      font-size: 1.15rem;
-      color: var(--muted);
-      max-width: 520px;
-      margin-bottom: 36px;
-      line-height: 1.7;
+    .hero-content h1 .line-green { color: var(--green-accent); }
+    .hero-content h1 .line-dim { color: var(--muted); }
+    .hero-sub {
+      font-size: 1rem;
+      color: var(--muted-light);
+      max-width: 440px;
+      margin-bottom: 48px;
+      line-height: 1.8;
+      font-weight: 300;
     }
     .hero-ctas {
       display: flex;
       gap: 16px;
       flex-wrap: wrap;
     }
-
-    /* ── TRUST BAR ── */
-    #trust {
-      background: var(--accent);
-      padding: 20px 0;
-    }
-    .trust-inner {
-      display: flex;
-      justify-content: center;
-      gap: 48px;
-      flex-wrap: wrap;
-    }
-    .trust-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: #fff;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 1.1rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .trust-item .icon { font-size: 1.3rem; }
-
-    /* ── SECTIONS ── */
-    section { padding: 88px 0; }
-    .section-label {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 700;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 12px;
-    }
-    .section-title {
-      font-size: clamp(2rem, 5vw, 3rem);
-      font-weight: 800;
-      text-transform: uppercase;
-      margin-bottom: 48px;
-    }
-    .section-title span { color: var(--accent); }
-    .divider {
-      width: 48px;
-      height: 4px;
-      background: var(--accent);
-      margin: 16px 0 48px;
-    }
-
-    /* ── SERVICES ── */
-    #services { background: var(--bg-alt); }
-    .services-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-    }
-    .service-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 40px 36px;
-      position: relative;
-      transition: border-color 0.2s;
-    }
-    .service-card:hover { border-color: var(--accent); }
-    .service-card.coming-soon {
-      opacity: 0.6;
-    }
-    .coming-badge {
+    .hero-scroll {
       position: absolute;
-      top: 20px; right: 20px;
-      background: var(--border);
-      color: var(--muted);
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 0.8rem;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      padding: 4px 10px;
-      border-radius: 3px;
-    }
-    .service-icon {
-      font-size: 2.5rem;
-      margin-bottom: 20px;
-    }
-    .service-card h3 {
-      font-size: 1.7rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      margin-bottom: 16px;
-    }
-    .service-card p {
-      color: var(--muted);
-      margin-bottom: 24px;
-      line-height: 1.7;
-    }
-    .service-tags {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 28px;
-    }
-    .tag {
-      background: var(--bg-alt);
-      border: 1px solid var(--border);
-      color: var(--muted);
-      font-size: 0.8rem;
-      font-weight: 500;
-      padding: 4px 12px;
-      border-radius: 3px;
-    }
-
-    /* ── HOW IT WORKS ── */
-    #how { background: var(--bg); }
-    .steps {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0;
-      position: relative;
-    }
-    .steps::before {
-      content: '';
-      position: absolute;
-      top: 36px;
-      left: calc(16.66% + 12px);
-      right: calc(16.66% + 12px);
-      height: 2px;
-      background: var(--border);
-    }
-    .step {
-      text-align: center;
-      padding: 0 24px;
-      position: relative;
-    }
-    .step-number {
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      background: var(--accent);
-      color: #fff;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 1.8rem;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 24px;
-      position: relative;
-      z-index: 1;
-    }
-    .step h3 {
-      font-size: 1.4rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      margin-bottom: 12px;
-    }
-    .step p { color: var(--muted); font-size: 0.95rem; }
-    .how-cta {
-      text-align: center;
-      margin-top: 56px;
-    }
-    .how-cta p {
-      color: var(--muted);
-      margin-bottom: 20px;
-      font-size: 1rem;
-    }
-
-    /* ── ABOUT ── */
-    #about { background: var(--bg-alt); }
-    .about-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 64px;
-      align-items: center;
-    }
-    .about-text p {
-      color: var(--muted);
-      margin-bottom: 20px;
-      line-height: 1.8;
-    }
-    .about-text p strong { color: var(--text); }
-    .about-text .tribute {
-      border-left: 4px solid var(--accent);
-      padding-left: 20px;
-      margin: 32px 0;
-      color: var(--muted);
-      font-style: italic;
-      line-height: 1.8;
-    }
-    .about-stats {
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
       flex-direction: column;
-      gap: 24px;
-    }
-    .stat-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-left: 4px solid var(--accent);
-      border-radius: 4px;
-      padding: 24px 28px;
-    }
-    .stat-number {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 3rem;
-      font-weight: 800;
-      color: var(--accent);
-      line-height: 1;
-      margin-bottom: 6px;
-    }
-    .stat-label {
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
-
-    /* ── SERVICE AREA ── */
-    #area { background: var(--bg); }
-    .area-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 64px;
-      align-items: start;
-    }
-    .area-text p {
-      color: var(--muted);
-      margin-bottom: 24px;
-      line-height: 1.8;
-    }
-    .area-list {
-      list-style: none;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    .area-list li {
-      display: flex;
       align-items: center;
       gap: 8px;
       color: var(--muted);
-      font-size: 0.95rem;
+      font-size: 0.65rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      animation: scrollBounce 2s ease-in-out infinite;
     }
-    .area-list li::before {
-      content: '▸';
-      color: var(--accent);
-      font-size: 0.8rem;
+    .hero-scroll::after {
+      content: '';
+      display: block;
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, var(--muted), transparent);
+    }
+    @keyframes scrollBounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(6px); }
     }
 
-    /* ── CONTACT ── */
-    #contact { background: var(--bg-alt); }
-    .contact-grid {
+    /* ── STATS ── */
+    #stats {
+      padding: 80px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--dark);
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+    }
+    .stat-item {
+      padding: 0 48px;
+      border-right: 1px solid var(--border);
+    }
+    .stat-item:first-child { padding-left: 0; }
+    .stat-item:last-child { border-right: none; }
+    .stat-number {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 800;
+      color: var(--green-accent);
+      line-height: 1;
+      margin-bottom: 8px;
+      letter-spacing: -1px;
+    }
+    .stat-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: 400;
+    }
+
+    /* ── SECTIONS ── */
+    .section { padding: 120px 0; }
+    .section-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.7rem;
+      font-weight: 400;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--green-accent);
+      margin-bottom: 24px;
+    }
+    .section-tag::before {
+      content: '';
+      display: block;
+      width: 20px;
+      height: 1px;
+      background: var(--green-accent);
+    }
+    .section-title {
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+      line-height: 1;
+      margin-bottom: 64px;
+    }
+    .section-title .dim { color: var(--muted); }
+    .section-title .green { color: var(--green-accent); }
+
+    /* ── SERVICES ── */
+    #services { background: var(--black); }
+    .services-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 64px;
-      align-items: start;
-    }
-    .contact-info p {
-      color: var(--muted);
-      margin-bottom: 32px;
-      line-height: 1.8;
-    }
-    .phone-display {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: clamp(2rem, 5vw, 3rem);
-      font-weight: 800;
-      color: var(--accent);
-      display: block;
-      margin-bottom: 8px;
-      transition: color 0.2s;
-    }
-    .phone-display:hover { color: var(--accent-hover); }
-    .phone-note {
-      color: var(--muted);
-      font-size: 0.85rem;
-      margin-bottom: 32px;
-    }
-    .hours {
-      background: var(--bg-card);
+      gap: 1px;
+      background: var(--border);
       border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 24px;
     }
-    .hours h4 {
-      font-size: 1rem;
+    .service-card {
+      background: var(--dark);
+      padding: 56px 48px;
+      position: relative;
+      transition: background 0.3s ease;
+    }
+    .service-card:hover { background: var(--card-hover); }
+    .service-card.dimmed { opacity: 0.5; }
+    .coming-tag {
+      display: inline-block;
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--border-light);
+      padding: 4px 10px;
+      margin-bottom: 24px;
+    }
+    .service-num {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 3px;
+      color: var(--muted);
+      margin-bottom: 24px;
+      font-weight: 400;
+    }
+    .service-card h3 {
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+      margin-bottom: 20px;
+      line-height: 1.05;
+    }
+    .service-card h3 span { color: var(--green-accent); }
+    .service-card p {
+      color: var(--muted-light);
+      font-size: 0.9rem;
+      line-height: 1.8;
+      margin-bottom: 36px;
+      font-weight: 300;
+    }
+    .service-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 40px;
+    }
+    .stag {
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--green-accent);
+      border: 1px solid var(--green-deep);
+      padding: 5px 12px;
+      font-weight: 400;
+    }
+
+    /* ── PROCESS ── */
+    #process { background: var(--dark); }
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-bottom: 64px;
+    }
+    .process-step {
+      background: var(--black);
+      padding: 48px 40px;
+    }
+    .process-num {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: var(--border-light);
+      line-height: 1;
+      margin-bottom: 24px;
+      letter-spacing: -2px;
+    }
+    .process-step h3 {
+      font-size: 1.3rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    .process-step p {
+      font-size: 0.88rem;
+      color: var(--muted-light);
+      line-height: 1.7;
+      font-weight: 300;
+    }
+    .process-cta {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+    .process-cta p {
+      font-size: 0.85rem;
       color: var(--muted);
+      font-weight: 300;
+    }
+
+    /* ── ABOUT ── */
+    #about { background: var(--black); }
+    .about-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 96px;
+      align-items: start;
+    }
+    .about-text p {
+      font-size: 0.92rem;
+      color: var(--muted-light);
+      line-height: 1.9;
+      margin-bottom: 20px;
+      font-weight: 300;
+    }
+    .about-text p strong { color: var(--text); font-weight: 500; }
+    .tribute-block {
+      margin: 40px 0;
+      padding: 32px;
+      background: var(--dark);
+      border: 1px solid var(--border);
+      border-left: 2px solid var(--green-accent);
+    }
+    .tribute-block p {
+      font-size: 0.9rem !important;
+      color: var(--muted-light) !important;
+      font-style: italic;
+      line-height: 1.9 !important;
+      margin-bottom: 0 !important;
+    }
+    .about-right {
+      position: sticky;
+      top: 100px;
+    }
+    .about-stat-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .about-stat {
+      background: var(--dark);
+      padding: 32px;
+      transition: background 0.3s;
+    }
+    .about-stat:hover { background: var(--card-hover); }
+    .about-stat-num {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: var(--green-accent);
+      line-height: 1;
+      margin-bottom: 6px;
+      letter-spacing: -1px;
+    }
+    .about-stat-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: 400;
+    }
+
+    /* ── SERVICE AREA ── */
+    #area { background: var(--dark); }
+    .area-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 96px;
+      align-items: start;
+    }
+    .area-text p {
+      font-size: 0.92rem;
+      color: var(--muted-light);
+      line-height: 1.9;
+      margin-bottom: 32px;
+      font-weight: 300;
+    }
+    .area-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .area-list li {
+      background: var(--black);
+      padding: 16px 24px;
+      font-size: 0.85rem;
+      color: var(--muted-light);
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: background 0.2s, color 0.2s;
+      font-weight: 300;
+    }
+    .area-list li:hover { background: var(--card-hover); color: var(--text); }
+    .area-list li::before {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--green-accent);
+      flex-shrink: 0;
+    }
+
+    /* ── CONTACT ── */
+    #contact { background: var(--black); }
+    .contact-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 96px;
+      align-items: start;
+    }
+    .contact-left p {
+      font-size: 0.92rem;
+      color: var(--muted-light);
+      line-height: 1.9;
+      margin-bottom: 40px;
+      font-weight: 300;
+    }
+    .phone-link {
+      display: block;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      color: var(--green-accent);
+      letter-spacing: -1px;
+      line-height: 1;
+      margin-bottom: 8px;
+      transition: color 0.2s;
+    }
+    .phone-link:hover { color: var(--green-bright); }
+    .phone-note {
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 48px;
+      font-weight: 400;
+    }
+    .hours-block {
+      border: 1px solid var(--border);
+      background: var(--dark);
+    }
+    .hours-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.7rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 400;
     }
     .hours-row {
       display: flex;
       justify-content: space-between;
-      padding: 8px 0;
+      padding: 14px 24px;
       border-bottom: 1px solid var(--border);
-      font-size: 0.9rem;
-      color: var(--muted);
+      font-size: 0.83rem;
+      color: var(--muted-light);
+      font-weight: 300;
     }
     .hours-row:last-child { border-bottom: none; }
-    .hours-row span:last-child { color: var(--text); }
+    .hours-row span:last-child { color: var(--text); font-weight: 400; }
 
     /* FORM */
-    form { display: flex; flex-direction: column; gap: 16px; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    form { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+    .form-field {
+      background: var(--dark);
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+    .form-field:focus-within { background: var(--card-hover); }
     label {
-      font-size: 0.8rem;
-      font-weight: 600;
+      font-size: 0.65rem;
+      font-weight: 400;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 2px;
       color: var(--muted);
     }
     input, textarea {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 12px 16px;
+      background: transparent;
+      border: none;
+      outline: none;
       color: var(--text);
       font-family: 'Inter', sans-serif;
-      font-size: 0.95rem;
-      transition: border-color 0.2s;
-      outline: none;
+      font-size: 0.9rem;
+      font-weight: 300;
       width: 100%;
+      padding: 0;
     }
-    input:focus, textarea:focus { border-color: var(--accent); }
-    textarea { resize: vertical; min-height: 120px; }
-    input::placeholder, textarea::placeholder { color: var(--border); }
+    textarea { resize: none; min-height: 80px; }
+    input::placeholder, textarea::placeholder { color: var(--muted); }
+    .form-submit {
+      background: var(--dark);
+      padding: 0;
+    }
+    .form-submit .btn {
+      width: 100%;
+      justify-content: center;
+      border-radius: 0;
+      border: none;
+      padding: 20px;
+    }
 
     /* ── FOOTER ── */
     footer {
-      background: #111;
+      background: var(--dark);
       border-top: 1px solid var(--border);
-      padding: 32px 0;
+      padding: 40px 0;
     }
     .footer-inner {
       display: flex;
@@ -581,26 +716,32 @@
     }
     .footer-logo {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 1.3rem;
-      font-weight: 800;
+      font-size: 1.1rem;
+      font-weight: 700;
       text-transform: uppercase;
+      letter-spacing: 3px;
     }
-    .footer-logo span { color: var(--accent); }
-    .footer-text {
+    .footer-logo span { color: var(--green-accent); }
+    .footer-meta {
+      font-size: 0.75rem;
       color: var(--muted);
-      font-size: 0.85rem;
       text-align: center;
+      font-weight: 300;
+      letter-spacing: 0.5px;
     }
     .footer-links {
       display: flex;
-      gap: 24px;
+      gap: 32px;
     }
     .footer-links a {
+      font-size: 0.72rem;
       color: var(--muted);
-      font-size: 0.85rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
       transition: color 0.2s;
+      font-weight: 400;
     }
-    .footer-links a:hover { color: var(--text); }
+    .footer-links a:hover { color: var(--green-accent); }
 
     /* ── MOBILE STICKY CTA ── */
     .mobile-cta-bar {
@@ -608,16 +749,17 @@
       position: fixed;
       bottom: 0; left: 0; right: 0;
       z-index: 99;
-      background: var(--accent);
-      padding: 14px 24px;
-      text-align: center;
+      background: var(--green-accent);
     }
     .mobile-cta-bar a {
-      color: #fff;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 1.2rem;
-      font-weight: 700;
-      letter-spacing: 1px;
+      display: block;
+      padding: 16px;
+      text-align: center;
+      color: var(--black);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 2px;
       text-transform: uppercase;
     }
 
@@ -626,51 +768,57 @@
       .nav-links { display: none; }
       .hamburger { display: flex; }
 
-      .hero-content { padding: 100px 0 60px; }
+      .hero-content { padding: 110px 0 80px; }
+      .hero-scroll { display: none; }
 
-      .trust-inner { gap: 24px; }
+      .stats-grid { grid-template-columns: 1fr; gap: 32px; }
+      .stat-item { padding: 0; border-right: none; border-bottom: 1px solid var(--border); padding-bottom: 32px; }
+      .stat-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+      .section { padding: 80px 0; }
+      .section-title { margin-bottom: 40px; }
 
       .services-grid,
-      .about-grid,
-      .area-grid,
-      .contact-grid { grid-template-columns: 1fr; gap: 32px; }
+      .process-grid { grid-template-columns: 1fr; }
+      .service-card { padding: 40px 28px; }
+      .process-step { padding: 36px 28px; }
 
-      .steps {
-        grid-template-columns: 1fr;
-        gap: 40px;
-      }
-      .steps::before { display: none; }
+      .about-layout,
+      .area-layout,
+      .contact-layout { grid-template-columns: 1fr; gap: 48px; }
 
-      .area-list { grid-template-columns: 1fr; }
+      .about-right { position: static; }
+
+      .process-cta { flex-direction: column; align-items: flex-start; gap: 16px; }
 
       .mobile-cta-bar { display: block; }
+      body { padding-bottom: 56px; }
 
-      body { padding-bottom: 60px; }
-
-      section { padding: 64px 0; }
+      .footer-inner { flex-direction: column; text-align: center; }
+      .footer-links { justify-content: center; }
     }
   </style>
 </head>
 <body>
 
   <!-- NAV -->
-  <nav>
+  <nav id="navbar">
     <div class="container nav-inner">
       <a href="#hero" class="nav-logo">Steady <span>Eco</span></a>
       <ul class="nav-links">
         <li><a href="#services">Services</a></li>
-        <li><a href="#how">How It Works</a></li>
+        <li><a href="#process">Process</a></li>
         <li><a href="#about">About</a></li>
         <li><a href="#contact">Contact</a></li>
-        <li><a href="tel:+61456190202" class="nav-call">📞 Call Now</a></li>
+        <li><a href="tel:+61456190202" class="nav-cta">0456 190 202</a></li>
       </ul>
-      <div class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+      <div class="hamburger" onclick="toggleMenu()" aria-label="Open menu">
         <span></span><span></span><span></span>
       </div>
     </div>
     <div class="mobile-menu" id="mobileMenu">
       <a href="#services" onclick="toggleMenu()">Services</a>
-      <a href="#how" onclick="toggleMenu()">How It Works</a>
+      <a href="#process" onclick="toggleMenu()">Process</a>
       <a href="#about" onclick="toggleMenu()">About</a>
       <a href="#contact" onclick="toggleMenu()">Contact</a>
     </div>
@@ -678,133 +826,136 @@
 
   <!-- HERO -->
   <section id="hero">
-    <div class="hero-bg-pattern"></div>
-    <div class="hero-accent-bar"></div>
+    <div class="hero-bg"></div>
+    <div class="hero-line"></div>
     <div class="container">
       <div class="hero-content">
-        <span class="hero-eyebrow">Cairns & Far North Queensland</span>
-        <h1>Woodchipper Blade Sharpening<br /><span>Cairns & FNQ</span></h1>
-        <p>Woodchipper blade sharpening for arborists, tree loppers and landscapers across Cairns and Far North Queensland. Fast turnaround, factory-edge results.</p>
-        <div class="hero-ctas">
+        <div class="hero-tag fade-in">Cairns & Far North Queensland</div>
+        <h1 class="fade-in fade-in-delay-1">
+          <span class="line-dim">Woodchipper</span><br />
+          <span>Blade</span><br />
+          <span class="line-green">Sharpening.</span>
+        </h1>
+        <p class="hero-sub fade-in fade-in-delay-2">
+          Factory-edge results for arborists, tree loppers and landscapers across FNQ. Fast turnaround. No fuss.
+        </p>
+        <div class="hero-ctas fade-in fade-in-delay-3">
           <a href="#contact" class="btn btn-primary">Get a Quote</a>
-          <a href="tel:+61456190202" class="btn btn-ghost">📞 Call Us Now</a>
+          <a href="tel:+61456190202" class="btn btn-outline">0456 190 202</a>
         </div>
       </div>
     </div>
+    <div class="hero-scroll">Scroll</div>
   </section>
 
-  <!-- TRUST BAR -->
-  <div id="trust">
+  <!-- STATS -->
+  <div id="stats">
     <div class="container">
-      <div class="trust-inner">
-        <div class="trust-item">
-          <span class="icon">⚡</span>
-          Fast Turnaround
+      <div class="stats-grid">
+        <div class="stat-item fade-in">
+          <div class="stat-number">15+</div>
+          <div class="stat-label">Years hands-on experience</div>
         </div>
-        <div class="trust-item">
-          <span class="icon">📍</span>
-          Based in Cairns
+        <div class="stat-item fade-in fade-in-delay-1">
+          <div class="stat-number">FNQ</div>
+          <div class="stat-label">Locally based, widely serviced</div>
         </div>
-        <div class="trust-item">
-          <span class="icon">🌱</span>
-          Eco-Focused Services
+        <div class="stat-item fade-in fade-in-delay-2">
+          <div class="stat-number">Fast</div>
+          <div class="stat-label">Turnaround, back on the job</div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- SERVICES -->
-  <section id="services">
+  <section id="services" class="section">
     <div class="container">
-      <div class="section-label">What We Do</div>
-      <h2 class="section-title">Our <span>Services</span></h2>
+      <div class="section-tag fade-in">What We Do</div>
+      <h2 class="section-title fade-in">Our <span class="dim">Services</span></h2>
       <div class="services-grid">
-
-        <div class="service-card">
-          <div class="service-icon">🪚</div>
-          <h3>Woodchipper Blade Sharpening</h3>
-          <p>Dull blades slow your machine down and cost you money. We sharpen woodchipper blades back to factory edge so your equipment runs the way it should — no lengthy wait, no fuss.</p>
+        <div class="service-card fade-in">
+          <div class="service-num">01</div>
+          <h3>Blade <span>Sharpening</span></h3>
+          <p>Dull blades slow your machine and cost you money. We sharpen woodchipper blades back to factory edge — so your equipment runs the way it should. No lengthy wait, no fuss.</p>
           <div class="service-tags">
-            <span class="tag">📍 Cairns Drop-Off</span>
-            <span class="tag">⚡ Fast Turnaround</span>
-            <span class="tag">✅ Factory-Edge Results</span>
+            <span class="stag">Cairns Drop-Off</span>
+            <span class="stag">Fast Turnaround</span>
+            <span class="stag">Factory Edge</span>
           </div>
           <a href="#contact" class="btn btn-primary">Get a Quote</a>
         </div>
-
-        <div class="service-card coming-soon">
-          <span class="coming-badge">Coming Soon</span>
-          <div class="service-icon">🌿</div>
-          <h3>Land Regeneration Services</h3>
+        <div class="service-card dimmed fade-in fade-in-delay-1">
+          <div class="coming-tag">Coming Soon</div>
+          <div class="service-num">02</div>
+          <h3>Land <span>Regeneration</span></h3>
           <p>Large-scale eco restoration and vegetation management for Far North Queensland. Part of our expanding Steady Eco service offering.</p>
           <div class="service-tags">
-            <span class="tag">🌱 Eco Restoration</span>
-            <span class="tag">🗺 Far North QLD</span>
+            <span class="stag">Eco Restoration</span>
+            <span class="stag">Far North QLD</span>
           </div>
         </div>
-
       </div>
     </div>
   </section>
 
-  <!-- HOW IT WORKS -->
-  <section id="how">
+  <!-- PROCESS -->
+  <section id="process" class="section">
     <div class="container">
-      <div class="section-label">The Process</div>
-      <h2 class="section-title">Simple <span>as That</span></h2>
-      <div class="steps">
-        <div class="step">
-          <div class="step-number">1</div>
+      <div class="section-tag fade-in">How It Works</div>
+      <h2 class="section-title fade-in">Simple <span class="dim">as That</span></h2>
+      <div class="process-grid">
+        <div class="process-step fade-in">
+          <div class="process-num">01</div>
           <h3>Drop Off</h3>
           <p>Bring your blades to us in Cairns. Give us a call first and we'll be ready for you.</p>
         </div>
-        <div class="step">
-          <div class="step-number">2</div>
+        <div class="process-step fade-in fade-in-delay-1">
+          <div class="process-num">02</div>
           <h3>We Sharpen</h3>
-          <p>We sharpen your blades back to factory spec using professional equipment. Precision work, every time.</p>
+          <p>Sharpened back to factory spec using professional equipment. Precision work, every time.</p>
         </div>
-        <div class="step">
-          <div class="step-number">3</div>
+        <div class="process-step fade-in fade-in-delay-2">
+          <div class="process-num">03</div>
           <h3>Pick Up</h3>
           <p>Your blades are ready to go. Back on the machine, back on the job.</p>
         </div>
       </div>
-      <div class="how-cta">
-        <p>Ready to go? It all starts with a phone call.</p>
-        <a href="tel:+61456190202" class="btn btn-primary">📞 Call Us Today</a>
+      <div class="process-cta fade-in">
+        <p>Ready? It starts with a call.</p>
+        <a href="tel:+61456190202" class="btn btn-primary">Call 0456 190 202</a>
       </div>
     </div>
   </section>
 
   <!-- ABOUT -->
-  <section id="about">
+  <section id="about" class="section">
     <div class="container">
-      <div class="about-grid">
+      <div class="about-layout">
         <div class="about-text">
-          <div class="section-label">About Us</div>
-          <h2 class="section-title">This Trade Is<br /><span>In Our Blood</span></h2>
-          <p>Steady Eco Expansion is a Cairns-based business built on years of hands-on experience in arboriculture and vegetation management. The knowledge behind this business wasn't learned in a classroom — it was passed down on the job, working alongside some of the best in the trade across Far North Queensland.</p>
-
-          <div class="tribute">
-            "This business is dedicated to my father, who gave me this trade from the age of 15 and ran TRIMSNQ with the kind of skill and dedication that FNQ operators knew and trusted. His love for arboriculture lives on in every blade we sharpen."
+          <div class="section-tag fade-in">About Us</div>
+          <h2 class="section-title fade-in">This Trade Is<br /><span class="green">In Our Blood</span></h2>
+          <p class="fade-in">Steady Eco is a Cairns-based business built on years of hands-on experience in arboriculture and vegetation management across Far North Queensland.</p>
+          <div class="tribute-block fade-in">
+            <p>"This business is dedicated to my father, who gave me this trade from the age of 15 and ran TRIMSNQ with the kind of skill and dedication that FNQ operators knew and trusted. His love for arboriculture lives on in every blade we sharpen."</p>
           </div>
-
-          <p>We started with blade sharpening because we have the machinery, the knowledge, and a clear gap in the local market. If you're running woodchipping equipment in FNQ and your blades are dulling faster than your schedule allows — <strong>we're the call to make.</strong></p>
-          <p>Land regeneration services are on the way. Watch this space.</p>
+          <p class="fade-in">We started with blade sharpening because we have the machinery, the knowledge, and a clear gap in the local market. If you're running woodchipping equipment in FNQ and your blades are dulling faster than your schedule allows — <strong>we're the call to make.</strong></p>
+          <p class="fade-in">Land regeneration services are on the way. Watch this space.</p>
         </div>
-
-        <div class="about-stats">
-          <div class="stat-card">
-            <div class="stat-number">15+</div>
-            <div class="stat-label">Years of hands-on arborist experience</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">FNQ</div>
-            <div class="stat-label">Locally based, servicing all of Far North Queensland</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number">Fast</div>
-            <div class="stat-label">Turnaround times that keep your jobs on schedule</div>
+        <div class="about-right fade-in">
+          <div class="about-stat-list">
+            <div class="about-stat">
+              <div class="about-stat-num">15+</div>
+              <div class="about-stat-label">Years hands-on arborist experience</div>
+            </div>
+            <div class="about-stat">
+              <div class="about-stat-num">FNQ</div>
+              <div class="about-stat-label">Locally based, servicing all of Far North Queensland</div>
+            </div>
+            <div class="about-stat">
+              <div class="about-stat-num">Fast</div>
+              <div class="about-stat-label">Turnaround times that keep your jobs on schedule</div>
+            </div>
           </div>
         </div>
       </div>
@@ -812,16 +963,16 @@
   </section>
 
   <!-- SERVICE AREA -->
-  <section id="area">
+  <section id="area" class="section">
     <div class="container">
-      <div class="area-grid">
+      <div class="area-layout">
         <div class="area-text">
-          <div class="section-label">Where We Work</div>
-          <h2 class="section-title">We Service <span>FNQ</span></h2>
-          <p>Based in Cairns and servicing operators across Far North Queensland. If you're not sure whether we cover your area, give us a call — we'll work it out.</p>
-          <a href="#contact" class="btn btn-primary" style="margin-top:8px;">Check Your Area</a>
+          <div class="section-tag fade-in">Where We Work</div>
+          <h2 class="section-title fade-in">We Service <span class="green">FNQ</span></h2>
+          <p class="fade-in">Based in Cairns and servicing operators across Far North Queensland. Not sure if we cover your area? Give us a call — we'll work it out.</p>
+          <a href="#contact" class="btn btn-outline fade-in">Check Your Area</a>
         </div>
-        <div>
+        <div class="fade-in">
           <ul class="area-list">
             <li>Cairns</li>
             <li>Atherton Tablelands</li>
@@ -830,7 +981,7 @@
             <li>Port Douglas</li>
             <li>Innisfail</li>
             <li>Kuranda</li>
-            <li>Far North QLD</li>
+            <li>Far North Queensland</li>
           </ul>
         </div>
       </div>
@@ -838,41 +989,41 @@
   </section>
 
   <!-- CONTACT -->
-  <section id="contact">
+  <section id="contact" class="section">
     <div class="container">
-      <div class="contact-grid">
-        <div class="contact-info">
-          <div class="section-label">Get In Touch</div>
-          <h2 class="section-title">Let's <span>Talk</span></h2>
-          <p>The fastest way to reach us is a phone call. Leave a message if we're on the tools and we'll get back to you same day.</p>
-          <a href="tel:+61456190202" class="phone-display">0456 190 202</a>
-          <p class="phone-note">Same-day callback if we miss you.</p>
-          <p class="phone-note">📍 Cairns, Queensland</p>
-          <div class="hours">
-            <h4>Business Hours</h4>
+      <div class="contact-layout">
+        <div class="contact-left">
+          <div class="section-tag fade-in">Get In Touch</div>
+          <h2 class="section-title fade-in">Let's <span class="dim">Talk</span></h2>
+          <p class="fade-in">The fastest way to reach us is a phone call. Leave a message if we're on the tools and we'll get back to you same day.</p>
+          <a href="tel:+61456190202" class="phone-link fade-in">0456 190 202</a>
+          <p class="phone-note fade-in">📍 Cairns, Queensland &nbsp;·&nbsp; Same-day callback</p>
+          <div class="hours-block fade-in">
+            <div class="hours-header">Business Hours</div>
             <div class="hours-row"><span>Monday – Friday</span><span>7:00am – 5:00pm</span></div>
             <div class="hours-row"><span>Saturday</span><span>7:00am – 12:00pm</span></div>
             <div class="hours-row"><span>Sunday</span><span>Closed</span></div>
           </div>
         </div>
-
-        <div>
+        <div class="fade-in">
           <form action="https://formspree.io/f/xvzwlpko" method="POST">
-            <div class="form-group">
+            <input type="hidden" name="_subject" value="New enquiry from steadyeco.com" />
+            <input type="hidden" name="_next" value="https://steadyeco.com#contact" />
+            <div class="form-field">
               <label for="name">Your Name</label>
               <input type="text" id="name" name="name" placeholder="John Smith" required />
             </div>
-            <div class="form-group">
+            <div class="form-field">
               <label for="phone">Phone Number</label>
               <input type="tel" id="phone" name="phone" placeholder="04xx xxx xxx" required />
             </div>
-            <div class="form-group">
+            <div class="form-field">
               <label for="message">Message</label>
               <textarea id="message" name="message" placeholder="Tell us about your blades or equipment..."></textarea>
             </div>
-            <input type="hidden" name="_subject" value="New enquiry from steadyeco.com" />
-            <input type="hidden" name="_next" value="https://steadyeco.github.io/steadyeco#contact" />
-            <button type="submit" class="btn btn-primary" style="width:100%;">Send Message</button>
+            <div class="form-submit">
+              <button type="submit" class="btn btn-primary">Send Message</button>
+            </div>
           </form>
         </div>
       </div>
@@ -884,9 +1035,9 @@
     <div class="container">
       <div class="footer-inner">
         <div class="footer-logo">Steady <span>Eco</span></div>
-        <div class="footer-text">
-          © 2026 Steady Eco Expansion · Cairns, Queensland<br />
-          ABN: 49 553 784 085 · steadyeco.com
+        <div class="footer-meta">
+          © 2026 Steady Eco Expansion &nbsp;·&nbsp; Cairns, Queensland<br />
+          ABN: 49 553 784 085 &nbsp;·&nbsp; steadyeco.com
         </div>
         <div class="footer-links">
           <a href="#services">Services</a>
@@ -898,16 +1049,20 @@
 
   <!-- MOBILE STICKY CALL BAR -->
   <div class="mobile-cta-bar">
-    <a href="tel:+61456190202">📞 Call Now — 0456 190 202</a>
+    <a href="tel:+61456190202">Call Now — 0456 190 202</a>
   </div>
 
   <script>
-    function toggleMenu() {
-      const menu = document.getElementById('mobileMenu');
-      menu.classList.toggle('open');
-    }
+    // Nav scroll effect
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 40);
+    });
 
-    // Close mobile menu on outside click
+    // Mobile menu
+    function toggleMenu() {
+      document.getElementById('mobileMenu').classList.toggle('open');
+    }
     document.addEventListener('click', function(e) {
       const menu = document.getElementById('mobileMenu');
       const hamburger = document.querySelector('.hamburger');
@@ -916,6 +1071,19 @@
       }
     });
 
+    // Fade in on scroll
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.fade-in').forEach(el => {
+      observer.observe(el);
+    });
   </script>
 
 </body>
