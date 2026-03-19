@@ -839,7 +839,7 @@
         </div>
 
         <div>
-          <form onsubmit="handleSubmit(event)">
+          <form action="https://formspree.io/f/xvzwlpko" method="POST">
             <div class="form-group">
               <label for="name">Your Name</label>
               <input type="text" id="name" name="name" placeholder="John Smith" required />
@@ -852,6 +852,8 @@
               <label for="message">Message</label>
               <textarea id="message" name="message" placeholder="Tell us about your blades or equipment..."></textarea>
             </div>
+            <input type="hidden" name="_subject" value="New enquiry from steadyeco.com" />
+            <input type="hidden" name="_next" value="https://steadyeco.github.io/steadyeco#contact" />
             <button type="submit" class="btn btn-primary" style="width:100%;">Send Message</button>
           </form>
         </div>
@@ -896,17 +898,6 @@
       }
     });
 
-    function handleSubmit(e) {
-      e.preventDefault();
-      const btn = e.target.querySelector('button[type="submit"]');
-      btn.textContent = '✅ Message Sent!';
-      btn.disabled = true;
-      setTimeout(() => {
-        btn.textContent = 'Send Message';
-        btn.disabled = false;
-        e.target.reset();
-      }, 3000);
-    }
   </script>
 
 </body>
