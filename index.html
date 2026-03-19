@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Steady Eco | Woodchipper Blade Sharpening Cairns</title>
+  <meta name="description" content="Professional woodchipper blade sharpening in Cairns and Far North Queensland. Fast turnaround, factory-edge results. Call Steady Eco today." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #1A1A1A;
+      --bg-alt:    #242424;
+      --bg-card:   #2C2C2C;
+      --accent:    #E8690B;
+      --accent-hover: #CF5A08;
+      --text:      #F2F0EB;
+      --muted:     #A0A0A0;
+      --border:    #3A3A3A;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Barlow Condensed', sans-serif;
+      line-height: 1.1;
+      letter-spacing: 0.5px;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-block;
+      padding: 14px 28px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      border: 2px solid transparent;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--text);
+    }
+    .btn-ghost:hover {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(26,26,26,0.96);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .nav-logo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-call {
+      background: var(--accent);
+      color: #fff !important;
+      padding: 8px 18px;
+      border-radius: 4px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem !important;
+      font-weight: 700 !important;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: background 0.2s;
+    }
+    .nav-call:hover { background: var(--accent-hover) !important; color: #fff !important; }
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 4px;
+    }
+    .hamburger span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background: var(--text);
+      transition: 0.3s;
+    }
+    .mobile-menu {
+      display: none;
+      flex-direction: column;
+      background: var(--bg-alt);
+      border-top: 1px solid var(--border);
+      padding: 16px 24px 24px;
+      gap: 16px;
+    }
+    .mobile-menu a {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .mobile-menu a:hover { color: var(--text); }
+    .mobile-menu.open { display: flex; }
+
+    /* ── HERO ── */
+    #hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      background: linear-gradient(135deg, #0f0f0f 0%, #1e1e1e 50%, #0a0a0a 100%);
+      overflow: hidden;
+    }
+    .hero-bg-pattern {
+      position: absolute;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 40px,
+          rgba(232,105,11,0.03) 40px,
+          rgba(232,105,11,0.03) 41px
+        );
+    }
+    .hero-accent-bar {
+      position: absolute;
+      top: 0; left: 0;
+      width: 6px;
+      height: 100%;
+      background: var(--accent);
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      padding: 120px 0 80px;
+      max-width: 700px;
+    }
+    .hero-eyebrow {
+      display: inline-block;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+    .hero-content h1 {
+      font-size: clamp(3rem, 8vw, 5.5rem);
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      line-height: 1;
+    }
+    .hero-content h1 span { color: var(--accent); }
+    .hero-content p {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 520px;
+      margin-bottom: 36px;
+      line-height: 1.7;
+    }
+    .hero-ctas {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* ── TRUST BAR ── */
+    #trust {
+      background: var(--accent);
+      padding: 20px 0;
+    }
+    .trust-inner {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      flex-wrap: wrap;
+    }
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .trust-item .icon { font-size: 1.3rem; }
+
+    /* ── SECTIONS ── */
+    section { padding: 88px 0; }
+    .section-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 48px;
+    }
+    .section-title span { color: var(--accent); }
+    .divider {
+      width: 48px;
+      height: 4px;
+      background: var(--accent);
+      margin: 16px 0 48px;
+    }
+
+    /* ── SERVICES ── */
+    #services { background: var(--bg-alt); }
+    .services-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .service-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 40px 36px;
+      position: relative;
+      transition: border-color 0.2s;
+    }
+    .service-card:hover { border-color: var(--accent); }
+    .service-card.coming-soon {
+      opacity: 0.6;
+    }
+    .coming-badge {
+      position: absolute;
+      top: 20px; right: 20px;
+      background: var(--border);
+      color: var(--muted);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 3px;
+    }
+    .service-icon {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+    .service-card h3 {
+      font-size: 1.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .service-card p {
+      color: var(--muted);
+      margin-bottom: 24px;
+      line-height: 1.7;
+    }
+    .service-tags {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+    .tag {
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 3px;
+    }
+
+    /* ── HOW IT WORKS ── */
+    #how { background: var(--bg); }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      position: relative;
+    }
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 36px;
+      left: calc(16.66% + 12px);
+      right: calc(16.66% + 12px);
+      height: 2px;
+      background: var(--border);
+    }
+    .step {
+      text-align: center;
+      padding: 0 24px;
+      position: relative;
+    }
+    .step-number {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      position: relative;
+      z-index: 1;
+    }
+    .step h3 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .step p { color: var(--muted); font-size: 0.95rem; }
+    .how-cta {
+      text-align: center;
+      margin-top: 56px;
+    }
+    .how-cta p {
+      color: var(--muted);
+      margin-bottom: 20px;
+      font-size: 1rem;
+    }
+
+    /* ── ABOUT ── */
+    #about { background: var(--bg-alt); }
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+    .about-text p {
+      color: var(--muted);
+      margin-bottom: 20px;
+      line-height: 1.8;
+    }
+    .about-text p strong { color: var(--text); }
+    .about-text .tribute {
+      border-left: 4px solid var(--accent);
+      padding-left: 20px;
+      margin: 32px 0;
+      color: var(--muted);
+      font-style: italic;
+      line-height: 1.8;
+    }
+    .about-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 4px;
+      padding: 24px 28px;
+    }
+    .stat-number {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    /* ── SERVICE AREA ── */
+    #area { background: var(--bg); }
+    .area-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: start;
+    }
+    .area-text p {
+      color: var(--muted);
+      margin-bottom: 24px;
+      line-height: 1.8;
+    }
+    .area-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .area-list li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .area-list li::before {
+      content: '▸';
+      color: var(--accent);
+      font-size: 0.8rem;
+    }
+
+    /* ── CONTACT ── */
+    #contact { background: var(--bg-alt); }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: start;
+    }
+    .contact-info p {
+      color: var(--muted);
+      margin-bottom: 32px;
+      line-height: 1.8;
+    }
+    .phone-display {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      color: var(--accent);
+      display: block;
+      margin-bottom: 8px;
+      transition: color 0.2s;
+    }
+    .phone-display:hover { color: var(--accent-hover); }
+    .phone-note {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 32px;
+    }
+    .hours {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 24px;
+    }
+    .hours h4 {
+      font-size: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+      color: var(--muted);
+    }
+    .hours-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .hours-row:last-child { border-bottom: none; }
+    .hours-row span:last-child { color: var(--text); }
+
+    /* FORM */
+    form { display: flex; flex-direction: column; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+    }
+    input, textarea {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+      outline: none;
+      width: 100%;
+    }
+    input:focus, textarea:focus { border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 120px; }
+    input::placeholder, textarea::placeholder { color: var(--border); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #111;
+      border-top: 1px solid var(--border);
+      padding: 32px 0;
+    }
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .footer-logo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .footer-logo span { color: var(--accent); }
+    .footer-text {
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+    .footer-links a {
+      color: var(--muted);
+      font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--text); }
+
+    /* ── MOBILE STICKY CTA ── */
+    .mobile-cta-bar {
+      display: none;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 99;
+      background: var(--accent);
+      padding: 14px 24px;
+      text-align: center;
+    }
+    .mobile-cta-bar a {
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+
+      .hero-content { padding: 100px 0 60px; }
+
+      .trust-inner { gap: 24px; }
+
+      .services-grid,
+      .about-grid,
+      .area-grid,
+      .contact-grid { grid-template-columns: 1fr; gap: 32px; }
+
+      .steps {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+      .steps::before { display: none; }
+
+      .area-list { grid-template-columns: 1fr; }
+
+      .mobile-cta-bar { display: block; }
+
+      body { padding-bottom: 60px; }
+
+      section { padding: 64px 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="container nav-inner">
+      <a href="#hero" class="nav-logo">Steady <span>Eco</span></a>
+      <ul class="nav-links">
+        <li><a href="#services">Services</a></li>
+        <li><a href="#how">How It Works</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><a href="tel:+61456190202" class="nav-call">📞 Call Now</a></li>
+      </ul>
+      <div class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="#services" onclick="toggleMenu()">Services</a>
+      <a href="#how" onclick="toggleMenu()">How It Works</a>
+      <a href="#about" onclick="toggleMenu()">About</a>
+      <a href="#contact" onclick="toggleMenu()">Contact</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-bg-pattern"></div>
+    <div class="hero-accent-bar"></div>
+    <div class="container">
+      <div class="hero-content">
+        <span class="hero-eyebrow">Cairns & Far North Queensland</span>
+        <h1>Sharp Blades.<br /><span>Less Downtime.</span></h1>
+        <p>Woodchipper blade sharpening for arborists, tree loppers and landscapers across Cairns and Far North Queensland. Fast turnaround, factory-edge results.</p>
+        <div class="hero-ctas">
+          <a href="#contact" class="btn btn-primary">Get a Quote</a>
+          <a href="tel:+61456190202" class="btn btn-ghost">📞 Call Us Now</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST BAR -->
+  <div id="trust">
+    <div class="container">
+      <div class="trust-inner">
+        <div class="trust-item">
+          <span class="icon">⚡</span>
+          Fast Turnaround
+        </div>
+        <div class="trust-item">
+          <span class="icon">📍</span>
+          Based in Cairns
+        </div>
+        <div class="trust-item">
+          <span class="icon">🌱</span>
+          Eco-Focused Services
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SERVICES -->
+  <section id="services">
+    <div class="container">
+      <div class="section-label">What We Do</div>
+      <h2 class="section-title">Our <span>Services</span></h2>
+      <div class="services-grid">
+
+        <div class="service-card">
+          <div class="service-icon">🪚</div>
+          <h3>Woodchipper Blade Sharpening</h3>
+          <p>Dull blades slow your machine down and cost you money. We sharpen woodchipper blades back to factory edge so your equipment runs the way it should — no lengthy wait, no fuss.</p>
+          <div class="service-tags">
+            <span class="tag">📍 Cairns Drop-Off</span>
+            <span class="tag">⚡ Fast Turnaround</span>
+            <span class="tag">✅ Factory-Edge Results</span>
+          </div>
+          <a href="#contact" class="btn btn-primary">Get a Quote</a>
+        </div>
+
+        <div class="service-card coming-soon">
+          <span class="coming-badge">Coming Soon</span>
+          <div class="service-icon">🌿</div>
+          <h3>Land Regeneration Services</h3>
+          <p>Large-scale eco restoration and vegetation management for Far North Queensland. Part of our expanding Steady Eco service offering.</p>
+          <div class="service-tags">
+            <span class="tag">🌱 Eco Restoration</span>
+            <span class="tag">🗺 Far North QLD</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how">
+    <div class="container">
+      <div class="section-label">The Process</div>
+      <h2 class="section-title">Simple <span>as That</span></h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3>Drop Off</h3>
+          <p>Bring your blades to us in Cairns. Give us a call first and we'll be ready for you.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3>We Sharpen</h3>
+          <p>We sharpen your blades back to factory spec using professional equipment. Precision work, every time.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3>Pick Up</h3>
+          <p>Your blades are ready to go. Back on the machine, back on the job.</p>
+        </div>
+      </div>
+      <div class="how-cta">
+        <p>Ready to go? It all starts with a phone call.</p>
+        <a href="tel:+61456190202" class="btn btn-primary">📞 Call Us Today</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-text">
+          <div class="section-label">About Us</div>
+          <h2 class="section-title">This Trade Is<br /><span>In Our Blood</span></h2>
+          <p>Steady Eco Expansion is a Cairns-based business built on years of hands-on experience in arboriculture and vegetation management. The knowledge behind this business wasn't learned in a classroom — it was passed down on the job, working alongside some of the best in the trade across Far North Queensland.</p>
+
+          <div class="tribute">
+            "This business is dedicated to my father, who gave me this trade from the age of 15 and ran TRIMSNQ with the kind of skill and dedication that FNQ operators knew and trusted. His love for arboriculture lives on in every blade we sharpen."
+          </div>
+
+          <p>We started with blade sharpening because we have the machinery, the knowledge, and a clear gap in the local market. If you're running woodchipping equipment in FNQ and your blades are dulling faster than your schedule allows — <strong>we're the call to make.</strong></p>
+          <p>Land regeneration services are on the way. Watch this space.</p>
+        </div>
+
+        <div class="about-stats">
+          <div class="stat-card">
+            <div class="stat-number">15+</div>
+            <div class="stat-label">Years of hands-on arborist experience</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">FNQ</div>
+            <div class="stat-label">Locally based, servicing all of Far North Queensland</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">Fast</div>
+            <div class="stat-label">Turnaround times that keep your jobs on schedule</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICE AREA -->
+  <section id="area">
+    <div class="container">
+      <div class="area-grid">
+        <div class="area-text">
+          <div class="section-label">Where We Work</div>
+          <h2 class="section-title">We Service <span>FNQ</span></h2>
+          <p>Based in Cairns and servicing operators across Far North Queensland. If you're not sure whether we cover your area, give us a call — we'll work it out.</p>
+          <a href="#contact" class="btn btn-primary" style="margin-top:8px;">Check Your Area</a>
+        </div>
+        <div>
+          <ul class="area-list">
+            <li>Cairns</li>
+            <li>Atherton Tablelands</li>
+            <li>Mareeba</li>
+            <li>Mossman</li>
+            <li>Port Douglas</li>
+            <li>Innisfail</li>
+            <li>Kuranda</li>
+            <li>Far North QLD</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="container">
+      <div class="contact-grid">
+        <div class="contact-info">
+          <div class="section-label">Get In Touch</div>
+          <h2 class="section-title">Let's <span>Talk</span></h2>
+          <p>The fastest way to reach us is a phone call. Leave a message if we're on the tools and we'll get back to you same day.</p>
+          <a href="tel:+61456190202" class="phone-display">0456 190 202</a>
+          <p class="phone-note">Same-day callback if we miss you.</p>
+          <div class="hours">
+            <h4>Business Hours</h4>
+            <div class="hours-row"><span>Monday – Friday</span><span>7:00am – 5:00pm</span></div>
+            <div class="hours-row"><span>Saturday</span><span>7:00am – 12:00pm</span></div>
+            <div class="hours-row"><span>Sunday</span><span>Closed</span></div>
+          </div>
+        </div>
+
+        <div>
+          <form onsubmit="handleSubmit(event)">
+            <div class="form-group">
+              <label for="name">Your Name</label>
+              <input type="text" id="name" name="name" placeholder="John Smith" required />
+            </div>
+            <div class="form-group">
+              <label for="phone">Phone Number</label>
+              <input type="tel" id="phone" name="phone" placeholder="04xx xxx xxx" required />
+            </div>
+            <div class="form-group">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" placeholder="Tell us about your blades or equipment..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;">Send Message</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-logo">Steady <span>Eco</span></div>
+        <div class="footer-text">
+          © 2026 Steady Eco Expansion · Cairns, Queensland<br />
+          ABN: 49 553 784 085 · steadyeco.com
+        </div>
+        <div class="footer-links">
+          <a href="#services">Services</a>
+          <a href="#contact">Contact</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MOBILE STICKY CALL BAR -->
+  <div class="mobile-cta-bar">
+    <a href="tel:+61456190202">📞 Call Now — 0456 190 202</a>
+  </div>
+
+  <script>
+    function toggleMenu() {
+      const menu = document.getElementById('mobileMenu');
+      menu.classList.toggle('open');
+    }
+
+    // Close mobile menu on outside click
+    document.addEventListener('click', function(e) {
+      const menu = document.getElementById('mobileMenu');
+      const hamburger = document.querySelector('.hamburger');
+      if (!menu.contains(e.target) && !hamburger.contains(e.target)) {
+        menu.classList.remove('open');
+      }
+    });
+
+    function handleSubmit(e) {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.textContent = '✅ Message Sent!';
+      btn.disabled = true;
+      setTimeout(() => {
+        btn.textContent = 'Send Message';
+        btn.disabled = false;
+        e.target.reset();
+      }, 3000);
+    }
+  </script>
+
+</body>
+</html>
