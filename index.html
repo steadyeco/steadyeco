@@ -716,6 +716,29 @@
       gap: 2px;
       background: var(--border);
     }
+    .form-success {
+      text-align: center;
+      padding: 48px 24px;
+      background: var(--card);
+      border: 1px solid var(--green-accent);
+    }
+    .form-success-icon {
+      font-size: 2rem;
+      color: var(--green-accent);
+      margin-bottom: 12px;
+    }
+    .form-success-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .form-success p {
+      font-size: 0.9rem;
+      color: var(--muted-light);
+    }
+
     .form-field {
       background: var(--bg-alt);
       padding: 20px 24px;
@@ -824,6 +847,10 @@
       .hero-right .img-placeholder { min-height: 300px; }
     }
 
+    @media (max-width: 900px) {
+      .hero-scroll { display: none; }
+    }
+
     @media (max-width: 768px) {
       .nav-links { display: none; }
       .hamburger { display: flex; }
@@ -838,7 +865,12 @@
       .services-grid,
       .process-grid { grid-template-columns: 1fr; }
       .service-card { padding: 36px 24px; }
+      .service-card.dimmed { display: none; }
       .process-step { padding: 32px 24px; }
+
+      .hero-ctas { flex-direction: column; }
+      .hero-ctas .btn-primary { width: 100%; justify-content: center; }
+      .hero-ctas .btn-outline { display: none; }
 
       .about-layout,
       .area-layout,
@@ -1045,6 +1077,7 @@
             <li><span class="area-dot"></span>Kuranda</li>
             <li><span class="area-dot"></span>Far North Queensland</li>
           </ul>
+          <p style="margin-top:20px; font-size:0.82rem; color:var(--muted-light); line-height:1.6;">Drop off in Cairns at no extra charge — or we can collect and return your blades for $20. Call to discuss your options.</p>
         </div>
       </div>
     </div>
@@ -1143,6 +1176,32 @@
     }, { threshold: 0.1 });
 
     document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    const contactForm = document.querySelector('form[action*="formspree"]');
+    if (contactForm) {
+      contactForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = contactForm.querySelector('button[type="submit"]');
+        btn.textContent = 'Sending...';
+        btn.disabled = true;
+        try {
+          const res = await fetch(contactForm.action, {
+            method: 'POST',
+            body: new FormData(contactForm),
+            headers: { 'Accept': 'application/json' }
+          });
+          if (res.ok) {
+            contactForm.innerHTML = '<div class="form-success"><div class="form-success-icon">✓</div><div class="form-success-title">Message Sent</div><p>We\'ll get back to you same day.</p></div>';
+          } else {
+            btn.textContent = 'Send Message';
+            btn.disabled = false;
+          }
+        } catch(err) {
+          btn.textContent = 'Send Message';
+          btn.disabled = false;
+        }
+      });
+    }
   </script>
 
 </body>

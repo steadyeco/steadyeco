@@ -626,6 +626,51 @@
   .dash-alert.danger .dash-alert-btn { background:var(--danger); color:#fff; }
   .dash-alert.danger .dash-alert-btn.ghost { background:transparent; border-color:var(--danger); color:var(--danger); }
 
+  /* ══════════════════════════════ CALENDAR ══════════════════════════ */
+  .jobs-topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .jobs-topbar .back-btn { margin-bottom:0; }
+  .jobs-topbar .toggle-group { width:auto; margin-bottom:0; background:none; gap:2px; }
+
+  .cal-header { display:flex; align-items:center; justify-content:space-between; background:var(--card); border:1px solid var(--border); padding:14px 18px; margin-bottom:2px; }
+  .cal-month-label { font-family:'Fraunces',Georgia,serif; font-size:1.15rem; font-weight:600; color:var(--text); letter-spacing:-0.3px; }
+  .cal-nav-btn { background:none; border:1px solid var(--border-light); color:var(--green-accent); font-size:1.4rem; width:40px; height:40px; cursor:pointer; line-height:1; -webkit-tap-highlight-color:transparent; transition:background 0.15s; }
+  .cal-nav-btn:active { background:var(--green-deep); }
+
+  .cal-day-labels { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; background:var(--border); margin-bottom:2px; }
+  .cal-day-labels span { background:var(--bg-alt); text-align:center; font-size:0.52rem; letter-spacing:2px; font-weight:600; text-transform:uppercase; color:var(--muted); padding:8px 0; }
+
+  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; background:var(--border); margin-bottom:16px; }
+
+  .cal-cell { background:var(--card); min-height:56px; padding:6px 5px 5px; cursor:pointer; -webkit-tap-highlight-color:transparent; display:flex; flex-direction:column; align-items:flex-start; position:relative; transition:background 0.15s; }
+  .cal-cell:active { background:var(--card-hover); }
+  .cal-cell.empty { background:var(--bg); cursor:default; pointer-events:none; }
+  .cal-cell.today { border:1px solid var(--green-muted); }
+  .cal-cell.today .cal-day-num { color:var(--green-accent); font-weight:700; }
+  .cal-cell.selected { background:var(--green-deep); border:1px solid var(--green-muted); }
+  .cal-cell.no-jobs { cursor:default; }
+
+  .cal-day-num { font-size:0.78rem; font-weight:500; color:var(--text-secondary); line-height:1; margin-bottom:4px; }
+
+  .cal-job-dots { display:flex; flex-wrap:wrap; gap:2px; margin-top:2px; }
+  .cal-job-dot { width:6px; height:6px; border-radius:50%; background:var(--teal); display:inline-block; flex-shrink:0; }
+  .cal-job-dot.in_progress { background:var(--amber); }
+  .cal-job-dot.complete    { background:var(--green-accent); }
+  .cal-job-dot.paid        { background:var(--muted); }
+
+  .cal-job-pill { font-size:0.5rem; font-weight:600; letter-spacing:0.5px; text-transform:uppercase; background:var(--teal-bg); color:var(--teal); padding:1px 5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  .cal-job-pill.in_progress { background:var(--amber-bg);  color:var(--amber); }
+  .cal-job-pill.complete    { background:var(--green-deep); color:var(--green-accent); }
+  .cal-job-pill.paid        { background:#1C2A22;           color:var(--muted-light); }
+
+  .cal-job-count { font-size:0.52rem; font-weight:700; color:var(--green-accent); letter-spacing:0.5px; }
+
+  .cal-day-panel { background:var(--bg-alt); border:1px solid var(--border-light); padding:16px 18px; }
+  .cal-day-panel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .cal-day-panel-title { font-size:0.72rem; letter-spacing:2px; text-transform:uppercase; color:var(--muted-light); font-weight:600; }
+  .cal-close-btn { background:none; border:none; color:var(--muted); font-size:1.2rem; cursor:pointer; padding:4px 8px; -webkit-tap-highlight-color:transparent; }
+  .cal-close-btn:active { color:var(--danger); }
+  .cal-day-empty { text-align:center; padding:20px 0; font-size:0.78rem; color:var(--muted); }
+
   /* ── Print / PDF ── */
   @media print {
     body { background:#fff !important; color:#000 !important; }
@@ -718,12 +763,42 @@
 
   <!-- ═══════════════════════════════ JOBS LIST ═════════════════════════════════ -->
   <div class="screen" id="screen-jobs">
-    <button class="back-btn" onclick="goHome()">← Home</button>
-    <div id="jobsListContent"></div>
-    <div id="noJobs" class="empty-state" style="display:none;">
-      <div class="empty-icon">📅</div>
-      <div class="empty-title">No jobs yet</div>
-      <div class="empty-sub">Open a quote and tap "Book This Job" to get started</div>
+    <div class="jobs-topbar">
+      <button class="back-btn" style="margin-bottom:0;" onclick="goHome()">← Home</button>
+      <div class="toggle-group" style="width:auto;margin-bottom:0;">
+        <button class="toggle-btn active" id="jobsViewListBtn" onclick="setJobsView('list')">List</button>
+        <button class="toggle-btn"        id="jobsViewCalBtn"  onclick="setJobsView('calendar')">📅 Cal</button>
+      </div>
+    </div>
+
+    <!-- LIST PANEL -->
+    <div id="jobsListPanel">
+      <div id="jobsListContent"></div>
+      <div id="noJobs" class="empty-state" style="display:none;">
+        <div class="empty-icon">📅</div>
+        <div class="empty-title">No jobs yet</div>
+        <div class="empty-sub">Open a quote and tap "Book This Job" to get started</div>
+      </div>
+    </div>
+
+    <!-- CALENDAR PANEL -->
+    <div id="jobsCalPanel" style="display:none;">
+      <div class="cal-header">
+        <button class="cal-nav-btn" onclick="calChangeMonth(-1)">‹</button>
+        <div class="cal-month-label" id="calMonthLabel"></div>
+        <button class="cal-nav-btn" onclick="calChangeMonth(1)">›</button>
+      </div>
+      <div class="cal-day-labels">
+        <span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-day-panel" id="calDayPanel" style="display:none;">
+        <div class="cal-day-panel-header">
+          <div class="cal-day-panel-title" id="calDayTitle"></div>
+          <button class="cal-close-btn" onclick="closeCalDay()">✕</button>
+        </div>
+        <div id="calDayJobs"></div>
+      </div>
     </div>
   </div>
 
@@ -1116,6 +1191,11 @@
   let qSets = 1, qJobType = 'standard', qDelivery = 'dropoff', qPayment = 'cash';
   let jSets = 1, jJobType = 'standard', jDelivery = 'dropoff', jFromQuoteId = null;
 
+  let calYear  = new Date().getFullYear();
+  let calMonth = new Date().getMonth();
+  let calSelectedDate  = null;
+  let currentJobsView  = 'list';
+
   const BASE = 120;
 
   const STATUS_LABEL  = { booked:'Scheduled', in_progress:'On Site', complete:'Awaiting Payment', paid:'Paid' };
@@ -1175,6 +1255,7 @@
       case 'customers':       showCustomersScreen(); break;
       case 'quotes':          showQuotesScreen();    break;
       case 'jobs':            showJobsScreen();      break;
+      case 'calendar':        showJobsScreen(); setJobsView('calendar'); break;
       case 'quote-detail':    showQuoteDetail(currentQuoteId, 'quotes'); break;
       case 'job-detail':      showJobDetail(currentJobId, 'jobs'); break;
       case 'invoices':        showInvoicesScreen(); break;
@@ -1184,7 +1265,7 @@
   }
   function showCustomersScreen() { renderCustomers(); showScreen('customers', 'dashboard'); }
   function showQuotesScreen()    { renderQuotes();    showScreen('quotes',    'dashboard'); }
-  function showJobsScreen()      { renderJobs();      showScreen('jobs',      'dashboard'); }
+  function showJobsScreen()      { renderJobs(); showScreen('jobs', 'dashboard'); setJobsView(currentJobsView); }
   function showInvoicesScreen()  { renderInvoices();  showScreen('invoices',  'dashboard'); }
   function showSettingsScreen()  { loadSettings();    showScreen('settings',  'dashboard'); }
 
@@ -1460,6 +1541,103 @@
     jobs=jobs.filter(x=>x.id!==currentJobId); save(); showToast('Job deleted');
     if (previousScreen==='customer-detail') showCustomerDetail(currentCustomerId,'customers');
     else showJobsScreen();
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  CALENDAR
+  // ══════════════════════════════════════════════════════════════
+  function setJobsView(view) {
+    currentJobsView = view;
+    document.getElementById('jobsListPanel').style.display  = view === 'list'     ? 'block' : 'none';
+    document.getElementById('jobsCalPanel').style.display   = view === 'calendar' ? 'block' : 'none';
+    document.getElementById('jobsViewListBtn').className = 'toggle-btn' + (view === 'list'     ? ' active' : '');
+    document.getElementById('jobsViewCalBtn').className  = 'toggle-btn' + (view === 'calendar' ? ' active' : '');
+    if (view === 'calendar') renderCalendar();
+  }
+
+  function calBuildJobsByDate() {
+    const map = {};
+    jobs.forEach(j => {
+      if (!j.scheduledDate) return;
+      if (!map[j.scheduledDate]) map[j.scheduledDate] = [];
+      map[j.scheduledDate].push(j);
+    });
+    return map;
+  }
+
+  function renderCalendar() {
+    const firstDay   = new Date(calYear, calMonth, 1);
+    const totalDays  = new Date(calYear, calMonth + 1, 0).getDate();
+    const startOffset = (firstDay.getDay() + 6) % 7; // Monday-first
+    const todayStr   = new Date().toISOString().slice(0, 10);
+    const byDate     = calBuildJobsByDate();
+
+    document.getElementById('calMonthLabel').textContent =
+      firstDay.toLocaleDateString('en-AU', { month: 'long', year: 'numeric' });
+
+    let html = '';
+    for (let i = 0; i < startOffset; i++) {
+      html += `<div class="cal-cell empty"></div>`;
+    }
+    for (let d = 1; d <= totalDays; d++) {
+      const mm      = String(calMonth + 1).padStart(2, '0');
+      const dd      = String(d).padStart(2, '0');
+      const dateStr = `${calYear}-${mm}-${dd}`;
+      const dayJobs = byDate[dateStr] || [];
+      const isToday = dateStr === todayStr;
+      const isSel   = dateStr === calSelectedDate;
+
+      let cls = 'cal-cell';
+      if (isToday) cls += ' today';
+      if (isSel)   cls += ' selected';
+      if (!dayJobs.length) cls += ' no-jobs';
+
+      let indicator = '';
+      if (dayJobs.length === 1) {
+        const fn = dayJobs[0].customerName.split(' ')[0];
+        indicator = `<span class="cal-job-pill ${dayJobs[0].status}">${fn}</span>`;
+      } else if (dayJobs.length === 2) {
+        indicator = `<div class="cal-job-dots">${dayJobs.map(j => `<span class="cal-job-dot ${j.status}"></span>`).join('')}</div>`;
+      } else if (dayJobs.length >= 3) {
+        indicator = `<span class="cal-job-count">${dayJobs.length} jobs</span>`;
+      }
+
+      const clickAttr = dayJobs.length ? `onclick="calTapDay('${dateStr}')"` : '';
+      html += `<div class="${cls}" ${clickAttr}>
+        <div class="cal-day-num">${d}</div>
+        ${indicator}
+      </div>`;
+    }
+    document.getElementById('calGrid').innerHTML = html;
+  }
+
+  function calChangeMonth(delta) {
+    calMonth += delta;
+    if (calMonth < 0)  { calMonth = 11; calYear--; }
+    if (calMonth > 11) { calMonth = 0;  calYear++; }
+    calSelectedDate = null;
+    closeCalDay();
+    renderCalendar();
+  }
+
+  function calTapDay(dateStr) {
+    calSelectedDate = dateStr;
+    renderCalendar();
+    const dayJobs = calBuildJobsByDate()[dateStr] || [];
+    const title   = new Date(dateStr + 'T12:00:00').toLocaleDateString('en-AU', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    document.getElementById('calDayTitle').textContent = title;
+    document.getElementById('calDayJobs').innerHTML = dayJobs.length
+      ? dayJobs.map(j => jobCardHTML(j, 'calendar')).join('')
+      : `<div class="cal-day-empty">No jobs on this day</div>`;
+    const panel = document.getElementById('calDayPanel');
+    panel.style.display = 'block';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function closeCalDay() {
+    calSelectedDate = null;
+    document.getElementById('calDayPanel').style.display = 'none';
+    renderCalendar();
   }
 
   // ══════════════════════════════════════════════════════════════
