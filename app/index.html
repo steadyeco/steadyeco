@@ -748,7 +748,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px 24px calc(40px + var(--safe-bottom));
+    padding: calc(40px + var(--safe-top)) 24px calc(40px + var(--safe-bottom));
   }
   #pin-screen { z-index: 9999; }
   #pin-screen.hidden { display: none; }
@@ -1346,6 +1346,7 @@
     </div>
 
     <div style="margin-top:8px;">
+      <button class="btn-full btn-ghost" onclick="duplicateCurrentInvoice()" style="margin-bottom:8px;">⧉ Duplicate Invoice</button>
       <button class="btn-full btn-ghost" onclick="window.print()" style="margin-bottom:8px;">🖨️  Save as PDF</button>
       <button class="btn-full btn-danger" onclick="confirmDelete(this, deleteCurrentInvoice)">Delete Invoice</button>
     </div>
@@ -1470,11 +1471,15 @@
   }
 
   function save() {
-    localStorage.setItem('se_customers', JSON.stringify(customers));
-    localStorage.setItem('se_quotes',    JSON.stringify(quotes));
-    localStorage.setItem('se_jobs',      JSON.stringify(jobs));
-    localStorage.setItem('se_invoices',  JSON.stringify(invoices));
-    localStorage.setItem('se_settings',  JSON.stringify(settings));
+    try {
+      localStorage.setItem('se_customers', JSON.stringify(customers));
+      localStorage.setItem('se_quotes',    JSON.stringify(quotes));
+      localStorage.setItem('se_jobs',      JSON.stringify(jobs));
+      localStorage.setItem('se_invoices',  JSON.stringify(invoices));
+      localStorage.setItem('se_settings',  JSON.stringify(settings));
+    } catch(e) {
+      showToast('⚠️ Save failed — storage may be full');
+    }
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -1511,6 +1516,7 @@
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('screen-dashboard').classList.add('active');
     previousScreen = 'dashboard';
+    setDockActive('dashboard');
   }
   function goBack() {
     switch (previousScreen) {
@@ -1526,11 +1532,11 @@
       default:                goHome();
     }
   }
-  function showCustomersScreen() { renderCustomers(); showScreen('customers', 'dashboard'); }
-  function showQuotesScreen()    { renderQuotes();    showScreen('quotes',    'dashboard'); }
-  function showJobsScreen()      { renderJobs(); showScreen('jobs', 'dashboard'); setJobsView(currentJobsView); }
-  function showInvoicesScreen()  { renderInvoices();  showScreen('invoices',  'dashboard'); }
-  function showSettingsScreen()  { loadSettings();    showScreen('settings',  'dashboard'); }
+  function showCustomersScreen() { renderCustomers(); showScreen('customers', 'dashboard'); setDockActive(''); }
+  function showQuotesScreen()    { renderQuotes();    showScreen('quotes',    'dashboard'); setDockActive(''); }
+  function showJobsScreen()      { renderJobs(); showScreen('jobs', 'dashboard'); setJobsView(currentJobsView); setDockActive(''); }
+  function showInvoicesScreen()  { renderInvoices();  showScreen('invoices',  'dashboard'); setDockActive('invoices'); }
+  function showSettingsScreen()  { loadSettings();    showScreen('settings',  'dashboard'); setDockActive(''); }
 
   // ══════════════════════════════════════════════════════════════
   //  DASHBOARD
@@ -1564,7 +1570,7 @@
       const sms = `Hi ${j.customerName.split(' ')[0]}, confirming your blade sharpening ${j.delivery === 'collection' ? 'collection' : 'drop-off'} tomorrow. Any questions give me a call. — ${settings.business || 'Steady Eco'}`;
       alerts += `<div class="dash-alert">
         <div class="dash-alert-title">📅 Job Tomorrow</div>
-        <div class="dash-alert-body">${j.customerName} · ${j.ref || ''} · ${j.delivery === 'collection' ? 'Collection & delivery' : 'Drop-off'}</div>
+        <div class="dash-alert-body">${esc(j.customerName)} · ${esc(j.ref || '')} · ${j.delivery === 'collection' ? 'Collection &amp; delivery' : 'Drop-off'}</div>
         <div class="dash-alert-actions">
           <button class="dash-alert-btn" onclick="copyRaw(${JSON.stringify(sms)},this)">Copy Reminder SMS</button>
           <button class="dash-alert-btn ghost" onclick="showJobDetail('${j.id}','dashboard')">View Job</button>
@@ -1574,7 +1580,7 @@
       const sms = `Hi ${inv.customerName.split(' ')[0]}, this is a reminder that invoice ${inv.ref} for $${inv.total} is now overdue. Please arrange payment at your earliest convenience. — ${settings.business || 'Steady Eco'}`;
       alerts += `<div class="dash-alert danger">
         <div class="dash-alert-title">⚠️ Invoice Overdue</div>
-        <div class="dash-alert-body">${inv.customerName} · ${inv.ref} · $${inv.total} overdue</div>
+        <div class="dash-alert-body">${esc(inv.customerName)} · ${esc(inv.ref)} · $${inv.total} overdue</div>
         <div class="dash-alert-actions">
           <button class="dash-alert-btn" onclick="sendPaymentReminderSMS('${inv.id}')">Send Reminder SMS</button>
           <button class="dash-alert-btn ghost" onclick="showInvoiceDetail('${inv.id}','dashboard')">View Invoice</button>
@@ -1583,7 +1589,7 @@
     // Step 13 — predictive prompts
     generatePredictivePrompts().forEach(p => {
       alerts += `<div class="dash-alert" style="border-color:rgba(232,168,56,0.3);">
-        <div class="dash-alert-body" style="color:var(--amber);">${p.icon} ${p.text}</div>
+        <div class="dash-alert-body" style="color:var(--amber);">${p.icon} ${esc(p.text)}</div>
         <div class="dash-alert-actions"><button class="dash-alert-btn" onclick="${p.action}">${p.btn}</button></div>
       </div>`;
     });
@@ -1738,7 +1744,8 @@
       const sms = `Hi ${j.customerName.split(' ')[0]}, your blade sharpening is booked for ${dateDisp}. ${j.delivery==='collection'?'We\'ll collect and return your blades.':'Drop off your blades and we\'ll have them ready for pick-up.'} Any questions, give me a call. — ${settings.business||'Steady Eco'}`;
       confirmSec.innerHTML = `<div class="copy-block" style="margin-top:0;">
         <div class="copy-block-header"><span class="copy-block-title">💬 Booking Confirmation SMS</span><button class="copy-btn" onclick="copyRaw(${JSON.stringify(sms)},this)">Copy</button></div>
-        <div class="copy-block-text">${sms}</div></div>`;
+        <div class="copy-block-text" id="jdConfirmSmsText"></div></div>`;
+      document.getElementById('jdConfirmSmsText').textContent = sms;
     } else {
       confirmSec.innerHTML = '';
     }
@@ -1751,6 +1758,7 @@
 
   function advanceJobStatus(id) {
     const j = jobs.find(x => x.id === id);
+    if (!j) return;
     const now = new Date().toISOString();
     if (j.status==='booked')      { j.status='in_progress'; j.startedAt=now; }
     else if (j.status==='in_progress') { j.status='complete'; j.completedAt=now; }
@@ -1923,7 +1931,8 @@
     if (!f.length) { list.innerHTML=''; none.style.display='block'; }
     else { none.style.display='none'; list.innerHTML=f.map(c=>customerCardHTML(c,'customers')).join(''); }
   }
-  function filterCustomers() { renderCustomers(); }
+  let _filterTimer = null;
+  function filterCustomers() { clearTimeout(_filterTimer); _filterTimer = setTimeout(renderCustomers, 120); }
 
   function customerCardHTML(c, from) {
     const initials=c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
@@ -1932,9 +1941,16 @@
     let meta=c.phone||'—';
     const bits=[]; if(qc) bits.push(`${qc} quote${qc>1?'s':''}`); if(jc) bits.push(`${jc} job${jc>1?'s':''}`);
     if(bits.length) meta+=' · '+bits.join(' · ');
+    // Last invoiced date
+    const custInvs = invoices.filter(i=>i.customerId===c.id);
+    let lastInvStr = '';
+    if (custInvs.length) {
+      const last = custInvs.reduce((a,b) => new Date(a.issueDate) > new Date(b.issueDate) ? a : b);
+      lastInvStr = ' · Invoiced ' + new Date(last.issueDate+'T12:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short'});
+    }
     return `<div class="customer-card" onclick="showCustomerDetail('${c.id}','${from}')">
       <div class="customer-avatar">${initials}</div>
-      <div class="customer-info"><div class="customer-name">${c.name}</div><div class="customer-meta">${meta}</div></div>
+      <div class="customer-info"><div class="customer-name">${esc(c.name)}</div><div class="customer-meta">${esc(meta + lastInvStr)}</div></div>
       <div class="customer-arrow">›</div>
     </div>`;
   }
@@ -1992,7 +2008,7 @@
       const em=q.jobType==='emergency';
       return `<div class="history-quote-card ${em?'emergency':''}" onclick="showQuoteDetail('${q.id}','customer-detail')">
         <div class="history-quote-top">
-          <div>${q.ref?`<div class="history-quote-ref">${q.ref}</div>`:''}<div class="history-quote-date">${d}</div><div class="history-quote-detail">${q.sets} set${q.sets>1?'s':''} (${q.sets*2} blades) · ${em?'Emergency':'Standard'} · ${q.delivery==='collection'?'Collection':'Drop-off'}</div></div>
+          <div>${q.ref?`<div class="history-quote-ref">${esc(q.ref)}</div>`:''}<div class="history-quote-date">${d}</div><div class="history-quote-detail">${q.sets} set${q.sets>1?'s':''} (${q.sets*2} blades) · ${em?'Emergency':'Standard'} · ${q.delivery==='collection'?'Collection':'Drop-off'}</div></div>
           <div class="history-quote-total ${em?'emergency':''}">$${q.total}</div>
         </div>
       </div>`;
@@ -2039,7 +2055,7 @@
     const hasJob=jobs.some(j=>j.quoteId===q.id);
     return `<div class="quote-card" onclick="showQuoteDetail('${q.id}','${from}')">
       <div class="quote-card-top">
-        <div><div class="quote-card-customer">${q.customerName}${hasJob?` <span style="font-size:0.6rem;color:var(--teal);">· Scheduled</span>`:''}</div>${q.ref?`<div class="quote-card-ref">${q.ref}</div>`:''}</div>
+        <div><div class="quote-card-customer">${esc(q.customerName)}${hasJob?` <span style="font-size:0.6rem;color:var(--teal);">· Scheduled</span>`:''}</div>${q.ref?`<div class="quote-card-ref">${esc(q.ref)}</div>`:''}</div>
         <div class="quote-card-total">$${q.total}</div>
       </div>
       <div class="quote-card-meta">${badge}${q.sets} set${q.sets>1?'s':''} · ${del} · ${d}</div>
@@ -2191,7 +2207,7 @@
     const paidCls = st==='paid' ? ' paid' : '';
     return `<div class="invoice-card ${st}" onclick="showInvoiceDetail('${inv.id}','${from}')">
       <div class="invoice-card-top">
-        <div><div class="invoice-card-name">${inv.customerName}</div><div class="invoice-card-ref">${inv.ref}</div></div>
+        <div><div class="invoice-card-name">${esc(inv.customerName)}</div><div class="invoice-card-ref">${esc(inv.ref)}</div></div>
         <div class="invoice-card-total${paidCls}">$${inv.total}</div>
       </div>
       <div><span class="status-badge inv-status-${st}">${INV_STATUS_LABEL[st]}</span></div>
@@ -2333,6 +2349,28 @@
     else showInvoicesScreen();
   }
 
+  function duplicateCurrentInvoice() {
+    const src = invoices.find(x => x.id === currentInvoiceId);
+    if (!src) return;
+    const today   = new Date().toISOString().slice(0, 10);
+    const dueDate = new Date(Date.now() + 14*24*60*60*1000).toISOString().slice(0, 10);
+    const dup = Object.assign({}, src, {
+      id:        Date.now().toString(),
+      ref:       getNextInvRef(),
+      issueDate: today,
+      dueDate,
+      status:    'draft',
+      sentAt:    null,
+      paidAt:    null,
+      createdAt: new Date().toISOString(),
+      jobId:     null   // duplicate is not linked to original job
+    });
+    invoices.push(dup);
+    save();
+    showToast('Invoice duplicated — review and send');
+    showInvoiceDetail(dup.id, 'invoices');
+  }
+
   // ══════════════════════════════════════════════════════════════
   //  SETTINGS & EXPORT
   // ══════════════════════════════════════════════════════════════
@@ -2362,6 +2400,7 @@
   // ── Photo functions ──────────────────────────────────────────────
   function handleJobPhoto(e) {
     const file = e.target.files[0]; if (!file) return;
+    const capturedJobId = currentJobId; // capture now — currentJobId may change before img.onload fires
     const reader = new FileReader();
     reader.onload = function(ev) {
       const img = new Image();
@@ -2373,7 +2412,7 @@
         canvas.width=w; canvas.height=h;
         canvas.getContext('2d').drawImage(img,0,0,w,h);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.65);
-        const j = jobs.find(x=>x.id===currentJobId); if (!j) return;
+        const j = jobs.find(x=>x.id===capturedJobId); if (!j) return;
         if (!j.photos) j.photos=[];
         // Check storage isn't near capacity (warn at 4MB of 5MB limit)
         let storageUsed = 0;
@@ -2703,7 +2742,9 @@
     }, 600);
   }
 
+  let _cooldownTimer = null;
   function showCooldown(until) {
+    clearTimeout(_cooldownTimer);
     const keypad = document.getElementById('pinKeypad');
     keypad.classList.add('disabled');
     function tick() {
@@ -2714,7 +2755,7 @@
         ? `Too many attempts — try again in ${mins}:${secs.toString().padStart(2,'0')}`
         : 'Try again';
       if (remaining > 0) {
-        setTimeout(tick, 1000);
+        _cooldownTimer = setTimeout(tick, 1000);
       } else {
         localStorage.removeItem(PIN_LOCKOUT);
         localStorage.setItem(PIN_ATTEMPTS, '0');
@@ -2726,12 +2767,14 @@
   }
 
   // ── Change PIN modal ───────────────────────────────────────────
-  let cpBuffer  = '';
-  let cpStage   = 'verify';   // 'verify' | 'new' | 'confirm'
-  let cpNewHash = '';
+  let cpBuffer   = '';
+  let cpStage    = 'verify';   // 'verify' | 'new' | 'confirm'
+  let cpNewHash  = '';
+  let cpAttempts = 0;
+  const CP_MAX_ATTEMPTS = 3;
 
   function openChangePinModal() {
-    cpBuffer = ''; cpStage = 'verify'; cpNewHash = '';
+    cpBuffer = ''; cpStage = 'verify'; cpNewHash = ''; cpAttempts = 0;
     updatePinDots('cpDots');
     document.getElementById('cpSubtitle').textContent = 'Enter Current PIN';
     document.getElementById('cpKeypad').classList.remove('disabled');
@@ -2740,7 +2783,7 @@
 
   function closeChangePinModal() {
     document.getElementById('change-pin-modal').classList.remove('visible');
-    cpBuffer = ''; cpStage = 'verify'; cpNewHash = '';
+    cpBuffer = ''; cpStage = 'verify'; cpNewHash = ''; cpAttempts = 0;
   }
 
   function cpInput(digit) {
@@ -2761,11 +2804,18 @@
       const entered = await sha256(cpBuffer);
       const stored  = localStorage.getItem(PIN_KEY);
       if (entered === stored) {
+        cpAttempts = 0;
         cpStage = 'new'; cpBuffer = '';
         updatePinDots('cpDots');
         document.getElementById('cpSubtitle').textContent = 'Enter New PIN';
       } else {
-        cpWrongAttempt('Incorrect PIN — try again');
+        cpAttempts++;
+        if (cpAttempts >= CP_MAX_ATTEMPTS) {
+          closeChangePinModal();
+          showToast('Too many incorrect attempts — try again later');
+        } else {
+          cpWrongAttempt(`Incorrect PIN — ${CP_MAX_ATTEMPTS - cpAttempts} attempt${CP_MAX_ATTEMPTS - cpAttempts === 1 ? '' : 's'} left`);
+        }
       }
     } else if (cpStage === 'new') {
       cpNewHash = await sha256(cpBuffer);
@@ -2854,44 +2904,14 @@
   }
 
   // Patch renderJobs and renderInvoices to attach swipes after render
+  // Clear pending timer before setting new one to prevent listener stacking
+  let _jobSwipeTimer = null, _invSwipeTimer = null;
   const _origRenderJobs = renderJobs;
-  renderJobs = function() { _origRenderJobs(); setTimeout(attachJobSwipes, 50); };
+  renderJobs = function() { _origRenderJobs(); clearTimeout(_jobSwipeTimer); _jobSwipeTimer = setTimeout(attachJobSwipes, 50); };
   const _origRenderInvoices = renderInvoices;
-  renderInvoices = function() { _origRenderInvoices(); setTimeout(attachInvoiceSwipes, 50); };
-
-  // ══════════════════════════════════════════════════════════════
-  //  STEP 8 — PRICING CATALOGUE
-  // ══════════════════════════════════════════════════════════════
-  function initPriceCatalogue() {
-    if (localStorage.getItem('se_price_catalogue')) return;
-    localStorage.setItem('se_price_catalogue', JSON.stringify([
-      { id:'cat_1', name:'Standard blade sharpening', unit:'per set (2 blades)', price:120 },
-      { id:'cat_2', name:'Emergency blade sharpening (2× rate)', unit:'per set (2 blades)', price:240 },
-      { id:'cat_3', name:'Collection & delivery', unit:'flat', price:20 },
-      { id:'cat_4', name:'Single blade sharpening', unit:'per blade', price:60 },
-      { id:'cat_5', name:'Blade inspection & report', unit:'per set', price:25 }
-    ]));
-  }
-
-  // ══════════════════════════════════════════════════════════════
-  //  STEP 9 — MACHINE TEMPLATES
-  // ══════════════════════════════════════════════════════════════
-  function initMachineTemplates() {
-    if (localStorage.getItem('se_machine_templates')) return;
-    localStorage.setItem('se_machine_templates', JSON.stringify([
-      { make:'Bandit',     blade_type:'double_edge', typical_count:2 },
-      { make:'Vermeer',    blade_type:'double_edge', typical_count:2 },
-      { make:'Morbark',    blade_type:'double_edge', typical_count:2 },
-      { make:'Timberwolf', blade_type:'double_hollow', typical_count:2 },
-      { make:'Rayco',      blade_type:'single_edge', typical_count:1 },
-      { make:'Greenmech',  blade_type:'double_hollow', typical_count:2 },
-      { make:'Husqvarna',  blade_type:'single_edge', typical_count:1 }
-    ]));
-  }
+  renderInvoices = function() { _origRenderInvoices(); clearTimeout(_invSwipeTimer); _invSwipeTimer = setTimeout(attachInvoiceSwipes, 50); };
 
   // ── Boot ───────────────────────────────────────────────────────
-  initPriceCatalogue();
-  initMachineTemplates();
   initPin();
 </script>
 </body>
