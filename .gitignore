@@ -11,6 +11,7 @@ Thumbs.db
 *.txt
 *.html
 !quote-tool.html
+!quote.html
 *.com
 *.exe
 *.asar

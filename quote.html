@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Get a Quote — Steady Eco</title>
+  <meta name="description" content="Get an instant blade sharpening quote from Steady Eco in Cairns. $120 per set, 1–2 day turnaround, collection available across FNQ." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    button, a { -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+
+    :root {
+      --bg:     #0a0f0a;
+      --bg-alt: #0f160f;
+      --card:   #111a14;
+      --card-h: #162019;
+      --green:  #4a9e3f;
+      --green-b:#52c483;
+      --gold:   #c8a84b;
+      --text:   #e8ede6;
+      --muted:  #5a7a68;
+      --muted-l:#8aad98;
+      --border: #1e3028;
+      --border-l:#2a4035;
+      --danger: #e05252;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', -apple-system, sans-serif;
+      font-size: 16px;
+      line-height: 1.55;
+      min-height: 100%;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ── */
+    .site-nav {
+      display: flex;
+      align-items: center;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-alt);
+    }
+    .nav-logo {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--green); }
+    .nav-back {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 1px;
+      margin-left: auto;
+      transition: color 200ms ease;
+    }
+    .nav-back:hover { color: var(--text); }
+
+    /* ── WRAP ── */
+    .wrap {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 40px 24px 120px;
+      overflow: hidden;
+    }
+
+    /* ── HERO HEADLINE ── */
+    .form-hero {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(36px, 6vw, 56px);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--gold);
+      line-height: 1.1;
+      margin-bottom: 36px;
+      transition: transform 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                  opacity  600ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .form-hero.receded { transform: translateY(-20px); opacity: 0.4; }
+
+    /* ── PROGRESS TRACK ── */
+    .progress-track {
+      position: relative;
+      height: 1px;
+      background: #1e2d25;
+      margin-bottom: 44px;
+    }
+    .progress-fill {
+      position: absolute;
+      top: 0; left: 0;
+      height: 1px;
+      background: var(--gold);
+      width: 0%;
+      transition: width 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .progress-dot {
+      position: absolute;
+      top: -3px;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #1e2d25;
+      transition: background 300ms ease;
+    }
+    .progress-dot:nth-child(2) { left: calc(33.33% - 3.5px); }
+    .progress-dot:nth-child(3) { left: calc(66.66% - 3.5px); }
+    .progress-dot:nth-child(4) { left: calc(100% - 3.5px); }
+    .progress-dot.done {
+      background: var(--gold);
+      animation: dotPulse 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes dotPulse {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.8); }
+      100% { transform: scale(1); }
+    }
+
+    /* ── STEPS ── */
+    .step { display: none; }
+    .step.active { display: block; }
+    .step.active.from-right { animation: slideFromRight 380ms cubic-bezier(0.4,0,0.2,1) both; }
+    .step.active.from-left  { animation: slideFromLeft  380ms cubic-bezier(0.4,0,0.2,1) both; }
+    @keyframes slideFromRight { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes slideFromLeft  { from{opacity:0;transform:translateX(-40px)} to{opacity:1;transform:translateX(0)} }
+
+    .step-label {
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    /* ── MACHINE CARDS ── */
+    .machine-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+    .machine-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 18px 8px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--muted-l);
+      text-align: center;
+      letter-spacing: 0.5px;
+      transition: border-color 250ms ease-out, box-shadow 250ms ease-out, color 250ms ease-out;
+    }
+    .machine-card:hover { border-color: var(--border-l); color: var(--text); }
+    .machine-card.selected {
+      border-color: var(--green);
+      color: var(--text);
+      box-shadow: inset 0 0 0 1px var(--green), 0 0 20px rgba(74,158,63,0.15);
+    }
+    .machine-card .mc-icon { font-size: 1.4rem; display: block; margin-bottom: 6px; }
+
+    /* ── STEPPER ── */
+    .sets-section { margin-bottom: 32px; }
+    .sets-section .step-label { margin-bottom: 16px; }
+    .sets-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+    }
+    .step-count-btn {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--card);
+      border: 1px solid var(--border-l);
+      color: var(--text);
+      font-size: 1.3rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 180ms ease, border-color 180ms ease;
+    }
+    .step-count-btn:hover { background: var(--card-h); border-color: var(--green); }
+    .step-count-btn:active { transform: scale(0.94); }
+    .sets-count {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 56px;
+      font-weight: 300;
+      color: var(--green);
+      line-height: 1;
+      min-width: 60px;
+      text-align: center;
+    }
+    .sets-note {
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 8px;
+      letter-spacing: 0.3px;
+    }
+
+    /* ── JOB TYPE ── */
+    .jtype-section { margin-bottom: 36px; }
+    .jtype-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .jtype-btn {
+      padding: 14px 10px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--muted-l);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-align: center;
+      transition: border-color 200ms ease, color 200ms ease, background 200ms ease;
+    }
+    .jtype-btn.active-std {
+      border-color: var(--green);
+      color: var(--green);
+      background: rgba(74,158,63,0.06);
+    }
+    .jtype-btn.active-emg {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(200,168,75,0.06);
+    }
+
+    /* ── COLLECT CARDS ── */
+    .collect-section { margin-bottom: 24px; }
+    .collect-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .collect-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 18px 12px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--muted-l);
+      text-align: center;
+      letter-spacing: 0.5px;
+      transition: border-color 250ms ease-out, color 250ms ease-out, box-shadow 250ms ease-out;
+    }
+    .collect-card .cc-icon { font-size: 1.4rem; display: block; margin-bottom: 8px; }
+    .collect-card:hover { border-color: var(--border-l); color: var(--text); }
+    .collect-card.selected {
+      border-color: var(--green);
+      color: var(--text);
+      box-shadow: inset 0 0 0 1px var(--green), 0 0 20px rgba(74,158,63,0.12);
+    }
+
+    /* ── ZONE PANEL ── */
+    .zone-panel {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 300ms ease-out, opacity 300ms ease-out;
+      opacity: 0;
+      margin-bottom: 0;
+    }
+    .zone-panel.open {
+      max-height: 400px;
+      opacity: 1;
+      margin-bottom: 24px;
+    }
+    .zone-panel-inner { padding-top: 16px; }
+
+    .zone-map {
+      width: 100%;
+      max-width: 220px;
+      display: block;
+      margin: 0 auto 16px;
+    }
+    .zone-ring {
+      fill: none;
+      stroke: var(--green);
+      stroke-width: 1;
+      opacity: 0.12;
+      transition: opacity 250ms ease, stroke-width 250ms ease;
+      transform-origin: center;
+    }
+    .zone-ring.active {
+      opacity: 0.7;
+      animation: ringPulse 400ms ease-out;
+    }
+    @keyframes ringPulse {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.04); }
+      100% { transform: scale(1); }
+    }
+
+    select {
+      width: 100%;
+      background: var(--bg-alt);
+      border: 1px solid var(--border-l);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      padding: 12px 14px;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a7a68' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+    select:focus { border-color: var(--green); }
+    select option { background: #0f160f; }
+
+    /* ── FLOAT LABELS ── */
+    .float-section { margin-bottom: 32px; }
+    .float-group {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .float-group input {
+      width: 100%;
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      padding: 22px 44px 8px 14px;
+      outline: none;
+      transition: border-color 200ms cubic-bezier(0.4,0,0.2,1),
+                  box-shadow  200ms cubic-bezier(0.4,0,0.2,1);
+    }
+    .float-group input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(74,158,63,0.08);
+    }
+    .float-group label {
+      position: absolute;
+      left: 14px;
+      top: 15px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--muted);
+      pointer-events: none;
+      transition: top 200ms cubic-bezier(0.4,0,0.2,1),
+                  font-size 200ms cubic-bezier(0.4,0,0.2,1),
+                  color 200ms cubic-bezier(0.4,0,0.2,1),
+                  letter-spacing 200ms cubic-bezier(0.4,0,0.2,1);
+    }
+    .float-group input:focus + label,
+    .float-group input:not(:placeholder-shown) + label {
+      top: 5px;
+      font-size: 10px;
+      color: var(--gold);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .float-group.has-value input + label { color: var(--muted-l); }
+    .float-group.error input { border-color: var(--danger); animation: inputShake 300ms cubic-bezier(0.36,0.07,0.19,0.97); }
+    .float-group.error label { color: var(--danger) !important; }
+    @keyframes inputShake {
+      0%,100% { transform: translateX(0); }
+      20%     { transform: translateX(-6px); }
+      40%     { transform: translateX(6px); }
+      60%     { transform: translateX(-4px); }
+      80%     { transform: translateX(4px); }
+    }
+    .input-check {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--green);
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 200ms ease;
+      pointer-events: none;
+    }
+    .float-group.has-value .input-check { opacity: 1; }
+    .field-note {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: -10px;
+      margin-bottom: 16px;
+      padding-left: 14px;
+    }
+
+    /* ── TURNAROUND STRIP ── */
+    .turnaround-strip {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: var(--bg-alt);
+      border-left: 3px solid var(--green);
+      padding: 12px 14px;
+      margin-bottom: 28px;
+      transition: border-color 250ms ease;
+    }
+    .turnaround-strip.emergency { border-left-color: var(--gold); }
+    .turnaround-strip .ta-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+    .turnaround-strip .ta-text { font-size: 0.78rem; color: var(--muted-l); line-height: 1.5; }
+
+    /* ── BUTTONS ── */
+    .next-btn {
+      display: block;
+      width: 100%;
+      padding: 18px;
+      background: var(--green);
+      border: none;
+      color: var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 200ms ease, transform 200ms ease;
+      margin-top: 4px;
+    }
+    .next-btn:hover { background: var(--green-b); }
+    .next-btn:active { transform: scale(0.98); }
+    .next-btn.loading { opacity: 0.7; pointer-events: none; }
+
+    .back-link {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      text-align: center;
+      margin-bottom: 8px;
+      transition: border-color 200ms ease, color 200ms ease;
+    }
+    .back-link:hover { border-color: var(--border-l); color: var(--text); }
+
+    /* ── PRICE TICKER ── */
+    .price-ticker {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--bg);
+      border-top: 1px solid var(--gold);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 100;
+      gap: 12px;
+    }
+    .ticker-left { flex: 1; min-width: 0; }
+    .ticker-label {
+      font-size: 9px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+    .ticker-breakdown {
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ticker-amount {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(36px, 8vw, 52px);
+      font-weight: 300;
+      color: var(--green);
+      line-height: 1;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .ticker-amount.call-mode { color: var(--gold); font-size: clamp(22px, 5vw, 32px); }
+
+    /* ── CONFIRM PANEL ── */
+    .confirm-panel {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 16px 0 24px;
+    }
+    .confirm-panel.visible { display: flex; animation: confirmFadeIn 350ms ease both; }
+    @keyframes confirmFadeIn { from{opacity:0;transform:scale(0.97)} to{opacity:1;transform:scale(1)} }
+
+    .confirm-check {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--green);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      animation: checkPop 450ms cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes checkPop { from{transform:scale(0)} to{transform:scale(1)} }
+
+    .ref-label {
+      font-size: 9px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .ref-number {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 32px;
+      font-weight: 300;
+      color: var(--gold);
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+      position: relative;
+      display: inline-block;
+    }
+    .ref-number::after {
+      content: '';
+      display: block;
+      height: 1px;
+      background: var(--gold);
+      width: 0%;
+      transition: width 400ms cubic-bezier(0.4,0,0.2,1);
+      margin-top: 4px;
+    }
+    .ref-number.underlined::after { width: 100%; }
+
+    .confirm-divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border);
+      margin: 20px 0;
+    }
+    .confirm-prose {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 22px;
+      font-weight: 300;
+      color: var(--muted-l);
+      margin-bottom: 16px;
+    }
+    .confirm-price {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 52px;
+      font-weight: 300;
+      color: var(--green);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .confirm-price.call-price {
+      font-size: 28px;
+      color: var(--gold);
+    }
+    .confirm-breakdown {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .confirm-message {
+      font-size: 13px;
+      color: var(--muted-l);
+      margin-bottom: 28px;
+      margin-top: 8px;
+    }
+
+    .copy-btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      margin-bottom: 8px;
+      transition: border-color 200ms ease, color 200ms ease, background 200ms ease;
+    }
+    .copy-btn.gold {
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+    }
+    .copy-btn.gold:hover { background: rgba(200,168,75,0.08); }
+    .copy-btn.gold.copied { background: rgba(200,168,75,0.12); }
+    .copy-btn.muted {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .copy-btn.muted:hover { border-color: var(--border-l); color: var(--text); }
+    .copy-btn.muted.copied { border-color: var(--green); color: var(--green); }
+
+    .confirm-phone {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .confirm-phone a { color: var(--muted-l); text-decoration: none; }
+    .confirm-phone a:hover { color: var(--text); }
+    .confirm-legal {
+      font-size: 11px;
+      color: #3d5446;
+      margin-top: 16px;
+      letter-spacing: 0.3px;
+    }
+
+    /* ── REDUCED MOTION ── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="site-nav">
+  <a href="/" class="nav-logo">Steady <span>Eco</span></a>
+  <a href="/" class="nav-back">← Back to site</a>
+</nav>
+
+<!-- MAIN -->
+<div class="wrap">
+
+  <h1 class="form-hero" id="formHero">What does your<br><em>chipper need?</em></h1>
+
+  <!-- PROGRESS -->
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill"></div>
+    <span class="progress-dot" id="pdot1"></span>
+    <span class="progress-dot" id="pdot2"></span>
+    <span class="progress-dot" id="pdot3"></span>
+  </div>
+
+  <!-- ═══ STEP 1 ═══ -->
+  <div class="step active" id="step1">
+
+    <div class="step-label">Your Machine</div>
+    <div class="machine-grid">
+      <button class="machine-card" data-machine="Vermeer" onclick="selectMachine(this)">
+        <span class="mc-icon">🟢</span>Vermeer
+      </button>
+      <button class="machine-card" data-machine="Bandit" onclick="selectMachine(this)">
+        <span class="mc-icon">🔵</span>Bandit
+      </button>
+      <button class="machine-card" data-machine="Other" onclick="selectMachine(this)">
+        <span class="mc-icon">⚙️</span>Other
+      </button>
+    </div>
+
+    <div class="sets-section">
+      <div class="step-label">Number of Sets</div>
+      <div class="sets-row">
+        <button class="step-count-btn" onclick="changeSets(-1)">−</button>
+        <div>
+          <div class="sets-count" id="setsDisplay">1</div>
+          <div class="sets-note">1 set = 2 blades · $120 per set</div>
+        </div>
+        <button class="step-count-btn" onclick="changeSets(1)">+</button>
+      </div>
+    </div>
+
+    <div class="jtype-section">
+      <div class="step-label">Job Type</div>
+      <div class="jtype-row">
+        <button class="jtype-btn active-std" id="btnStd" onclick="setJobType(false)">Standard</button>
+        <button class="jtype-btn" id="btnEmg" onclick="setJobType(true)">Emergency 2×</button>
+      </div>
+    </div>
+
+    <button class="next-btn" onclick="goStep(2)">Delivery →</button>
+  </div>
+
+  <!-- ═══ STEP 2 ═══ -->
+  <div class="step" id="step2">
+
+    <div class="step-label">How do the blades travel?</div>
+    <div class="collect-section">
+      <div class="collect-grid">
+        <button class="collect-card selected" id="cardDropoff" onclick="setCollect('dropoff')">
+          <span class="cc-icon">🏠</span>
+          I'll drop off
+        </button>
+        <button class="collect-card" id="cardCollect" onclick="setCollect('collect')">
+          <span class="cc-icon">🚗</span>
+          You collect &amp; return
+        </button>
+      </div>
+    </div>
+
+    <div class="zone-panel" id="zonePanel">
+      <div class="zone-panel-inner">
+        <svg class="zone-map" viewBox="0 0 200 180" aria-hidden="true">
+          <circle cx="100" cy="100" r="18" class="zone-ring" data-zone="zone1"/>
+          <circle cx="100" cy="100" r="36" class="zone-ring" data-zone="zone2"/>
+          <circle cx="100" cy="100" r="54" class="zone-ring" data-zone="zone3"/>
+          <circle cx="100" cy="100" r="72" class="zone-ring" data-zone="zone4"/>
+          <circle cx="100" cy="100" r="88" class="zone-ring" data-zone="zone5"/>
+          <circle cx="100" cy="100" r="4" fill="#4a9e3f"/>
+          <text x="100" y="90" text-anchor="middle" fill="#5a7a68" font-size="7" font-family="DM Sans,sans-serif">Sam's workshop</text>
+        </svg>
+        <select id="zoneSelect" onchange="onZoneChange()">
+          <option value="zone1">Freshwater / Edge Hill / Whitfield (+$10)</option>
+          <option value="zone2">Cairns CBD / Smithfield / Stratford / Manunda (+$20)</option>
+          <option value="zone3">Redlynch / Yorkeys Knob / Kewarra Beach (+$30)</option>
+          <option value="zone4">Trinity Beach / Clifton Beach / Palm Cove (+$40)</option>
+          <option value="zone5">Edmonton / Gordonvale / White Rock (+$50)</option>
+          <option value="portdouglas">Port Douglas — Sam will confirm price</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="back-link" onclick="goStep(1)">← Back</button>
+    <button class="next-btn" onclick="goStep(3)">Your details →</button>
+  </div>
+
+  <!-- ═══ STEP 3 ═══ -->
+  <div class="step" id="step3">
+
+    <div class="step-label">Almost Done</div>
+
+    <div class="float-section">
+      <div class="float-group" id="grpName">
+        <input type="text" id="custName" placeholder=" " autocomplete="name" oninput="onInput('grpName','custName')" />
+        <label for="custName">Your name</label>
+        <span class="input-check">✓</span>
+      </div>
+
+      <div class="float-group" id="grpPhone">
+        <input type="tel" id="custPhone" placeholder=" " autocomplete="tel" inputmode="tel" oninput="onInput('grpPhone','custPhone')" />
+        <label for="custPhone">Mobile number</label>
+        <span class="input-check">✓</span>
+      </div>
+
+      <div class="float-group" id="grpEmail">
+        <input type="email" id="custEmail" placeholder=" " autocomplete="email" oninput="onInput('grpEmail','custEmail')" />
+        <label for="custEmail">Email (optional)</label>
+        <span class="input-check">✓</span>
+      </div>
+      <div class="field-note">Email is optional — for a PDF copy of your quote</div>
+    </div>
+
+    <div class="turnaround-strip" id="turnaroundStrip">
+      <span class="ta-icon">⏱</span>
+      <span class="ta-text" id="turnaroundText">1–2 business days · Emergency: same day if received before 10am</span>
+    </div>
+
+    <button class="back-link" onclick="goStep(2)">← Back</button>
+    <button class="next-btn" id="submitBtn" onclick="submitQuote()">Request Your Quote</button>
+  </div>
+
+  <!-- ═══ CONFIRMATION ═══ -->
+  <div class="confirm-panel" id="confirmPanel">
+    <div class="confirm-check">✓</div>
+    <div class="ref-label">Job Reference</div>
+    <div class="ref-number" id="refDisplay"></div>
+    <div class="confirm-divider"></div>
+    <p class="confirm-prose">Your quote has been prepared.</p>
+    <div class="confirm-price" id="confirmPrice"></div>
+    <div class="confirm-breakdown" id="confirmBreakdown"></div>
+    <p class="confirm-message">Sam will be in touch within a few hours to confirm.</p>
+    <button class="copy-btn gold" id="smsCopyBtn" onclick="copyText('sms', 'smsCopyBtn')">Copy SMS Quote</button>
+    <button class="copy-btn muted" id="emailCopyBtn" onclick="copyText('email', 'emailCopyBtn')">Copy Email Quote</button>
+    <p class="confirm-phone">Questions? Call or text Sam directly: <a href="tel:0456190202">0456 190 202</a></p>
+    <p class="confirm-legal">This quote is valid for 7 days · Steady Eco · ABN 49 553 784 085</p>
+  </div>
+
+</div><!-- /wrap -->
+
+<!-- PRICE TICKER -->
+<div class="price-ticker" id="priceTicker">
+  <div class="ticker-left">
+    <div class="ticker-label">Estimated Total</div>
+    <div class="ticker-breakdown" id="tickerBreakdown">Select machine &amp; sets above</div>
+  </div>
+  <div class="ticker-amount" id="tickerAmount">$0</div>
+</div>
+
+<script>
+  /* ── STATE ── */
+  let selectedMachine = null;
+  let sets            = 1;
+  let isEmergency     = false;
+  let collectMode     = 'dropoff';
+  let currentStep     = 1;
+  let prevPrice       = 0;
+  let smsCopyText     = '';
+  let emailCopyText   = '';
+
+  const ZONES = {
+    zone1:       { fee: 10,   label: 'Freshwater / Edge Hill / Whitfield' },
+    zone2:       { fee: 20,   label: 'Cairns CBD / Smithfield / Stratford / Manunda' },
+    zone3:       { fee: 30,   label: 'Redlynch / Yorkeys Knob / Kewarra Beach' },
+    zone4:       { fee: 40,   label: 'Trinity Beach / Clifton Beach / Palm Cove' },
+    zone5:       { fee: 50,   label: 'Edmonton / Gordonvale / White Rock' },
+    portdouglas: { fee: null, label: 'Port Douglas' },
+  };
+
+  /* ── PRICE ── */
+  function basePrice()       { return sets * 120 * (isEmergency ? 2 : 1); }
+  function getZone()         { return collectMode === 'collect' ? document.getElementById('zoneSelect').value : 'dropoff'; }
+  function collectionFee()   {
+    if (collectMode !== 'collect') return 0;
+    const z = getZone();
+    if (z === 'portdouglas') return null;
+    return ZONES[z] ? ZONES[z].fee : 0;
+  }
+  function totalPrice() {
+    const cf = collectionFee();
+    if (cf === null) return null;
+    return basePrice() + cf;
+  }
+  function zoneLabel() {
+    if (collectMode !== 'collect') return null;
+    const z = getZone();
+    return ZONES[z] ? ZONES[z].label : null;
+  }
+  function isPortDouglas() { return collectMode === 'collect' && getZone() === 'portdouglas'; }
+
+  function animatePrice(target) {
+    const el = document.getElementById('tickerAmount');
+    if (target === null) {
+      el.textContent = 'Call to confirm';
+      el.className = 'ticker-amount call-mode';
+      prevPrice = 0;
+      return;
+    }
+    el.className = 'ticker-amount';
+    const from = prevPrice;
+    const duration = 400;
+    const start = performance.now();
+    (function tick(now) {
+      const p = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = '$' + Math.round(from + (target - from) * eased);
+      if (p < 1) requestAnimationFrame(tick);
+      else prevPrice = target;
+    })(performance.now());
+  }
+
+  function updateTicker() {
+    const bp = basePrice();
+    const tp = totalPrice();
+    const zl = zoneLabel();
+    const zone = getZone();
+
+    animatePrice(tp);
+
+    let breakdown = sets + ' set' + (sets > 1 ? 's' : '') + ' · ' + (selectedMachine || '—');
+    if (isEmergency) breakdown += ' · emergency';
+    if (collectMode === 'collect' && zone === 'portdouglas') breakdown += ' · Port Douglas';
+    else if (collectMode === 'collect' && zl) breakdown += ' · collect · ' + zl.split(' / ')[0];
+    document.getElementById('tickerBreakdown').textContent = breakdown;
+  }
+
+  /* ── MACHINE ── */
+  function selectMachine(btn) {
+    document.querySelectorAll('.machine-card').forEach(c => c.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedMachine = btn.dataset.machine;
+    heroRecede();
+    updateTicker();
+  }
+
+  /* ── STEPPER ── */
+  function changeSets(delta) {
+    sets = Math.max(1, Math.min(20, sets + delta));
+    document.getElementById('setsDisplay').textContent = sets;
+    heroRecede();
+    updateTicker();
+  }
+
+  /* ── JOB TYPE ── */
+  function setJobType(emergency) {
+    isEmergency = emergency;
+    document.getElementById('btnStd').className = emergency ? 'jtype-btn' : 'jtype-btn active-std';
+    document.getElementById('btnEmg').className = emergency ? 'jtype-btn active-emg' : 'jtype-btn';
+    updateTurnaroundStrip();
+    updateTicker();
+  }
+
+  /* ── COLLECT MODE ── */
+  function setCollect(mode) {
+    collectMode = mode;
+    document.getElementById('cardDropoff').classList.toggle('selected', mode === 'dropoff');
+    document.getElementById('cardCollect').classList.toggle('selected', mode === 'collect');
+    const panel = document.getElementById('zonePanel');
+    panel.classList.toggle('open', mode === 'collect');
+    updateTicker();
+  }
+
+  /* ── ZONE CHANGE ── */
+  function onZoneChange() {
+    const zone = document.getElementById('zoneSelect').value;
+    document.querySelectorAll('.zone-ring').forEach(r => r.classList.remove('active'));
+    const ring = document.querySelector(`.zone-ring[data-zone="${zone}"]`);
+    if (ring) ring.classList.add('active');
+    updateTicker();
+  }
+
+  /* ── TURNAROUND STRIP ── */
+  function updateTurnaroundStrip() {
+    const strip = document.getElementById('turnaroundStrip');
+    if (!strip) return;
+    strip.classList.toggle('emergency', isEmergency);
+    document.getElementById('turnaroundText').textContent = isEmergency
+      ? 'Emergency: same-day turnaround if received before 10am'
+      : '1–2 business days · Emergency: same day if received before 10am';
+  }
+
+  /* ── HERO RECEDE ── */
+  let heroDone = false;
+  function heroRecede() {
+    if (heroDone) return;
+    heroDone = true;
+    document.getElementById('formHero').classList.add('receded');
+  }
+
+  /* ── PROGRESS ── */
+  function updateProgress(step) {
+    const pct = { 1: '0%', 2: '33.33%', 3: '66.66%' };
+    document.getElementById('progressFill').style.width = pct[step] || '0%';
+    for (let i = 1; i <= 3; i++) {
+      const dot = document.getElementById('pdot' + i);
+      if (i < step) { if (!dot.classList.contains('done')) { dot.classList.add('done'); } }
+      else dot.classList.remove('done');
+    }
+  }
+
+  /* ── STEP TRANSITION ── */
+  function goStep(to) {
+    if (to > currentStep && !validateStep(currentStep)) return;
+    const forward = to > currentStep;
+    const fromEl = document.getElementById('step' + currentStep);
+    const toEl   = document.getElementById('step' + to);
+
+    fromEl.classList.remove('active', 'from-right', 'from-left');
+    toEl.classList.add('active', forward ? 'from-right' : 'from-left');
+    setTimeout(() => toEl.classList.remove('from-right', 'from-left'), 400);
+
+    currentStep = to;
+    updateProgress(to);
+    heroRecede();
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    if (to === 3) updateTurnaroundStrip();
+  }
+
+  /* ── VALIDATION ── */
+  function validateStep(step) {
+    if (step === 1) {
+      if (!selectedMachine) {
+        document.querySelectorAll('.machine-card').forEach(c => {
+          c.style.borderColor = 'rgba(224,82,82,0.5)';
+          setTimeout(() => c.style.borderColor = '', 1200);
+        });
+        return false;
+      }
+      return true;
+    }
+    return true;
+  }
+
+  function validateStep3() {
+    let ok = true;
+    const name  = document.getElementById('custName').value.trim();
+    const phone = document.getElementById('custPhone').value.trim();
+    if (!name)  { shakeField('grpName');  ok = false; }
+    if (!phone) { shakeField('grpPhone'); ok = false; }
+    return ok;
+  }
+
+  function shakeField(groupId) {
+    const g = document.getElementById(groupId);
+    g.classList.add('error');
+    setTimeout(() => g.classList.remove('error'), 600);
+  }
+
+  /* ── FLOAT LABEL LOGIC ── */
+  function onInput(groupId, inputId) {
+    const g = document.getElementById(groupId);
+    const v = document.getElementById(inputId).value.trim();
+    g.classList.toggle('has-value', v.length > 0);
+    g.classList.remove('error');
+  }
+
+  /* ── REFERENCE GENERATION ── */
+  function generateRef() {
+    const now  = new Date();
+    const yymm = String(now.getFullYear()).slice(2) + String(now.getMonth() + 1).padStart(2, '0');
+    const rand = Math.floor(1000 + Math.random() * 9000);
+    return 'SE-' + yymm + '-' + rand;
+  }
+
+  /* ── SUBMIT ── */
+  function submitQuote() {
+    if (!validateStep3()) return;
+
+    const name  = document.getElementById('custName').value.trim();
+    const phone = document.getElementById('custPhone').value.trim();
+    const email = document.getElementById('custEmail').value.trim();
+    const ref   = generateRef();
+    const zone  = getZone();
+    const bp    = basePrice();
+    const cf    = collectionFee();
+    const tp    = totalPrice();
+    const zl    = zoneLabel();
+    const pd    = isPortDouglas();
+    const today = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    const payload = {
+      ref,
+      submittedAt: Date.now(),
+      status: 'pending',
+      customer: { name, phone, email },
+      quote: {
+        machineType: selectedMachine,
+        sets,
+        isEmergency,
+        basePrice: bp,
+        collectionRequired: collectMode === 'collect',
+        zone,
+        zoneLabel: zl,
+        collectionFee: cf || 0,
+        totalPrice: tp
+      }
+    };
+
+    // Write to shared localStorage (same origin as app at steadyeco.com/app)
+    try {
+      const existing = JSON.parse(localStorage.getItem('se_pending_quotes') || '[]');
+      existing.push(payload);
+      localStorage.setItem('se_pending_quotes', JSON.stringify(existing));
+    } catch(e) { console.warn('se: could not write pending quote', e); }
+
+    // Pre-generate copy text
+    smsCopyText  = buildSMS(name, ref, bp, cf, tp, zl, pd);
+    emailCopyText = buildEmail(name, ref, bp, cf, tp, zl, pd, today);
+
+    showConfirmation(ref, tp, bp, sets, pd, zl, cf);
+  }
+
+  /* ── CONFIRMATION ── */
+  function showConfirmation(ref, tp, bp, s, pd, zl, cf) {
+    // Hide form, show ticker hidden state
+    document.getElementById('step3').classList.remove('active');
+    document.getElementById('priceTicker').style.display = 'none';
+
+    // Populate confirm panel
+    const priceEl = document.getElementById('confirmPrice');
+    const breakEl = document.getElementById('confirmBreakdown');
+
+    if (pd) {
+      priceEl.textContent = 'Call to confirm';
+      priceEl.className = 'confirm-price call-price';
+      breakEl.textContent = s + ' set' + (s > 1 ? 's' : '') + ' · ' + selectedMachine + ' · Collection: Sam will confirm';
+    } else {
+      priceEl.textContent = '$' + tp;
+      priceEl.className = 'confirm-price';
+      let bk = s + ' set' + (s > 1 ? 's' : '') + ' · ' + selectedMachine + ' · $' + bp;
+      if (cf > 0 && zl) bk += ' · Collect ' + zl.split(' / ')[0] + ' $' + cf;
+      breakEl.textContent = bk;
+    }
+
+    // Show panel
+    const panel = document.getElementById('confirmPanel');
+    panel.classList.add('visible');
+    updateProgress(4);
+    document.getElementById('progressFill').style.width = '100%';
+    document.getElementById('pdot3').classList.add('done');
+
+    // Reveal reference number
+    setTimeout(() => revealRef(ref, document.getElementById('refDisplay')), 200);
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function revealRef(ref, el) {
+    el.innerHTML = '';
+    [...ref].forEach((ch, i) => {
+      const s = document.createElement('span');
+      s.textContent = ch;
+      s.style.opacity = '0';
+      s.style.transition = 'opacity 150ms ease ' + (i * 40) + 'ms';
+      el.appendChild(s);
+      requestAnimationFrame(() => requestAnimationFrame(() => { s.style.opacity = '1'; }));
+    });
+    setTimeout(() => el.classList.add('underlined'), ref.length * 40 + 220);
+  }
+
+  /* ── SMS & EMAIL BUILDERS ── */
+  function buildSMS(name, ref, bp, cf, tp, zl, pd) {
+    const fn = name.split(' ')[0];
+    const blades = sets * 2;
+    let msg = 'Hi ' + fn + ', thanks for reaching out to Steady Eco.\n\n';
+    msg += "Here's your quote:\n";
+    msg += '• ' + sets + ' set' + (sets > 1 ? 's' : '') + ' (' + blades + ' blades) · ' + selectedMachine;
+    if (isEmergency) msg += ' · emergency rate';
+    msg += ' · $' + bp + '\n';
+    if (collectMode === 'collect' && !pd && cf > 0 && zl) {
+      msg += '• Collection & return (' + zl + ') · $' + cf + '\n';
+    }
+    msg += '\n';
+    if (pd) {
+      msg += 'Total: Call to confirm (Port Douglas collection)\n';
+      msg += 'Collection fee TBC — Sam will confirm.\n';
+    } else {
+      msg += 'Total: $' + tp + '\n';
+      msg += 'Payment due on pickup.\n';
+    }
+    msg += 'Ref: ' + ref + '\n\n';
+    msg += 'Call 0456 190 202 to confirm. Cheers, Steady Eco';
+    return msg;
+  }
+
+  function buildEmail(name, ref, bp, cf, tp, zl, pd, today) {
+    const blades = sets * 2;
+    const line = '──────────────────────────────';
+    let msg = 'Subject: Quote ' + ref + ' — Woodchipper Blade Sharpening · Steady Eco\n\n';
+    msg += 'Hi ' + name + ',\n\n';
+    msg += 'Thank you for reaching out to Steady Eco. Your quote is below.\n\n';
+    msg += line + '\n';
+    msg += 'QUOTE ' + ref + ' · ' + today + '\n';
+    msg += line + '\n\n';
+    msg += 'Machine:          ' + selectedMachine + '\n';
+    msg += 'Sets (blades):    ' + sets + ' set' + (sets > 1 ? 's' : '') + ' (' + blades + ' blades)\n';
+    if (isEmergency) msg += 'Rate:             Emergency (2×)\n';
+    msg += '\n';
+    msg += 'Blade sharpening: $' + bp + '\n';
+    if (collectMode === 'collect') {
+      if (pd) {
+        msg += 'Collection (Port Douglas): TBC — Sam will confirm\n';
+      } else if (cf > 0 && zl) {
+        msg += 'Collection & return (' + zl + '): $' + cf + '\n';
+      }
+    }
+    msg += '\n';
+    if (pd) {
+      msg += 'TOTAL: Call to confirm\n\n';
+    } else {
+      msg += 'TOTAL: $' + tp + '\n\n';
+      msg += 'Payment terms: Due on pickup\n\n';
+    }
+    msg += line + '\n\n';
+    msg += 'To confirm, call or text Sam: 0456 190 202\n';
+    msg += 'steadyeco.com · ABN 49 553 784 085\n\n';
+    msg += 'Thanks,\nSteady Eco — Cairns, Far North Queensland';
+    return msg;
+  }
+
+  /* ── COPY ── */
+  function copyText(type, btnId) {
+    const text = type === 'sms' ? smsCopyText : emailCopyText;
+    const btn  = document.getElementById(btnId);
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = type === 'sms' ? 'Copy SMS Quote' : 'Copy Email Quote';
+        btn.classList.remove('copied');
+      }, 2500);
+    }).catch(() => {
+      // Fallback for Safari
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = type === 'sms' ? 'Copy SMS Quote' : 'Copy Email Quote'; }, 2500);
+    });
+  }
+
+  /* ── INIT ── */
+  updateTicker();
+</script>
+</body>
+</html>

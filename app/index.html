@@ -1800,6 +1800,21 @@
     const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowStr = tomorrow.toISOString().slice(0, 10);
     let alerts = '';
+    // Pending website quotes — highest priority
+    const pending = JSON.parse(localStorage.getItem('se_pending_quotes') || '[]');
+    pending.forEach(p => {
+      const name = p.customer?.name || 'Unknown';
+      const machine = p.quote?.machineType || '';
+      const sets = p.quote?.sets || 1;
+      const total = p.quote?.totalPrice != null ? `$${p.quote.totalPrice}` : 'Call';
+      const ref = p.ref || '';
+      alerts += `<div class="dash-alert" style="border-color:#52C483;background:rgba(82,196,131,0.08);">
+        <div class="dash-alert-title" style="color:#52C483;">🌐 New Website Enquiry</div>
+        <div class="dash-alert-body">${esc(name)} · ${esc(machine)} · ${sets} set${sets!==1?'s':''} · ${total} · ${esc(ref)}</div>
+        <div class="dash-alert-actions">
+          <button class="dash-alert-btn" style="background:#52C483;" onclick="showPendingQuoteModal(${JSON.stringify(ref)})">Review &amp; Import</button>
+        </div></div>`;
+    });
     jobs.filter(j => j.scheduledDate === tomorrowStr && (j.status === 'booked' || j.status === 'in_progress')).forEach(j => {
       const sms = `Hi ${j.customerName.split(' ')[0]}, confirming your blade sharpening ${j.delivery === 'collection' ? 'collection' : 'drop-off'} tomorrow. Any questions give me a call. — ${settings.business || 'Steady Eco'}`;
       alerts += `<div class="dash-alert">
@@ -3195,6 +3210,113 @@
   }
 
   initPin();
+
+  // ── Pending website quotes ─────────────────────────────────────
+  function showPendingQuoteModal(ref) {
+    const pending = JSON.parse(localStorage.getItem('se_pending_quotes') || '[]');
+    const p = pending.find(x => x.ref === ref);
+    if (!p) return;
+    const c = p.customer || {};
+    const q = p.quote || {};
+    const fee = q.collectionFee > 0 ? ` + $${q.collectionFee} collection` : '';
+    const total = q.totalPrice != null ? `$${q.totalPrice}` : 'Call';
+    const overlay = document.createElement('div');
+    overlay.id = '_pendingModal';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9000;display:flex;align-items:flex-end;justify-content:center;';
+    overlay.innerHTML = `
+      <div style="background:var(--bg-elevated);border-radius:16px 16px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:1.5px;color:#52C483;text-transform:uppercase;">Website Enquiry</div>
+          <button onclick="document.getElementById('_pendingModal').remove()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1;">✕</button>
+        </div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:4px;">Reference</div>
+        <div style="font-size:0.9rem;color:var(--text);margin-bottom:14px;font-weight:600;">${esc(p.ref || '')}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;">
+          <div style="background:var(--card);border-radius:10px;padding:12px;">
+            <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Name</div>
+            <div style="font-size:0.88rem;color:var(--text);font-weight:500;">${esc(c.name || '—')}</div>
+          </div>
+          <div style="background:var(--card);border-radius:10px;padding:12px;">
+            <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Phone</div>
+            <div style="font-size:0.88rem;color:var(--text);font-weight:500;">${esc(c.phone || '—')}</div>
+          </div>
+          <div style="background:var(--card);border-radius:10px;padding:12px;">
+            <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Email</div>
+            <div style="font-size:0.82rem;color:var(--text);word-break:break-all;">${esc(c.email || '—')}</div>
+          </div>
+          <div style="background:var(--card);border-radius:10px;padding:12px;">
+            <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Machine</div>
+            <div style="font-size:0.88rem;color:var(--text);font-weight:500;">${esc(q.machineType || '—')}</div>
+          </div>
+          <div style="background:var(--card);border-radius:10px;padding:12px;">
+            <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Sets</div>
+            <div style="font-size:0.88rem;color:var(--text);font-weight:500;">${q.sets || 1} set${(q.sets||1)!==1?'s':''} (${(q.sets||1)*2} blades)</div>
+          </div>
+          <div style="background:var(--card);border-radius:10px;padding:12px;">
+            <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Job Type</div>
+            <div style="font-size:0.88rem;color:var(--text);font-weight:500;">${q.isEmergency ? 'Emergency' : 'Standard'}</div>
+          </div>
+          <div style="background:var(--card);border-radius:10px;padding:12px;">
+            <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Delivery</div>
+            <div style="font-size:0.88rem;color:var(--text);font-weight:500;">${q.collectionRequired ? `Collect &amp; return${fee}` : 'Drop-off'}</div>
+          </div>
+          <div style="background:var(--card);border-radius:10px;padding:12px;border:1px solid #52C483;">
+            <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Total</div>
+            <div style="font-size:1rem;color:#52C483;font-weight:700;">${total}</div>
+          </div>
+        </div>
+        <button onclick="importPendingQuote(${JSON.stringify(p.ref)})" style="width:100%;background:#52C483;color:#0A110D;border:none;border-radius:12px;padding:16px;font-size:0.95rem;font-weight:700;cursor:pointer;margin-bottom:10px;">Import as Customer &amp; Quote</button>
+        <button onclick="dismissPendingQuote('${esc(p.ref || '')}');document.getElementById('_pendingModal').remove();" style="width:100%;background:transparent;border:1px solid var(--border-light);color:var(--muted);border-radius:12px;padding:14px;font-size:0.9rem;cursor:pointer;">Dismiss</button>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  }
+
+  function importPendingQuote(ref) {
+    const pending = JSON.parse(localStorage.getItem('se_pending_quotes') || '[]');
+    const p = pending.find(x => x.ref === ref);
+    if (!p) return;
+    const c = p.customer || {};
+    const q = p.quote || {};
+    // Create or find customer
+    let cust = customers.find(x => x.phone && x.phone === c.phone);
+    if (!cust) {
+      cust = { id: Date.now().toString(), name: c.name || 'Unknown', phone: c.phone || '', email: c.email || '', abn: '', notes: `Imported from website enquiry ${p.ref}`, createdAt: new Date().toISOString() };
+      customers.push(cust);
+    }
+    // Create quote
+    const newQ = {
+      id: (Date.now() + 1).toString(),
+      ref: getNextRef(),
+      customerId: cust.id,
+      customerName: cust.name,
+      sets: q.sets || 1,
+      jobType: q.isEmergency ? 'emergency' : 'standard',
+      delivery: q.collectionRequired ? 'collection' : 'dropoff',
+      total: q.totalPrice || q.basePrice || 0,
+      paymentMethod: 'cash',
+      preferredDate: null,
+      createdAt: new Date().toISOString(),
+      websiteRef: p.ref
+    };
+    quotes.push(newQ);
+    save();
+    // Remove from pending
+    dismissPendingQuote(p.ref);
+    const modal = document.getElementById('_pendingModal');
+    if (modal) modal.remove();
+    showToast('Imported — customer & quote created');
+    refreshDashboard();
+    showQuoteDetail(newQ.id, 'dashboard');
+  }
+
+  function dismissPendingQuote(ref) {
+    const pending = JSON.parse(localStorage.getItem('se_pending_quotes') || '[]');
+    const updated = pending.filter(p => p.ref !== ref);
+    localStorage.setItem('se_pending_quotes', JSON.stringify(updated));
+    refreshDashboard();
+  }
+
 </script>
 </body>
 </html>
