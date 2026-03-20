@@ -684,9 +684,156 @@
     .inv-line-table > div { border-color:#ddd !important; color:#000 !important; }
     .status-badge { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
   }
+  /* ══════════════════════════════════════════════════════════════
+     PIN LOCK
+     ══════════════════════════════════════════════════════════════ */
+  #pin-screen, #change-pin-modal {
+    position: fixed;
+    inset: 0;
+    background: #0a0f0a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px calc(40px + var(--safe-bottom));
+  }
+  #pin-screen { z-index: 9999; }
+  #pin-screen.hidden { display: none; }
+  #change-pin-modal { z-index: 8999; display: none; }
+  #change-pin-modal.visible { display: flex; }
+
+  .pin-logo {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #e8ede6;
+    margin-bottom: 8px;
+  }
+  .pin-logo span { color: #4a9e3f; }
+  .pin-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #7a8f76;
+    margin-bottom: 48px;
+    min-height: 18px;
+    text-align: center;
+  }
+  .pin-dots {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .pin-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 2px solid rgba(74,158,63,0.3);
+    background: transparent;
+    transition: background 0.12s, border-color 0.12s;
+  }
+  .pin-dot.filled { background: #4a9e3f; border-color: #4a9e3f; }
+  .pin-dot.error  { background: #c04040; border-color: #c04040; }
+  .pin-dots.shake { animation: pinShake 0.5s cubic-bezier(0.36,0.07,0.19,0.97) both; }
+  @keyframes pinShake {
+    0%,100% { transform: translateX(0); }
+    15%,45%,75% { transform: translateX(-8px); }
+    30%,60%,90% { transform: translateX(8px); }
+  }
+  .pin-keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 56px);
+    gap: 14px;
+  }
+  .pin-key {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    border: 0.5px solid rgba(255,255,255,0.08);
+    color: #e8ede6;
+    font-family: 'Inter', sans-serif;
+    font-size: 18px; font-weight: 400;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.12s, border-color 0.12s, transform 0.1s;
+    user-select: none;
+  }
+  .pin-key:hover { background: rgba(74,158,63,0.12); border-color: rgba(74,158,63,0.3); }
+  .pin-key:active { transform: scale(0.94); background: rgba(74,158,63,0.2); }
+  .pin-key.blank { background: transparent; border-color: transparent; pointer-events: none; }
+  .pin-keypad.disabled .pin-key:not(.blank) { opacity: 0.3; pointer-events: none; }
+  .change-pin-close {
+    position: absolute;
+    top: calc(var(--safe-top) + 20px); right: 24px;
+    background: none; border: none;
+    color: #7a8f76; font-size: 1.2rem;
+    cursor: pointer; padding: 8px;
+  }
   </style>
 </head>
 <body>
+
+<!-- ════════════════════════════════════════════════════════════
+     PIN LOCK SCREEN
+     ════════════════════════════════════════════════════════════ -->
+<div id="pin-screen">
+  <div class="pin-logo">Steady <span>Eco</span></div>
+  <div class="pin-subtitle" id="pinSubtitle">Operational Access</div>
+  <div class="pin-dots" id="pinDots">
+    <div class="pin-dot" id="pd0"></div>
+    <div class="pin-dot" id="pd1"></div>
+    <div class="pin-dot" id="pd2"></div>
+    <div class="pin-dot" id="pd3"></div>
+  </div>
+  <div class="pin-keypad" id="pinKeypad">
+    <button class="pin-key" onclick="pinInput(1)">1</button>
+    <button class="pin-key" onclick="pinInput(2)">2</button>
+    <button class="pin-key" onclick="pinInput(3)">3</button>
+    <button class="pin-key" onclick="pinInput(4)">4</button>
+    <button class="pin-key" onclick="pinInput(5)">5</button>
+    <button class="pin-key" onclick="pinInput(6)">6</button>
+    <button class="pin-key" onclick="pinInput(7)">7</button>
+    <button class="pin-key" onclick="pinInput(8)">8</button>
+    <button class="pin-key" onclick="pinInput(9)">9</button>
+    <button class="pin-key blank" aria-hidden="true"></button>
+    <button class="pin-key" onclick="pinInput(0)">0</button>
+    <button class="pin-key" onclick="pinBackspace()">⌫</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     CHANGE PIN MODAL
+     ════════════════════════════════════════════════════════════ -->
+<div id="change-pin-modal">
+  <button class="change-pin-close" onclick="closeChangePinModal()">✕</button>
+  <div class="pin-logo">Steady <span>Eco</span></div>
+  <div class="pin-subtitle" id="cpSubtitle">Enter Current PIN</div>
+  <div class="pin-dots" id="cpDots">
+    <div class="pin-dot" id="cpd0"></div>
+    <div class="pin-dot" id="cpd1"></div>
+    <div class="pin-dot" id="cpd2"></div>
+    <div class="pin-dot" id="cpd3"></div>
+  </div>
+  <div class="pin-keypad" id="cpKeypad">
+    <button class="pin-key" onclick="cpInput(1)">1</button>
+    <button class="pin-key" onclick="cpInput(2)">2</button>
+    <button class="pin-key" onclick="cpInput(3)">3</button>
+    <button class="pin-key" onclick="cpInput(4)">4</button>
+    <button class="pin-key" onclick="cpInput(5)">5</button>
+    <button class="pin-key" onclick="cpInput(6)">6</button>
+    <button class="pin-key" onclick="cpInput(7)">7</button>
+    <button class="pin-key" onclick="cpInput(8)">8</button>
+    <button class="pin-key" onclick="cpInput(9)">9</button>
+    <button class="pin-key blank" aria-hidden="true"></button>
+    <button class="pin-key" onclick="cpInput(0)">0</button>
+    <button class="pin-key" onclick="cpBackspace()">⌫</button>
+  </div>
+</div>
+
 <div id="app">
 
   <!-- HEADER -->
@@ -702,7 +849,7 @@
 
   <!-- ═══════════════════════════════ DASHBOARD ════════════════════════════════ -->
   <div class="screen active" id="screen-dashboard">
-    <div class="dash-greeting">G'day, <strong id="greetName">Kyle</strong></div>
+    <div class="dash-greeting">G'day, <strong id="greetName">Sam</strong></div>
     <div class="dash-sub" id="dashDate"></div>
 
     <div id="dashAlerts" style="margin-bottom:4px;"></div>
@@ -1153,7 +1300,7 @@
   <div class="screen" id="screen-settings">
     <button class="back-btn" onclick="goHome()">← Home</button>
     <div class="section-label" style="margin-bottom:16px;">App Settings</div>
-    <div class="field" style="margin-bottom:2px;"><label>Your Name</label><input type="text" id="settingName" placeholder="Kyle" /></div>
+    <div class="field" style="margin-bottom:2px;"><label>Your Name</label><input type="text" id="settingName" placeholder="Sam" /></div>
     <div class="field" style="margin-bottom:20px;"><label>Business Name</label><input type="text" id="settingBusiness" value="Steady Eco" /></div>
     <button class="btn-full btn-green" onclick="saveSettings()">Save Settings</button>
 
@@ -1161,6 +1308,9 @@
     <div class="info-row"><span class="info-row-label">ABN</span><span class="info-row-value" style="color:var(--text-secondary);">49 553 784 085</span></div>
     <div class="info-row"><span class="info-row-label">Business</span><span class="info-row-value" style="color:var(--text-secondary);">Steady Eco Expansion</span></div>
     <div class="info-row"><span class="info-row-label">Location</span><span class="info-row-value" style="color:var(--text-secondary);">Cairns, QLD</span></div>
+
+    <div class="section-label" style="margin-top:36px; margin-bottom:12px;">Security</div>
+    <button class="btn-full btn-ghost" onclick="openChangePinModal()">Change Access Code</button>
 
     <div class="section-label" style="margin-top:36px; margin-bottom:12px;">Data</div>
     <button class="btn-full btn-ghost" onclick="exportData()">Export Backup (JSON)</button>
@@ -1177,7 +1327,7 @@
   let quotes    = JSON.parse(localStorage.getItem('se_quotes')    || '[]');
   let jobs      = JSON.parse(localStorage.getItem('se_jobs')      || '[]');
   let invoices  = JSON.parse(localStorage.getItem('se_invoices')  || '[]');
-  let settings  = JSON.parse(localStorage.getItem('se_settings')  || '{"name":"Kyle","business":"Steady Eco"}');
+  let settings  = JSON.parse(localStorage.getItem('se_settings')  || '{"name":"Sam","business":"Steady Eco"}');
   let nextRef    = parseInt(localStorage.getItem('se_next_ref')    || '1');
   let nextInvRef = parseInt(localStorage.getItem('se_next_inv')    || '1');
 
@@ -1275,7 +1425,7 @@
   function refreshDashboard() {
     const today = new Date().toLocaleDateString('en-AU', { weekday:'long', day:'numeric', month:'long' });
     document.getElementById('dashDate').textContent      = today;
-    document.getElementById('greetName').textContent     = settings.name || 'Kyle';
+    document.getElementById('greetName').textContent     = settings.name || 'Sam';
 
     const activeJobs = jobs.filter(j => j.status === 'booked' || j.status === 'in_progress');
     const unpaidInv  = invoices.filter(i => invStatus(i) === 'sent' || invStatus(i) === 'overdue').reduce((s,i) => s + i.total, 0);
@@ -2124,7 +2274,237 @@
     setTimeout(()=>t.classList.remove('show'),2500);
   }
 
-  refreshDashboard();
+
+  // ══════════════════════════════════════════════════════════════
+  //  PIN LOCK SYSTEM
+  // ══════════════════════════════════════════════════════════════
+  const PIN_KEY       = 'se_pin_hash';
+  const PIN_ATTEMPTS  = 'se_pin_attempts';
+  const PIN_LOCKOUT   = 'se_pin_lockout';
+  const DEFAULT_PIN   = '1962';
+  const MAX_ATTEMPTS  = 5;
+  const COOLDOWN_MS   = 10 * 60 * 1000;  // 10 minutes
+  const INACTIVITY_MS = 15 * 60 * 1000;  // 15 minutes
+
+  let pinBuffer       = '';
+  let inactivityTimer = null;
+
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  async function initPin() {
+    // Seed default hash if first run
+    if (!localStorage.getItem(PIN_KEY)) {
+      localStorage.setItem(PIN_KEY, await sha256(DEFAULT_PIN));
+    }
+    // Check active session
+    const unlocked = sessionStorage.getItem('se_unlocked');
+    const unlockTime = parseInt(sessionStorage.getItem('se_unlock_time') || '0');
+    if (unlocked === '1' && (Date.now() - unlockTime) < INACTIVITY_MS) {
+      unlockApp();
+      return;
+    }
+    // Check lockout
+    const lockout = parseInt(localStorage.getItem(PIN_LOCKOUT) || '0');
+    if (lockout && Date.now() < lockout) {
+      showCooldown(lockout);
+    } else {
+      if (lockout) {
+        localStorage.removeItem(PIN_LOCKOUT);
+        localStorage.setItem(PIN_ATTEMPTS, '0');
+      }
+      document.getElementById('pinSubtitle').textContent = 'Operational Access';
+    }
+  }
+
+  function unlockApp() {
+    sessionStorage.setItem('se_unlocked', '1');
+    sessionStorage.setItem('se_unlock_time', Date.now().toString());
+    document.getElementById('pin-screen').classList.add('hidden');
+    localStorage.setItem(PIN_ATTEMPTS, '0');
+    resetInactivityTimer();
+    refreshDashboard();
+  }
+
+  function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(lockApp, INACTIVITY_MS);
+  }
+
+  function lockApp() {
+    sessionStorage.removeItem('se_unlocked');
+    sessionStorage.removeItem('se_unlock_time');
+    pinBuffer = '';
+    updatePinDots('pinDots');
+    document.getElementById('pinSubtitle').textContent = 'Operational Access';
+    document.getElementById('pinKeypad').classList.remove('disabled');
+    document.getElementById('pin-screen').classList.remove('hidden');
+    // Check lockout state on re-lock
+    const lockout = parseInt(localStorage.getItem(PIN_LOCKOUT) || '0');
+    if (lockout && Date.now() < lockout) showCooldown(lockout);
+  }
+
+  // Reset inactivity on any interaction
+  document.addEventListener('touchstart', () => { if (!document.getElementById('pin-screen').classList.contains('hidden')) return; resetInactivityTimer(); }, { passive: true });
+  document.addEventListener('click',      () => { if (!document.getElementById('pin-screen').classList.contains('hidden')) return; resetInactivityTimer(); }, { passive: true });
+
+  function updatePinDots(containerId) {
+    const buf = containerId === 'pinDots' ? pinBuffer : cpBuffer;
+    for (let i = 0; i < 4; i++) {
+      const dot = document.getElementById(containerId === 'pinDots' ? 'pd'+i : 'cpd'+i);
+      if (dot) dot.classList.toggle('filled', i < buf.length);
+    }
+  }
+
+  function pinInput(digit) {
+    const keypad = document.getElementById('pinKeypad');
+    if (keypad.classList.contains('disabled')) return;
+    if (pinBuffer.length >= 4) return;
+    pinBuffer += digit;
+    updatePinDots('pinDots');
+    if (pinBuffer.length === 4) verifyPin();
+  }
+
+  function pinBackspace() {
+    pinBuffer = pinBuffer.slice(0, -1);
+    updatePinDots('pinDots');
+  }
+
+  async function verifyPin() {
+    const entered = await sha256(pinBuffer);
+    const stored  = localStorage.getItem(PIN_KEY);
+    if (entered === stored) {
+      unlockApp();
+    } else {
+      pinWrongAttempt();
+    }
+  }
+
+  function pinWrongAttempt() {
+    const dots   = document.getElementById('pinDots');
+    const keypad = document.getElementById('pinKeypad');
+    dots.querySelectorAll('.pin-dot').forEach(d => d.classList.add('error'));
+    dots.classList.add('shake');
+    keypad.classList.add('disabled');
+    let attempts = parseInt(localStorage.getItem(PIN_ATTEMPTS) || '0') + 1;
+    localStorage.setItem(PIN_ATTEMPTS, attempts.toString());
+    setTimeout(() => {
+      dots.classList.remove('shake');
+      dots.querySelectorAll('.pin-dot').forEach(d => { d.classList.remove('error'); d.classList.remove('filled'); });
+      pinBuffer = '';
+      if (attempts >= MAX_ATTEMPTS) {
+        const until = Date.now() + COOLDOWN_MS;
+        localStorage.setItem(PIN_LOCKOUT, until.toString());
+        showCooldown(until);
+      } else {
+        document.getElementById('pinSubtitle').textContent = `Wrong PIN — ${MAX_ATTEMPTS - attempts} attempt${MAX_ATTEMPTS - attempts === 1 ? '' : 's'} left`;
+        keypad.classList.remove('disabled');
+      }
+    }, 600);
+  }
+
+  function showCooldown(until) {
+    const keypad = document.getElementById('pinKeypad');
+    keypad.classList.add('disabled');
+    function tick() {
+      const remaining = Math.max(0, Math.ceil((until - Date.now()) / 1000));
+      const mins = Math.floor(remaining / 60);
+      const secs = remaining % 60;
+      document.getElementById('pinSubtitle').textContent = remaining > 0
+        ? `Too many attempts — try again in ${mins}:${secs.toString().padStart(2,'0')}`
+        : 'Try again';
+      if (remaining > 0) {
+        setTimeout(tick, 1000);
+      } else {
+        localStorage.removeItem(PIN_LOCKOUT);
+        localStorage.setItem(PIN_ATTEMPTS, '0');
+        keypad.classList.remove('disabled');
+        document.getElementById('pinSubtitle').textContent = 'Operational Access';
+      }
+    }
+    tick();
+  }
+
+  // ── Change PIN modal ───────────────────────────────────────────
+  let cpBuffer  = '';
+  let cpStage   = 'verify';   // 'verify' | 'new' | 'confirm'
+  let cpNewHash = '';
+
+  function openChangePinModal() {
+    cpBuffer = ''; cpStage = 'verify'; cpNewHash = '';
+    updatePinDots('cpDots');
+    document.getElementById('cpSubtitle').textContent = 'Enter Current PIN';
+    document.getElementById('cpKeypad').classList.remove('disabled');
+    document.getElementById('change-pin-modal').classList.add('visible');
+  }
+
+  function closeChangePinModal() {
+    document.getElementById('change-pin-modal').classList.remove('visible');
+    cpBuffer = ''; cpStage = 'verify'; cpNewHash = '';
+  }
+
+  function cpInput(digit) {
+    if (document.getElementById('cpKeypad').classList.contains('disabled')) return;
+    if (cpBuffer.length >= 4) return;
+    cpBuffer += digit;
+    updatePinDots('cpDots');
+    if (cpBuffer.length === 4) handleCpStep();
+  }
+
+  function cpBackspace() {
+    cpBuffer = cpBuffer.slice(0, -1);
+    updatePinDots('cpDots');
+  }
+
+  async function handleCpStep() {
+    if (cpStage === 'verify') {
+      const entered = await sha256(cpBuffer);
+      const stored  = localStorage.getItem(PIN_KEY);
+      if (entered === stored) {
+        cpStage = 'new'; cpBuffer = '';
+        updatePinDots('cpDots');
+        document.getElementById('cpSubtitle').textContent = 'Enter New PIN';
+      } else {
+        cpWrongAttempt('Incorrect PIN — try again');
+      }
+    } else if (cpStage === 'new') {
+      cpNewHash = await sha256(cpBuffer);
+      cpStage = 'confirm'; cpBuffer = '';
+      updatePinDots('cpDots');
+      document.getElementById('cpSubtitle').textContent = 'Confirm New PIN';
+    } else if (cpStage === 'confirm') {
+      const confirmHash = await sha256(cpBuffer);
+      if (confirmHash === cpNewHash) {
+        localStorage.setItem(PIN_KEY, cpNewHash);
+        closeChangePinModal();
+        showToast('Access code updated');
+      } else {
+        cpNewHash = '';
+        cpStage = 'new';
+        cpWrongAttempt("PINs didn't match — enter new PIN again");
+      }
+    }
+  }
+
+  function cpWrongAttempt(msg) {
+    const dots   = document.getElementById('cpDots');
+    const keypad = document.getElementById('cpKeypad');
+    dots.querySelectorAll('.pin-dot').forEach(d => d.classList.add('error'));
+    dots.classList.add('shake');
+    keypad.classList.add('disabled');
+    setTimeout(() => {
+      dots.classList.remove('shake');
+      dots.querySelectorAll('.pin-dot').forEach(d => { d.classList.remove('error'); d.classList.remove('filled'); });
+      cpBuffer = '';
+      document.getElementById('cpSubtitle').textContent = msg;
+      keypad.classList.remove('disabled');
+    }, 600);
+  }
+
+  // ── Boot ───────────────────────────────────────────────────────
+  initPin();
 </script>
 </body>
 </html>
