@@ -10,6 +10,7 @@ Thumbs.db
 *.dat
 *.txt
 *.html
+!quote-tool.html
 *.com
 *.exe
 *.asar

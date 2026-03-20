@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Steady Eco — Quote Tool</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #0A110D;
+      --bg-alt:       #0F1912;
+      --card:         #152019;
+      --green-accent: #52C483;
+      --green-deep:   #1E4D35;
+      --green-bright: #7DD9A0;
+      --text:         #EDF5F0;
+      --muted:        #5A7A68;
+      --muted-light:  #8AAD98;
+      --border:       #1E3028;
+      --border-light: #2A4035;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 40px 16px 80px;
+    }
+
+    .wrap {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .logo {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .logo span { color: var(--green-accent); }
+
+    .page-title {
+      font-size: 0.72rem;
+      color: var(--muted-light);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 36px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      margin-bottom: 2px;
+    }
+
+    .card-header {
+      padding: 12px 20px;
+      background: var(--bg-alt);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.65rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--muted-light);
+    }
+
+    .field-group {
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .field-group:last-child { border-bottom: none; }
+
+    label {
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted-light);
+    }
+
+    input, select {
+      background: var(--bg);
+      border: 1px solid var(--border-light);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.95rem;
+      padding: 10px 14px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus { border-color: var(--green-accent); }
+    select option { background: var(--bg); }
+
+    .toggle-row {
+      display: flex;
+      gap: 2px;
+    }
+    .toggle-btn {
+      flex: 1;
+      padding: 10px;
+      background: var(--bg);
+      border: 1px solid var(--border-light);
+      color: var(--muted-light);
+      font-family: inherit;
+      font-size: 0.78rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .toggle-btn.active {
+      background: var(--green-deep);
+      border-color: var(--green-accent);
+      color: var(--green-accent);
+    }
+
+    .price-display {
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .price-label {
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted-light);
+    }
+    .price-amount {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--green-accent);
+      letter-spacing: -1px;
+    }
+    .price-breakdown {
+      font-size: 0.72rem;
+      color: var(--muted);
+      padding: 0 20px 16px;
+      line-height: 1.8;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--green-accent);
+      color: var(--bg);
+      margin-bottom: 2px;
+    }
+    .btn-primary:hover { background: var(--green-bright); }
+    .btn-secondary {
+      background: var(--bg-alt);
+      color: var(--muted-light);
+      border: 1px solid var(--border-light);
+      margin-bottom: 2px;
+    }
+    .btn-secondary:hover { border-color: var(--green-accent); color: var(--green-accent); }
+
+    .output-box {
+      display: none;
+      margin-top: 24px;
+    }
+    .output-box.visible { display: block; }
+
+    .output-text {
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      padding: 20px;
+      font-size: 0.88rem;
+      color: var(--text);
+      line-height: 1.8;
+      white-space: pre-wrap;
+      font-family: inherit;
+    }
+
+    .copy-btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin-top: 2px;
+      background: var(--bg-alt);
+      border: 1px solid var(--border-light);
+      color: var(--muted-light);
+      font-family: inherit;
+      font-size: 0.72rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .copy-btn:hover { border-color: var(--green-accent); color: var(--green-accent); }
+    .copy-btn.copied { border-color: var(--green-accent); color: var(--green-accent); }
+
+    .section-gap { margin-top: 24px; }
+
+    .note {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 32px;
+      letter-spacing: 0.5px;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="logo">Steady <span>Eco</span></div>
+  <div class="page-title">Quote Generator</div>
+
+  <!-- CUSTOMER DETAILS -->
+  <div class="card">
+    <div class="card-header">Customer Details</div>
+    <div class="field-group">
+      <label for="custName">Customer Name</label>
+      <input type="text" id="custName" placeholder="e.g. John Smith" />
+    </div>
+    <div class="field-group">
+      <label for="custPhone">Phone Number</label>
+      <input type="tel" id="custPhone" placeholder="04xx xxx xxx" />
+    </div>
+    <div class="field-group">
+      <label for="custEmail">Email (optional)</label>
+      <input type="email" id="custEmail" placeholder="john@email.com" />
+    </div>
+  </div>
+
+  <!-- JOB DETAILS -->
+  <div class="card section-gap">
+    <div class="card-header">Job Details</div>
+    <div class="field-group">
+      <label for="numSets">Number of Sets</label>
+      <input type="number" id="numSets" min="1" max="50" placeholder="e.g. 2" oninput="updatePrice()" />
+      <div style="font-size:0.7rem; color:var(--muted); margin-top:4px;">1 set = 2 blades · $120 per set</div>
+    </div>
+
+    <div class="field-group">
+      <label>Job Type</label>
+      <div class="toggle-row">
+        <button class="toggle-btn active" id="btn-standard" onclick="setJobType('standard')">Standard</button>
+        <button class="toggle-btn" id="btn-emergency" onclick="setJobType('emergency')">Emergency (2×)</button>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Delivery</label>
+      <div class="toggle-row">
+        <button class="toggle-btn active" id="btn-dropoff" onclick="setDelivery('dropoff')">Customer Drop-Off</button>
+        <button class="toggle-btn" id="btn-collect" onclick="setDelivery('collect')">We Collect &amp; Return</button>
+      </div>
+      <div id="zone-selector" style="display:none; margin-top:10px;">
+        <select id="deliveryZone" onchange="updatePrice()">
+          <option value="zone1">Freshwater / Edge Hill / Whitfield (+$10)</option>
+          <option value="zone2">Cairns CBD / Smithfield / Stratford / Manunda (+$20)</option>
+          <option value="zone3">Redlynch / Yorkeys Knob / Kewarra Beach (+$30)</option>
+          <option value="zone4">Trinity Beach / Clifton Beach / Palm Cove (+$40)</option>
+          <option value="zone5">Edmonton / Gordonvale / White Rock (+$50)</option>
+          <option value="portdouglas">Port Douglas — Call to Discuss</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRICE SUMMARY -->
+  <div class="card section-gap">
+    <div class="card-header">Price Summary</div>
+    <div class="price-display">
+      <div class="price-label">Total Quote</div>
+      <div class="price-amount" id="totalPrice">$0</div>
+    </div>
+    <div class="price-breakdown" id="priceBreakdown">Enter number of sets above.</div>
+  </div>
+
+  <!-- GENERATE BUTTONS -->
+  <div class="section-gap">
+    <button class="btn btn-primary" onclick="generateSMS()">Generate SMS Quote</button>
+    <button class="btn btn-secondary" onclick="generateEmail()">Generate Email Quote</button>
+  </div>
+
+  <!-- SMS OUTPUT -->
+  <div class="output-box" id="smsOutput">
+    <div class="card-header" style="background:var(--bg-alt); border:1px solid var(--border); border-bottom:none; padding:12px 20px;">SMS / WhatsApp</div>
+    <div class="output-text" id="smsText"></div>
+    <button class="copy-btn" id="smsCopyBtn" onclick="copyText('smsText', 'smsCopyBtn')">Copy to Clipboard</button>
+  </div>
+
+  <!-- EMAIL OUTPUT -->
+  <div class="output-box" id="emailOutput">
+    <div class="card-header" style="background:var(--bg-alt); border:1px solid var(--border); border-bottom:none; padding:12px 20px;">Email</div>
+    <div class="output-text" id="emailText"></div>
+    <button class="copy-btn" id="emailCopyBtn" onclick="copyText('emailText', 'emailCopyBtn')">Copy to Clipboard</button>
+  </div>
+
+  <div class="note">Steady Eco Expansion · ABN 49 553 784 085 · steadyeco.com</div>
+
+</div>
+
+<script>
+  const PRICE_PER_SET = 120;
+
+  const DELIVERY_ZONES = {
+    dropoff:    { fee: 0,    label: null },
+    zone1:      { fee: 10,   label: 'Freshwater / Edge Hill / Whitfield' },
+    zone2:      { fee: 20,   label: 'Cairns CBD / Smithfield / Stratford / Manunda' },
+    zone3:      { fee: 30,   label: 'Redlynch / Yorkeys Knob / Kewarra Beach' },
+    zone4:      { fee: 40,   label: 'Trinity Beach / Clifton Beach / Palm Cove' },
+    zone5:      { fee: 50,   label: 'Edmonton / Gordonvale / White Rock' },
+    portdouglas:{ fee: null, label: 'Port Douglas' },
+  };
+
+  let jobType = 'standard';
+  let deliveryMode = 'dropoff'; // 'dropoff' | 'collect'
+
+  function getZone() {
+    if (deliveryMode === 'dropoff') return 'dropoff';
+    return document.getElementById('deliveryZone').value;
+  }
+
+  function setJobType(type) {
+    jobType = type;
+    document.getElementById('btn-standard').classList.toggle('active', type === 'standard');
+    document.getElementById('btn-emergency').classList.toggle('active', type === 'emergency');
+    updatePrice();
+  }
+
+  function setDelivery(mode) {
+    deliveryMode = mode;
+    document.getElementById('btn-dropoff').classList.toggle('active', mode === 'dropoff');
+    document.getElementById('btn-collect').classList.toggle('active', mode === 'collect');
+    document.getElementById('zone-selector').style.display = mode === 'collect' ? 'block' : 'none';
+    updatePrice();
+  }
+
+  function updatePrice() {
+    const sets = parseInt(document.getElementById('numSets').value) || 0;
+    const blades = sets * 2;
+    let base = sets * PRICE_PER_SET;
+    if (jobType === 'emergency') base *= 2;
+
+    const zone = getZone();
+    const zoneData = DELIVERY_ZONES[zone];
+    const isCallZone = zoneData.fee === null;
+    const delivery = isCallZone ? 0 : zoneData.fee;
+    const total = base + delivery;
+
+    if (isCallZone) {
+      document.getElementById('totalPrice').textContent = sets > 0 ? 'Call' : '$0';
+    } else {
+      document.getElementById('totalPrice').textContent = sets > 0 ? `$${total}` : '$0';
+    }
+
+    let breakdown = '';
+    if (sets > 0) {
+      breakdown += `${sets} set${sets > 1 ? 's' : ''} (${blades} blade${blades > 1 ? 's' : ''}) × $${PRICE_PER_SET}`;
+      if (jobType === 'emergency') breakdown += ` × 2 (emergency)`;
+      breakdown += ` = $${base}\n`;
+      if (zone === 'portdouglas') {
+        breakdown += `Collection & return (Port Douglas) — call to discuss\n`;
+        breakdown += `Total: Call to confirm`;
+      } else if (delivery > 0) {
+        breakdown += `Collection & return (${zoneData.label}) = $${delivery}\n`;
+        breakdown += `Total: $${total} · Payment due on pickup`;
+      } else {
+        breakdown += `Total: $${total} · Payment due on pickup`;
+      }
+    } else {
+      breakdown = 'Enter number of sets above.';
+    }
+    document.getElementById('priceBreakdown').textContent = breakdown;
+  }
+
+  function getQuoteData() {
+    const name = document.getElementById('custName').value.trim() || 'there';
+    const sets = parseInt(document.getElementById('numSets').value) || 0;
+    const blades = sets * 2;
+    let base = sets * PRICE_PER_SET;
+    if (jobType === 'emergency') base *= 2;
+    const zone = getZone();
+    const zoneData = DELIVERY_ZONES[zone];
+    const isCallZone = zoneData.fee === null;
+    const delivery = isCallZone ? null : zoneData.fee;
+    const total = isCallZone ? null : base + delivery;
+    const today = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+    return { name, sets, blades, base, delivery, total, today, zone, zoneData, isCallZone };
+  }
+
+  function generateSMS() {
+    const d = getQuoteData();
+    if (!d.sets) { alert('Please enter the number of sets.'); return; }
+
+    let msg = `Hi ${d.name}, thanks for getting in touch with Steady Eco.\n\n`;
+    msg += `Here's your quote for blade sharpening:\n`;
+    msg += `• ${d.sets} set${d.sets > 1 ? 's' : ''} (${d.blades} blade${d.blades > 1 ? 's' : ''}) — $${d.base}`;
+    if (jobType === 'emergency') msg += ` (emergency rate)`;
+    msg += `\n`;
+    if (d.zone === 'portdouglas') {
+      msg += `• Collection & return (Port Douglas) — call to confirm price\n`;
+      msg += `\nTotal: Call to confirm\n`;
+    } else if (d.delivery > 0) {
+      msg += `• Collection & return (${d.zoneData.label}) — $${d.delivery}\n`;
+      msg += `\nTotal: $${d.total}\nPayment due on pickup.\n`;
+    } else {
+      msg += `\nTotal: $${d.total}\nPayment due on pickup.\n`;
+    }
+    msg += `\nGive me a call on 0456 190 202 to confirm. Cheers, Steady Eco`;
+
+    document.getElementById('smsText').textContent = msg;
+    document.getElementById('smsOutput').classList.add('visible');
+    document.getElementById('smsCopyBtn').textContent = 'Copy to Clipboard';
+    document.getElementById('smsCopyBtn').classList.remove('copied');
+  }
+
+  function generateEmail() {
+    const d = getQuoteData();
+    if (!d.sets) { alert('Please enter the number of sets.'); return; }
+
+    let msg = `Subject: Quote — Woodchipper Blade Sharpening · Steady Eco\n\n`;
+    msg += `Hi ${d.name},\n\n`;
+    msg += `Thank you for reaching out to Steady Eco. Please find your quote below.\n\n`;
+    msg += `---\n`;
+    msg += `QUOTE — ${d.today}\n`;
+    msg += `---\n\n`;
+    msg += `Service: Woodchipper Blade Sharpening\n`;
+    msg += `Sets: ${d.sets} set${d.sets > 1 ? 's' : ''} (${d.blades} blade${d.blades > 1 ? 's' : ''})\n`;
+    if (jobType === 'emergency') msg += `Rate: Emergency (after-hours)\n`;
+    msg += `\n`;
+    msg += `Blade sharpening: $${d.base}\n`;
+    if (d.zone === 'portdouglas') {
+      msg += `Collection & return (Port Douglas): Call to confirm\n`;
+      msg += `\nTOTAL: Call to confirm\n\n`;
+    } else if (d.delivery > 0) {
+      msg += `Collection & return (${d.zoneData.label}): $${d.delivery}\n`;
+      msg += `\nTOTAL: $${d.total}\n\n`;
+      msg += `Payment terms: Due on pickup\n\n`;
+    } else {
+      msg += `\nTOTAL: $${d.total}\n\n`;
+      msg += `Payment terms: Due on pickup\n\n`;
+    }
+    msg += `---\n\n`;
+    msg += `To confirm this quote or arrange a drop-off, please call or reply to this email.\n\n`;
+    msg += `0456 190 202\nsteadyeco.com\n\n`;
+    msg += `Thanks,\nSteady Eco — Cairns, Far North Queensland`;
+
+    document.getElementById('emailText').textContent = msg;
+    document.getElementById('emailOutput').classList.add('visible');
+    document.getElementById('emailCopyBtn').textContent = 'Copy to Clipboard';
+    document.getElementById('emailCopyBtn').classList.remove('copied');
+  }
+
+  function copyText(elementId, btnId) {
+    const text = document.getElementById(elementId).textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById(btnId);
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy to Clipboard';
+        btn.classList.remove('copied');
+      }, 2500);
+    });
+  }
+</script>
+</body>
+</html>
