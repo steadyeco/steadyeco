@@ -3,23 +3,118 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Steady Eco | Woodchipper Blade Sharpening Cairns</title>
-  <meta name="description" content="Woodchipper blade sharpening in Cairns & Far North Queensland. Factory-edge results, fast turnaround. Call 0456 190 202 today." />
+  <title>Chipper Knife Sharpening Cairns | Steady Eco — Same Day, No Wait</title>
+  <meta name="description" content="Chipper knife and woodchipper blade sharpening in Cairns & FNQ. Same-day turnaround, $120/set, sharpened to factory spec. The only local specialist — no freight to Brisbane. Call 0456 190 202." />
+
+  <!-- LocalBusiness Schema -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
+    "@id": "https://steadyeco.com",
     "name": "Steady Eco",
     "telephone": "+61456190202",
     "url": "https://steadyeco.com",
+    "priceRange": "$$",
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "Cairns",
       "addressRegion": "QLD",
+      "postalCode": "4870",
       "addressCountry": "AU"
     },
-    "areaServed": ["Cairns", "Atherton Tablelands", "Mareeba", "Mossman", "Port Douglas", "Innisfail", "Far North Queensland"],
-    "description": "Woodchipper blade sharpening service in Cairns and Far North Queensland."
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+        "opens": "05:00",
+        "closes": "18:30"
+      }
+    ],
+    "areaServed": ["Cairns","Atherton Tablelands","Mareeba","Mossman","Port Douglas","Innisfail","Far North Queensland"],
+    "description": "Chipper knife and woodchipper blade sharpening service in Cairns and Far North Queensland. Same-day turnaround. FNQ's only local specialist."
+  }
+  </script>
+
+  <!-- Service Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "Chipper Knife Sharpening",
+    "serviceType": "Blade Sharpening",
+    "description": "Professional chipper knife and woodchipper blade sharpening to original manufacturer specification. Serving arborists, tree services and landscapers across Cairns and Far North Queensland. Same-day turnaround.",
+    "provider": {
+      "@type": "LocalBusiness",
+      "name": "Steady Eco",
+      "telephone": "+61456190202",
+      "url": "https://steadyeco.com"
+    },
+    "areaServed": "Far North Queensland, Australia",
+    "offers": {
+      "@type": "Offer",
+      "price": "120.00",
+      "priceCurrency": "AUD",
+      "description": "$120 per set (2 blades). Collection and return available for $20."
+    }
+  }
+  </script>
+
+  <!-- FAQPage Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How often should I sharpen my chipper knives?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Every 20–30 hours of chipping, or sooner if you notice increased fuel consumption, rougher chip quality, or your machine starting to labour. Dull blades cost more in fuel than a sharpening set."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I know if my blades are too damaged to sharpen?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Check for chips larger than 3mm, cracks, or warping. We inspect every blade on receipt — if it's beyond sharpening, we'll tell you upfront at no charge before doing any work."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do you sharpen all brands and sizes of chipper knives?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. We sharpen blades for Bandit, Vermeer, Morbark, Rayco, Greenmech, Timberwolf, Jensen and most other major brands. Call ahead with your machine make and model if you're unsure."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the turnaround time for chipper knife sharpening?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Same-day for drop-offs before noon. All jobs completed within 1 business day — no weeks-long wait for a Brisbane return."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I get my blades to you?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Drop them off in Cairns at no extra charge, or we'll collect and return your blades for a flat $20. Call 0456 190 202 to arrange a time."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does factory specification sharpening mean?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "It means we sharpen to the manufacturer's original angle and geometry — not just sharp, but sharp the right way. This preserves machine performance and extends blade life."
+        }
+      }
+    ]
   }
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -855,6 +950,159 @@
       .hero-scroll { display: none; }
     }
 
+    /* ── SERVICE PRICE TAG ── */
+    .service-price {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--green-accent);
+      letter-spacing: -1px;
+      margin-bottom: 12px;
+      line-height: 1;
+    }
+    .service-price span {
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: var(--muted-light);
+      letter-spacing: 1px;
+    }
+    .blade-type-label {
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--muted);
+      font-weight: 400;
+      margin-bottom: 10px;
+    }
+    .blade-type-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+    .blade-type-grid span {
+      font-size: 0.72rem;
+      color: var(--muted-light);
+      border: 1px solid var(--border-light);
+      padding: 4px 10px;
+      letter-spacing: 0.5px;
+    }
+    .service-features {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 32px;
+    }
+    .service-features div {
+      font-size: 0.8rem;
+      color: var(--muted-light);
+      font-weight: 300;
+    }
+    .service-features div::first-letter { color: var(--green-accent); }
+
+    /* ── HERO TRUST STRIP ── */
+    .hero-trust {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .hero-trust span {
+      font-size: 0.72rem;
+      color: var(--muted-light);
+      letter-spacing: 1px;
+      font-weight: 300;
+    }
+    .hero-trust span::before {
+      content: '✓ ';
+      color: var(--green-accent);
+    }
+
+    /* ── TESTIMONIALS ── */
+    #testimonials { background: var(--bg-alt); }
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      background: var(--border);
+    }
+    .testimonial-card {
+      background: var(--bg);
+      padding: 36px 32px;
+    }
+    .testimonial-stars {
+      color: var(--green-accent);
+      font-size: 0.9rem;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+    .testimonial-text {
+      font-size: 0.88rem;
+      color: var(--muted-light);
+      line-height: 1.85;
+      font-style: italic;
+      margin-bottom: 20px;
+      font-weight: 300;
+    }
+    .testimonial-author {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--green-accent);
+      font-weight: 400;
+    }
+
+    /* ── FAQ ── */
+    #faq { background: var(--bg); }
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      background: var(--border);
+    }
+    .faq-item { background: var(--bg-alt); }
+    .faq-q {
+      width: 100%;
+      padding: 22px 28px;
+      text-align: left;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 400;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      transition: color 0.2s;
+    }
+    .faq-q:hover { color: var(--green-accent); }
+    .faq-q::after {
+      content: '+';
+      font-size: 1.3rem;
+      color: var(--green-accent);
+      flex-shrink: 0;
+      font-weight: 300;
+    }
+    .faq-q.open::after { content: '−'; }
+    .faq-a {
+      display: none;
+      padding: 0 28px 24px;
+      font-size: 0.87rem;
+      color: var(--muted-light);
+      line-height: 1.85;
+      font-weight: 300;
+      border-top: 1px solid var(--border);
+    }
+    .faq-a.visible { display: block; }
+
+    @media (max-width: 768px) {
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .hero-trust { gap: 12px; }
+    }
+
     @media (max-width: 768px) {
       .nav-links { display: none; }
       .hamburger { display: flex; }
@@ -901,6 +1149,7 @@
         <li><a href="#services">Services</a></li>
         <li><a href="#process">Process</a></li>
         <li><a href="#about">About</a></li>
+        <li><a href="#faq">FAQ</a></li>
         <li><a href="#contact">Contact</a></li>
         <li><a href="tel:+61456190202" class="nav-cta">0456 190 202</a></li>
       </ul>
@@ -912,6 +1161,7 @@
       <a href="#services" onclick="toggleMenu()">Services</a>
       <a href="#process" onclick="toggleMenu()">Process</a>
       <a href="#about" onclick="toggleMenu()">About</a>
+      <a href="#faq" onclick="toggleMenu()">FAQ</a>
       <a href="#contact" onclick="toggleMenu()">Contact</a>
     </div>
   </nav>
@@ -923,16 +1173,21 @@
       <div class="hero-content">
         <div class="hero-tag fade-in">Cairns & Far North Queensland</div>
         <h1 class="fade-in fade-in-delay-1">
-          <span class="line-dim">Woodchipper</span><br />
-          <span>Blade</span><br />
-          <span class="line-green">Sharpening.</span>
+          <span class="line-dim">Chipper Knife</span><br />
+          <span>Sharpening</span><br />
+          <span class="line-green">Same Day.</span>
         </h1>
         <p class="hero-sub fade-in fade-in-delay-2">
-          Factory-edge results for arborists, tree loppers and landscapers across FNQ. Fast turnaround. No fuss.
+          $120 per set, back to factory spec. FNQ's only local specialist — no freight to Brisbane, no weeks of downtime. Drop off in Cairns or we collect for $20.
         </p>
         <div class="hero-ctas fade-in fade-in-delay-3">
           <a href="#contact" class="btn btn-primary">Get a Quote</a>
           <a href="tel:+61456190202" class="btn btn-outline">0456 190 202</a>
+        </div>
+        <div class="hero-trust fade-in fade-in-delay-4">
+          <span>Same-day turnaround</span>
+          <span>$120 per set</span>
+          <span>Factory spec results</span>
         </div>
       </div>
       <div class="hero-scroll">Scroll</div>
@@ -949,16 +1204,16 @@
     <div class="container">
       <div class="stats-grid">
         <div class="stat-item fade-in">
-          <div class="stat-number">15+</div>
-          <div class="stat-label">Years hands-on experience</div>
+          <div class="stat-number">$120</div>
+          <div class="stat-label">Per set — transparent, no surprises</div>
         </div>
         <div class="stat-item fade-in fade-in-delay-1">
-          <div class="stat-number">FNQ</div>
-          <div class="stat-label">Locally based, widely serviced</div>
+          <div class="stat-number">Same Day</div>
+          <div class="stat-label">Turnaround for drop-offs before noon</div>
         </div>
         <div class="stat-item fade-in fade-in-delay-2">
-          <div class="stat-number">Fast</div>
-          <div class="stat-label">Turnaround, back on the job</div>
+          <div class="stat-number">15+</div>
+          <div class="stat-label">Years hands-on arborist experience</div>
         </div>
       </div>
     </div>
@@ -968,7 +1223,7 @@
   <section id="services" class="section">
     <div class="container">
       <div class="section-tag fade-in">What We Do</div>
-      <h2 class="section-title fade-in">Our <span class="dim">Services</span></h2>
+      <h2 class="section-title fade-in">Chipper Knife <span class="dim">Sharpening</span></h2>
     </div>
 
     <div class="container" style="margin-bottom:32px;">
@@ -979,12 +1234,30 @@
       <div class="services-grid">
         <div class="service-card fade-in">
           <div class="service-num">01</div>
-          <h3>Blade <span>Sharpening</span></h3>
-          <p>Dull blades slow your machine and cost you money. We sharpen woodchipper blades back to factory edge — so your equipment runs the way it should. No lengthy wait, no fuss.</p>
+          <div class="service-price">$120 <span>per set (2 blades)</span></div>
+          <h3>Chipper Knife &amp; Blade <span>Sharpening</span></h3>
+          <p>Dull chipper knives slow your machine, burn extra fuel and produce rough chips. We sharpen woodchipper blades back to original manufacturer specification — the right angle, the right geometry, every time. Same-day turnaround means you're back on the job, not waiting weeks for a Brisbane return.</p>
+          <div class="blade-type-label">Blade Types</div>
+          <div class="blade-type-grid">
+            <span>Double Hollow</span>
+            <span>Single Hollow</span>
+            <span>Straight Edge</span>
+            <span>Circular / Disc</span>
+          </div>
           <div class="service-tags">
-            <span class="stag">Cairns Drop-Off</span>
-            <span class="stag">Fast Turnaround</span>
-            <span class="stag">Factory Edge</span>
+            <span class="stag">Bandit</span>
+            <span class="stag">Vermeer</span>
+            <span class="stag">Morbark</span>
+            <span class="stag">Rayco</span>
+            <span class="stag">Greenmech</span>
+            <span class="stag">Timberwolf</span>
+            <span class="stag">Jensen</span>
+            <span class="stag">+ More</span>
+          </div>
+          <div class="service-features">
+            <div>✓ Same-day turnaround — drop off before noon</div>
+            <div>✓ Sharpened to factory spec, every blade matched</div>
+            <div>✓ Drop off in Cairns free — or we collect &amp; return for $20</div>
           </div>
           <a href="#contact" class="btn btn-primary">Get a Quote</a>
         </div>
@@ -1006,26 +1279,26 @@
   <section id="process" class="section">
     <div class="container">
       <div class="section-tag fade-in">How It Works</div>
-      <h2 class="section-title fade-in">Simple <span class="dim">as That</span></h2>
+      <h2 class="section-title fade-in">Back On The Job <span class="dim">Same Day</span></h2>
       <div class="process-grid">
         <div class="process-step fade-in">
           <div class="process-num">01</div>
-          <h3>Drop Off</h3>
-          <p>Bring your blades to us in Cairns. Give us a call first and we'll be ready for you.</p>
+          <h3>Call or Contact</h3>
+          <p>Call 0456 190 202 or send a message below. Tell us your machine make and how many sets — we'll confirm a time and have everything ready when you arrive.</p>
         </div>
         <div class="process-step fade-in fade-in-delay-1">
           <div class="process-num">02</div>
-          <h3>We Sharpen</h3>
-          <p>Sharpened back to factory spec using professional equipment. Precision work, every time.</p>
+          <h3>Drop Off or We Collect</h3>
+          <p>Drop your blades in Cairns at no charge. Or we collect from your yard or job site for a flat $20 — same trip we'll return the sharpened set.</p>
         </div>
         <div class="process-step fade-in fade-in-delay-2">
           <div class="process-num">03</div>
-          <h3>Pick Up</h3>
-          <p>Your blades are ready to go. Back on the machine, back on the job.</p>
+          <h3>Sharpened to Spec</h3>
+          <p>Every blade sharpened to the manufacturer's original angle using professional grinding equipment. Each set matched in weight and geometry before it leaves the shop.</p>
         </div>
       </div>
       <div class="process-cta fade-in">
-        <p>Ready? It starts with a call.</p>
+        <p>Drop-offs before noon are ready same day.</p>
         <a href="tel:+61456190202" class="btn btn-primary">Call 0456 190 202</a>
       </div>
     </div>
@@ -1046,7 +1319,7 @@
           <p class="fade-in">Land regeneration services are on the way. Watch this space.</p>
         </div>
         <div class="about-right fade-in">
-          <img src="images/about-image.jpg" alt="Kyle at work in the workshop" style="width:100%; display:block; object-fit:cover; object-position:center 12%; max-height:360px; margin-bottom:2px;" />
+          <img src="images/about-image.jpg" alt="Sam sharpening chipper knives in the Steady Eco workshop, Cairns" style="width:100%; display:block; object-fit:cover; object-position:center 12%; max-height:360px; margin-bottom:2px;" />
           <div class="about-stat-list">
             <div class="about-stat">
               <div class="about-stat-num">15+</div>
@@ -1061,6 +1334,32 @@
               <div class="about-stat-label">Turnaround times that keep your jobs on schedule</div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <!-- ⚠️ FLAG FOR SAM: Replace the 3 placeholder quotes below with real customer testimonials before going live. Ask 2-3 arborist customers for a one-sentence review. -->
+  <section id="testimonials" class="section">
+    <div class="container">
+      <div class="section-tag fade-in">What Customers Say</div>
+      <h2 class="section-title fade-in">Trusted By <span class="dim">FNQ Operators</span></h2>
+      <div class="testimonials-grid">
+        <div class="testimonial-card fade-in">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-text"><!-- ⚠️ REPLACE: "Add a real customer quote here — e.g. 'Same day turnaround, blades came back razor sharp. Back on the job before lunch.'" -->"[CUSTOMER QUOTE — SOURCE NEEDED]"</p>
+          <div class="testimonial-author">Name — Company, Location</div>
+        </div>
+        <div class="testimonial-card fade-in fade-in-delay-1">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-text"><!-- ⚠️ REPLACE -->"[CUSTOMER QUOTE — SOURCE NEEDED]"</p>
+          <div class="testimonial-author">Name — Company, Location</div>
+        </div>
+        <div class="testimonial-card fade-in fade-in-delay-2">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-text"><!-- ⚠️ REPLACE -->"[CUSTOMER QUOTE — SOURCE NEEDED]"</p>
+          <div class="testimonial-author">Name — Company, Location</div>
         </div>
       </div>
     </div>
@@ -1088,6 +1387,40 @@
             <li><span class="area-dot"></span>Far North Queensland</li>
           </ul>
           <p style="margin-top:20px; font-size:0.82rem; color:var(--muted-light); line-height:1.6;">Drop off in Cairns at no extra charge — or we can collect and return your blades for $20. Call to discuss your options.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="section">
+    <div class="container">
+      <div class="section-tag fade-in">Common Questions</div>
+      <h2 class="section-title fade-in">FAQ <span class="dim">— Quick Answers</span></h2>
+      <div class="faq-list">
+        <div class="faq-item fade-in">
+          <button class="faq-q" onclick="toggleFaq(this)">How often should I sharpen my chipper knives?</button>
+          <div class="faq-a">Every 20–30 hours of chipping, or sooner if you notice increased fuel consumption, rougher chip quality, or your machine starting to labour. Dull blades cost more in fuel than a sharpening set — most operators wait too long.</div>
+        </div>
+        <div class="faq-item fade-in">
+          <button class="faq-q" onclick="toggleFaq(this)">How do I know if my blades are too damaged to sharpen?</button>
+          <div class="faq-a">Check for chips larger than 3mm, cracks running through the blade body, or visible warping. We inspect every blade on receipt — if it's beyond sharpening, we'll tell you upfront at no charge before any work is done.</div>
+        </div>
+        <div class="faq-item fade-in">
+          <button class="faq-q" onclick="toggleFaq(this)">Do you sharpen all brands and sizes of chipper knives?</button>
+          <div class="faq-a">Yes. We sharpen blades for Bandit, Vermeer, Morbark, Rayco, Greenmech, Timberwolf, Jensen and most other major brands — including double hollow, single hollow, straight edge and circular disc blades. Call ahead with your machine make and model if you're unsure.</div>
+        </div>
+        <div class="faq-item fade-in">
+          <button class="faq-q" onclick="toggleFaq(this)">What is the turnaround time?</button>
+          <div class="faq-a">Same-day for drop-offs before noon. All jobs completed within 1 business day guaranteed. That's the whole point of being local — no waiting two weeks for a Brisbane return while your machine sits idle.</div>
+        </div>
+        <div class="faq-item fade-in">
+          <button class="faq-q" onclick="toggleFaq(this)">How do I get my blades to you?</button>
+          <div class="faq-a">Two options: drop them off in Cairns at no extra charge (call ahead on 0456 190 202 and we'll be ready), or we collect from your yard or job site and return the sharpened set for a flat $20. Blades are sharp — wrap them in cardboard or cloth for transport.</div>
+        </div>
+        <div class="faq-item fade-in">
+          <button class="faq-q" onclick="toggleFaq(this)">What does "factory specification" sharpening mean?</button>
+          <div class="faq-a">It means we sharpen to the original manufacturer's angle and geometry — not just sharp, but sharp the right way. Each blade in a set is matched for weight and edge profile before it leaves the shop. This preserves machine balance, reduces vibration, and extends blade life significantly longer than a rough grind.</div>
         </div>
       </div>
     </div>
@@ -1146,6 +1479,7 @@
         </div>
         <div class="footer-links">
           <a href="#services">Services</a>
+          <a href="#faq">FAQ</a>
           <a href="#contact">Contact</a>
         </div>
       </div>
@@ -1186,6 +1520,22 @@
     }, { threshold: 0.1 });
 
     document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    function toggleFaq(btn) {
+      const item = btn.closest('.faq-item');
+      const answer = btn.nextElementSibling;
+      const isOpen = btn.classList.contains('open');
+      // Close all
+      document.querySelectorAll('.faq-q.open').forEach(q => {
+        q.classList.remove('open');
+        q.nextElementSibling.classList.remove('visible');
+      });
+      // Open this one if it was closed
+      if (!isOpen) {
+        btn.classList.add('open');
+        answer.classList.add('visible');
+      }
+    }
 
     const contactForm = document.querySelector('form[action*="formspree"]');
     if (contactForm) {
