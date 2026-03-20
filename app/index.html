@@ -377,6 +377,7 @@
     .btn-ghost  { background: var(--card); color: var(--text-secondary); border: 1px solid var(--border-light); }
     .btn-ghost:active { border-color: var(--green-accent); color: var(--green-accent); }
     .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+    .btn-confirming { background: var(--danger) !important; color: #fff !important; border-color: var(--danger) !important; }
 
     /* ══════════════════════════════ CUSTOMER DETAIL ════════════════════════ */
     .detail-header { display: flex; align-items: center; gap: 18px; margin-bottom: 24px; }
@@ -1088,13 +1089,10 @@
     <div id="jdTimeline"></div>
 
     <div class="section-label" style="margin-top:28px; margin-bottom:10px;">Photos</div>
-    <div class="job-photo-grid" id="jdPhotoGrid">
-      <button class="photo-add-btn" onclick="document.getElementById('jdPhotoInput').click()" title="Add photo">＋</button>
-      <input type="file" id="jdPhotoInput" accept="image/*" capture="environment" style="display:none;" onchange="handleJobPhoto(event)">
-    </div>
+    <div class="job-photo-grid" id="jdPhotoGrid"></div>
 
     <div style="margin-top:24px;">
-      <button class="btn-full btn-danger" onclick="deleteCurrentJob()">Delete Job</button>
+      <button class="btn-full btn-danger" onclick="confirmDelete(this, deleteCurrentJob)">Delete Job</button>
     </div>
   </div>
 
@@ -1139,7 +1137,7 @@
     <div style="margin-top:20px; display:flex; flex-direction:column; gap:2px;">
       <button class="btn-full btn-green"  onclick="openNewQuoteForCustomer(currentCustomerId)">📋 New Quote</button>
       <button class="btn-full btn-ghost"  onclick="editCurrentCustomer()">Edit Customer</button>
-      <button class="btn-full btn-danger" onclick="deleteCurrentCustomer()">Delete Customer</button>
+      <button class="btn-full btn-danger" onclick="confirmDelete(this, deleteCurrentCustomer)">Delete Customer</button>
     </div>
 
     <div class="dash-section-header" style="margin-top:32px;">
@@ -1169,6 +1167,7 @@
       <div class="field"><label>Full Name *</label><input type="text"   id="custFormName"  placeholder="John Smith" /></div>
       <div class="field"><label>Phone Number *</label><input type="tel"   id="custFormPhone" placeholder="04xx xxx xxx" /></div>
       <div class="field"><label>Email (optional)</label><input type="email" id="custFormEmail" placeholder="john@email.com" /></div>
+      <div class="field"><label>ABN (optional — required on invoices over $1,000)</label><input type="text" id="custFormABN" placeholder="XX XXX XXX XXX" /></div>
       <div class="field"><label>Notes (optional)</label><textarea id="custFormNotes" placeholder="e.g. Arborist, Atherton Tablelands, prefers SMS..."></textarea></div>
     </div>
     <button class="btn-full btn-green" id="saveCustomerBtn" onclick="saveCustomer()">Save Customer</button>
@@ -1285,7 +1284,7 @@
     </div>
 
     <div style="margin-top:8px;">
-      <button class="btn-full btn-danger" onclick="deleteCurrentQuote()">Delete Quote</button>
+      <button class="btn-full btn-danger" onclick="confirmDelete(this, deleteCurrentQuote)">Delete Quote</button>
     </div>
   </div>
 
@@ -1319,8 +1318,10 @@
 
     <div class="section-label" style="margin-bottom:8px; margin-top:16px;">Bill To</div>
     <div class="info-row"><span class="info-row-label">Customer</span>  <span class="info-row-value" id="invCustomer"></span></div>
+    <div class="info-row" id="invCustABNRow" style="display:none;"><span class="info-row-label">Customer ABN</span><span class="info-row-value" id="invCustABN"></span></div>
     <div class="info-row"><span class="info-row-label">Due Date</span>  <span class="info-row-value" id="invDueDate"></span></div>
     <div class="info-row"><span class="info-row-label">Payment</span>   <span class="info-row-value" id="invPayment"></span></div>
+    <div class="info-row" id="invBankRow" style="display:none;"><span class="info-row-label">Bank Transfer</span><span class="info-row-value" id="invBankDetails" style="font-size:0.78rem;"></span></div>
     <div class="info-row" id="invJobRow" style="display:none;"><span class="info-row-label">Job Ref</span><span class="info-row-value" id="invJobRef" style="color:var(--teal);cursor:pointer;"></span></div>
 
     <div class="section-label" style="margin-bottom:8px; margin-top:16px;">Line Items</div>
@@ -1346,7 +1347,7 @@
 
     <div style="margin-top:8px;">
       <button class="btn-full btn-ghost" onclick="window.print()" style="margin-bottom:8px;">🖨️  Save as PDF</button>
-      <button class="btn-full btn-danger" onclick="deleteCurrentInvoice()">Delete Invoice</button>
+      <button class="btn-full btn-danger" onclick="confirmDelete(this, deleteCurrentInvoice)">Delete Invoice</button>
     </div>
   </div>
 
@@ -1355,7 +1356,9 @@
     <button class="back-btn" onclick="goHome()">← Home</button>
     <div class="section-label" style="margin-bottom:16px;">App Settings</div>
     <div class="field" style="margin-bottom:2px;"><label>Your Name</label><input type="text" id="settingName" placeholder="Sam" /></div>
-    <div class="field" style="margin-bottom:20px;"><label>Business Name</label><input type="text" id="settingBusiness" value="Steady Eco" /></div>
+    <div class="field" style="margin-bottom:2px;"><label>Business Name</label><input type="text" id="settingBusiness" value="Steady Eco" /></div>
+    <div class="field" style="margin-bottom:2px;"><label>Bank BSB (for invoices)</label><input type="text" id="settingBSB" placeholder="064-XXX" /></div>
+    <div class="field" style="margin-bottom:20px;"><label>Bank Account Number (for invoices)</label><input type="text" id="settingAccount" placeholder="XXXXXXXX" /></div>
     <button class="btn-full btn-green" onclick="saveSettings()">Save Settings</button>
 
     <div class="section-label" style="margin-top:36px; margin-bottom:8px;">Credentials</div>
@@ -1477,6 +1480,27 @@
   // ══════════════════════════════════════════════════════════════
   //  NAVIGATION
   // ══════════════════════════════════════════════════════════════
+  // ── 2-tap delete confirmation (replaces confirm() which is blocked on iOS PWA) ──
+  function confirmDelete(btn, action) {
+    if (btn.dataset.confirming === '1') {
+      clearTimeout(btn._confirmTimer);
+      btn.dataset.confirming = '';
+      btn.textContent = btn.dataset.orig;
+      btn.classList.remove('btn-confirming');
+      action();
+    } else {
+      btn.dataset.orig = btn.textContent;
+      btn.dataset.confirming = '1';
+      btn.textContent = '⚠️ Tap again to confirm';
+      btn.classList.add('btn-confirming');
+      btn._confirmTimer = setTimeout(() => {
+        btn.dataset.confirming = '';
+        btn.textContent = btn.dataset.orig;
+        btn.classList.remove('btn-confirming');
+      }, 3000);
+    }
+  }
+
   function showScreen(id, from) {
     previousScreen = from || 'dashboard';
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -1787,7 +1811,6 @@
   }
 
   function deleteCurrentJob() {
-    if (!confirm('Delete this job? This cannot be undone.')) return;
     jobs=jobs.filter(x=>x.id!==currentJobId); save(); showToast('Job deleted');
     if (previousScreen==='customer-detail') showCustomerDetail(currentCustomerId,'customers');
     else showJobsScreen();
@@ -1980,7 +2003,7 @@
   function editCurrentCustomer()   { openAddCustomer(currentCustomerId); }
   function deleteCurrentCustomer() {
     const c=customers.find(x=>x.id===currentCustomerId);
-    if (!c||!confirm(`Delete ${c.name}? This cannot be undone.`)) return;
+    if (!c) return;
     customers=customers.filter(x=>x.id!==currentCustomerId);
     save(); showToast('Customer deleted'); showCustomersScreen();
   }
@@ -1988,15 +2011,15 @@
     editingCustomerId=id||null;
     document.getElementById('addCustomerTitle').textContent=id?'Edit Customer':'New Customer';
     document.getElementById('saveCustomerBtn').textContent=id?'Save Changes':'Save Customer';
-    if (id) { const c=customers.find(x=>x.id===id); document.getElementById('custFormName').value=c.name||''; document.getElementById('custFormPhone').value=c.phone||''; document.getElementById('custFormEmail').value=c.email||''; document.getElementById('custFormNotes').value=c.notes||''; showScreen('add-customer','customer-detail'); }
-    else { ['custFormName','custFormPhone','custFormEmail','custFormNotes'].forEach(x=>document.getElementById(x).value=''); showScreen('add-customer','customers'); }
+    if (id) { const c=customers.find(x=>x.id===id); document.getElementById('custFormName').value=c.name||''; document.getElementById('custFormPhone').value=c.phone||''; document.getElementById('custFormEmail').value=c.email||''; document.getElementById('custFormABN').value=c.abn||''; document.getElementById('custFormNotes').value=c.notes||''; showScreen('add-customer','customer-detail'); }
+    else { ['custFormName','custFormPhone','custFormEmail','custFormABN','custFormNotes'].forEach(x=>document.getElementById(x).value=''); showScreen('add-customer','customers'); }
   }
   function saveCustomer() {
     const name=document.getElementById('custFormName').value.trim();
     if (!name) { showToast('Name is required'); return; }
-    const phone=document.getElementById('custFormPhone').value.trim(), email=document.getElementById('custFormEmail').value.trim(), notes=document.getElementById('custFormNotes').value.trim();
-    if (editingCustomerId) { const c=customers.find(x=>x.id===editingCustomerId); Object.assign(c,{name,phone,email,notes}); save(); showToast('Customer updated'); showCustomerDetail(editingCustomerId,'customers'); }
-    else { customers.push({id:Date.now().toString(),name,phone,email,notes,createdAt:new Date().toISOString()}); save(); showToast('Customer added'); showCustomersScreen(); }
+    const phone=document.getElementById('custFormPhone').value.trim(), email=document.getElementById('custFormEmail').value.trim(), abn=document.getElementById('custFormABN').value.trim(), notes=document.getElementById('custFormNotes').value.trim();
+    if (editingCustomerId) { const c=customers.find(x=>x.id===editingCustomerId); Object.assign(c,{name,phone,email,abn,notes}); save(); showToast('Customer updated'); showCustomerDetail(editingCustomerId,'customers'); }
+    else { customers.push({id:Date.now().toString(),name,phone,email,abn,notes,createdAt:new Date().toISOString()}); save(); showToast('Customer added'); showCustomersScreen(); }
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -2130,7 +2153,6 @@
   }
 
   function deleteCurrentQuote() {
-    if (!confirm('Delete this quote?')) return;
     quotes=quotes.filter(x=>x.id!==currentQuoteId); save(); showToast('Quote deleted');
     if (previousScreen==='customer-detail') showCustomerDetail(currentCustomerId,'customers');
     else showQuotesScreen();
@@ -2213,7 +2235,27 @@
     document.getElementById('invRef').textContent          = inv.ref;
     document.getElementById('invTotal').textContent        = `$${inv.total}`;
     document.getElementById('invCustomer').textContent     = inv.customerName;
+    // Customer ABN — required by ATO on invoices >= $1,000
+    const custABNRow = document.getElementById('invCustABNRow');
+    const cust = customers.find(x=>x.id===inv.customerId);
+    if (inv.total >= 1000 && cust && cust.abn) {
+      document.getElementById('invCustABN').textContent = cust.abn;
+      custABNRow.style.display = 'flex';
+    } else if (inv.total >= 1000 && (!cust || !cust.abn)) {
+      document.getElementById('invCustABN').innerHTML = '<span style="color:var(--amber);">⚠️ Add customer ABN — required for invoices over $1,000</span>';
+      custABNRow.style.display = 'flex';
+    } else {
+      custABNRow.style.display = 'none';
+    }
     document.getElementById('invPayment').textContent      = PAY_LABELS[inv.paymentMethod] || 'Cash';
+    // Bank details — show BSB/Account if set in Settings
+    const bankRow = document.getElementById('invBankRow');
+    if (settings.bankBSB || settings.bankAccount) {
+      document.getElementById('invBankDetails').textContent = [settings.bankBSB && `BSB: ${settings.bankBSB}`, settings.bankAccount && `Acc: ${settings.bankAccount}`].filter(Boolean).join('  |  ');
+      bankRow.style.display = 'flex';
+    } else {
+      bankRow.style.display = 'none';
+    }
     document.getElementById('invIssueDateDisplay').textContent = 'Issued: ' + new Date(inv.issueDate+'T12:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'});
     document.getElementById('invDueDate').textContent      = new Date(inv.dueDate+'T12:00:00').toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
     document.getElementById('invStatusBadge').innerHTML    = `<span class="status-badge inv-status-${st}">${INV_STATUS_LABEL[st]}</span>`;
@@ -2284,7 +2326,6 @@
   }
 
   function deleteCurrentInvoice() {
-    if (!confirm('Delete this invoice? This cannot be undone.')) return;
     invoices = invoices.filter(x => x.id !== currentInvoiceId);
     save(); showToast('Invoice deleted');
     if (previousScreen==='customer-detail') showCustomerDetail(currentCustomerId,'customers');
@@ -2295,8 +2336,8 @@
   // ══════════════════════════════════════════════════════════════
   //  SETTINGS & EXPORT
   // ══════════════════════════════════════════════════════════════
-  function loadSettings() { document.getElementById('settingName').value=settings.name||''; document.getElementById('settingBusiness').value=settings.business||'Steady Eco'; }
-  function saveSettings() { settings.name=document.getElementById('settingName').value.trim(); settings.business=document.getElementById('settingBusiness').value.trim(); save(); showToast('Settings saved'); refreshDashboard(); }
+  function loadSettings() { document.getElementById('settingName').value=settings.name||''; document.getElementById('settingBusiness').value=settings.business||'Steady Eco'; document.getElementById('settingBSB').value=settings.bankBSB||''; document.getElementById('settingAccount').value=settings.bankAccount||''; }
+  function saveSettings() { settings.name=document.getElementById('settingName').value.trim(); settings.business=document.getElementById('settingBusiness').value.trim(); settings.bankBSB=document.getElementById('settingBSB').value.trim(); settings.bankAccount=document.getElementById('settingAccount').value.trim(); save(); showToast('Settings saved'); refreshDashboard(); }
   function exportData() {
     const blob=new Blob([JSON.stringify({customers,quotes,jobs,invoices,settings,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob), a=document.createElement('a');
@@ -2495,13 +2536,14 @@
   const PIN_KEY       = 'se_pin_hash';
   const PIN_ATTEMPTS  = 'se_pin_attempts';
   const PIN_LOCKOUT   = 'se_pin_lockout';
-  const DEFAULT_PIN   = '1962';
   const MAX_ATTEMPTS  = 5;
   const COOLDOWN_MS   = 10 * 60 * 1000;  // 10 minutes
   const INACTIVITY_MS = 15 * 60 * 1000;  // 15 minutes
 
   let pinBuffer       = '';
   let inactivityTimer = null;
+  let pinSetupMode    = false;
+  let pinSetupFirst   = '';
 
   async function sha256(str) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
@@ -2509,9 +2551,12 @@
   }
 
   async function initPin() {
-    // Seed default hash if first run
+    // First run — no PIN set yet, prompt user to create one
     if (!localStorage.getItem(PIN_KEY)) {
-      localStorage.setItem(PIN_KEY, await sha256(DEFAULT_PIN));
+      pinSetupMode  = true;
+      pinSetupFirst = '';
+      document.getElementById('pinSubtitle').textContent = 'Create your 4-digit Access PIN';
+      return;
     }
     // Check active session
     const unlocked = sessionStorage.getItem('se_unlocked');
@@ -2545,6 +2590,7 @@
   function resetInactivityTimer() {
     clearTimeout(inactivityTimer);
     inactivityTimer = setTimeout(lockApp, INACTIVITY_MS);
+    sessionStorage.setItem('se_unlock_time', Date.now().toString());
   }
 
   function lockApp() {
@@ -2563,6 +2609,11 @@
   // Reset inactivity on any interaction
   document.addEventListener('touchstart', () => { if (!document.getElementById('pin-screen').classList.contains('hidden')) return; resetInactivityTimer(); }, { passive: true });
   document.addEventListener('click',      () => { if (!document.getElementById('pin-screen').classList.contains('hidden')) return; resetInactivityTimer(); }, { passive: true });
+
+  // Lock immediately when app is backgrounded (switched away on iPhone)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') { lockApp(); }
+  });
 
   function updatePinDots(containerId) {
     const buf = containerId === 'pinDots' ? pinBuffer : cpBuffer;
@@ -2587,12 +2638,45 @@
   }
 
   async function verifyPin() {
+    if (pinSetupMode) { await handlePinSetup(); return; }
     const entered = await sha256(pinBuffer);
     const stored  = localStorage.getItem(PIN_KEY);
     if (entered === stored) {
       unlockApp();
     } else {
       pinWrongAttempt();
+    }
+  }
+
+  async function handlePinSetup() {
+    const dots   = document.getElementById('pinDots');
+    const keypad = document.getElementById('pinKeypad');
+    if (!pinSetupFirst) {
+      // Step 1 — store first entry, ask to confirm
+      pinSetupFirst = pinBuffer;
+      pinBuffer = '';
+      updatePinDots('pinDots');
+      document.getElementById('pinSubtitle').textContent = 'Confirm your PIN';
+    } else if (pinBuffer === pinSetupFirst) {
+      // Step 2 match — save and unlock
+      localStorage.setItem(PIN_KEY, await sha256(pinBuffer));
+      pinSetupMode  = false;
+      pinSetupFirst = '';
+      unlockApp();
+    } else {
+      // Step 2 mismatch — shake and restart
+      pinSetupFirst = '';
+      dots.querySelectorAll('.pin-dot').forEach(d => d.classList.add('error'));
+      dots.classList.add('shake');
+      keypad.classList.add('disabled');
+      setTimeout(() => {
+        dots.classList.remove('shake');
+        dots.querySelectorAll('.pin-dot').forEach(d => { d.classList.remove('error'); d.classList.remove('filled'); });
+        pinBuffer = '';
+        keypad.classList.remove('disabled');
+        document.getElementById('pinSubtitle').textContent = 'PINs didn\'t match — try again';
+        setTimeout(() => { document.getElementById('pinSubtitle').textContent = 'Create your 4-digit Access PIN'; }, 2000);
+      }, 600);
     }
   }
 
