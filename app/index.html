@@ -1812,7 +1812,7 @@
         <div class="dash-alert-title" style="color:#52C483;">🌐 New Website Enquiry</div>
         <div class="dash-alert-body">${esc(name)} · ${esc(machine)} · ${sets} set${sets!==1?'s':''} · ${total} · ${esc(ref)}</div>
         <div class="dash-alert-actions">
-          <button class="dash-alert-btn" style="background:#52C483;" onclick="showPendingQuoteModal(${JSON.stringify(ref)})">Review &amp; Import</button>
+          <button class="dash-alert-btn" style="background:#52C483;" onclick="showPendingQuoteModal('${ref}')">Review &amp; Import</button>
         </div></div>`;
     });
     jobs.filter(j => j.scheduledDate === tomorrowStr && (j.status === 'booked' || j.status === 'in_progress')).forEach(j => {
@@ -3265,7 +3265,7 @@
             <div style="font-size:1rem;color:#52C483;font-weight:700;">${total}</div>
           </div>
         </div>
-        <button onclick="importPendingQuote(${JSON.stringify(p.ref)})" style="width:100%;background:#52C483;color:#0A110D;border:none;border-radius:12px;padding:16px;font-size:0.95rem;font-weight:700;cursor:pointer;margin-bottom:10px;">Import as Customer &amp; Quote</button>
+        <button onclick="importPendingQuote('${p.ref}')" style="width:100%;background:#52C483;color:#0A110D;border:none;border-radius:12px;padding:16px;font-size:0.95rem;font-weight:700;cursor:pointer;margin-bottom:10px;">Import as Customer &amp; Quote</button>
         <button onclick="dismissPendingQuote('${esc(p.ref || '')}');document.getElementById('_pendingModal').remove();" style="width:100%;background:transparent;border:1px solid var(--border-light);color:var(--muted);border-radius:12px;padding:14px;font-size:0.9rem;cursor:pointer;">Dismiss</button>
       </div>`;
     document.body.appendChild(overlay);
