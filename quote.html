@@ -144,9 +144,9 @@
     /* ── MACHINE CARDS ── */
     .machine-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 8px;
-      margin-bottom: 32px;
+      margin-bottom: 16px;
     }
     .machine-card {
       background: var(--card);
@@ -168,6 +168,76 @@
       box-shadow: inset 0 0 0 1px var(--green), 0 0 20px rgba(74,158,63,0.15);
     }
     .machine-card .mc-icon { font-size: 1.4rem; display: block; margin-bottom: 6px; }
+
+    .other-machine-wrap {
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transition: max-height 300ms ease, opacity 300ms ease, margin 300ms ease;
+      margin-bottom: 0;
+    }
+    .other-machine-wrap.open {
+      max-height: 80px;
+      opacity: 1;
+      margin-bottom: 24px;
+    }
+    .other-machine-wrap input {
+      width: 100%;
+      background: var(--bg-alt);
+      border: 1px solid var(--border-l);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      padding: 14px;
+      outline: none;
+      transition: border-color 200ms ease;
+    }
+    .other-machine-wrap input:focus { border-color: var(--green); }
+    .other-machine-wrap input::placeholder { color: var(--muted); }
+
+    /* ── SUBURB LOOKUP ── */
+    .suburb-wrap { margin-bottom: 8px; }
+    .suburb-input {
+      width: 100%;
+      background: var(--bg-alt);
+      border: 1px solid var(--border-l);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      padding: 14px;
+      outline: none;
+      transition: border-color 200ms ease;
+    }
+    .suburb-input:focus { border-color: var(--green); }
+    .suburb-input::placeholder { color: var(--muted); }
+    .suburb-suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+      min-height: 0;
+    }
+    .suburb-pill {
+      padding: 7px 14px;
+      background: var(--card);
+      border: 1px solid var(--border-l);
+      color: var(--muted-l);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: border-color 200ms ease, color 200ms ease, background 200ms ease;
+    }
+    .suburb-pill:hover { border-color: var(--green); color: var(--text); }
+    .suburb-result {
+      margin-top: 10px;
+      font-size: 0.82rem;
+      padding: 10px 14px;
+      border-left: 2px solid var(--green);
+      background: rgba(74,158,63,0.06);
+      color: var(--text);
+    }
+    .suburb-result.confirm { border-left-color: var(--gold); background: rgba(200,168,75,0.05); color: var(--muted-l); }
+    .suburb-result.none { border-left-color: var(--muted); background: transparent; color: var(--muted); }
 
     /* ── STEPPER ── */
     .sets-section { margin-bottom: 32px; }
@@ -657,15 +727,71 @@
 
     <div class="step-label">Your Machine</div>
     <div class="machine-grid">
+
       <button class="machine-card" data-machine="Vermeer" onclick="selectMachine(this)">
-        <span class="mc-icon">🟢</span>Vermeer
+        <svg viewBox="0 0 64 46" width="52" height="37" style="display:block;margin:0 auto 8px;overflow:visible">
+          <rect x="1" y="25" width="12" height="3" rx="1.5" fill="#d4a800"/>
+          <rect x="10" y="15" width="32" height="20" rx="3" fill="#d4a800"/>
+          <polygon points="10,15 17,4 31,4 31,15" fill="#d4a800" fill-opacity="0.8"/>
+          <rect x="11" y="16" width="11" height="6" rx="1" fill="#d4a800" fill-opacity="0.35"/>
+          <path d="M42,14 L56,5 L60,8 L46,18 Z" fill="#d4a800" fill-opacity="0.9"/>
+          <circle cx="20" cy="35" r="6" fill="#0a1410" stroke="#d4a800" stroke-width="2.5"/>
+          <circle cx="20" cy="35" r="2" fill="#d4a800"/>
+          <circle cx="33" cy="35" r="6" fill="#0a1410" stroke="#d4a800" stroke-width="2.5"/>
+          <circle cx="33" cy="35" r="2" fill="#d4a800"/>
+        </svg>
+        Vermeer
       </button>
+
       <button class="machine-card" data-machine="Bandit" onclick="selectMachine(this)">
-        <span class="mc-icon">🔵</span>Bandit
+        <svg viewBox="0 0 64 46" width="52" height="37" style="display:block;margin:0 auto 8px;overflow:visible">
+          <rect x="1" y="25" width="12" height="3" rx="1.5" fill="#2d9e52"/>
+          <rect x="10" y="15" width="32" height="20" rx="3" fill="#2d9e52"/>
+          <polygon points="10,15 17,4 31,4 31,15" fill="#2d9e52" fill-opacity="0.8"/>
+          <rect x="11" y="16" width="11" height="6" rx="1" fill="#2d9e52" fill-opacity="0.35"/>
+          <path d="M42,14 L56,5 L60,8 L46,18 Z" fill="#2d9e52" fill-opacity="0.9"/>
+          <circle cx="20" cy="35" r="6" fill="#0a1410" stroke="#2d9e52" stroke-width="2.5"/>
+          <circle cx="20" cy="35" r="2" fill="#2d9e52"/>
+          <circle cx="33" cy="35" r="6" fill="#0a1410" stroke="#2d9e52" stroke-width="2.5"/>
+          <circle cx="33" cy="35" r="2" fill="#2d9e52"/>
+        </svg>
+        Bandit
       </button>
+
+      <button class="machine-card" data-machine="Morbark" onclick="selectMachine(this)">
+        <svg viewBox="0 0 64 46" width="52" height="37" style="display:block;margin:0 auto 8px;overflow:visible">
+          <rect x="1" y="25" width="12" height="3" rx="1.5" fill="#c93535"/>
+          <rect x="10" y="15" width="32" height="20" rx="3" fill="#c93535"/>
+          <polygon points="10,15 17,4 31,4 31,15" fill="#c93535" fill-opacity="0.8"/>
+          <rect x="11" y="16" width="11" height="6" rx="1" fill="#c93535" fill-opacity="0.35"/>
+          <path d="M42,14 L56,5 L60,8 L46,18 Z" fill="#c93535" fill-opacity="0.9"/>
+          <circle cx="20" cy="35" r="6" fill="#0a1410" stroke="#c93535" stroke-width="2.5"/>
+          <circle cx="20" cy="35" r="2" fill="#c93535"/>
+          <circle cx="33" cy="35" r="6" fill="#0a1410" stroke="#c93535" stroke-width="2.5"/>
+          <circle cx="33" cy="35" r="2" fill="#c93535"/>
+        </svg>
+        Morbark
+      </button>
+
       <button class="machine-card" data-machine="Other" onclick="selectMachine(this)">
-        <span class="mc-icon">⚙️</span>Other
+        <svg viewBox="0 0 64 46" width="52" height="37" style="display:block;margin:0 auto 8px;overflow:visible">
+          <rect x="1" y="25" width="12" height="3" rx="1.5" fill="#5a7a68"/>
+          <rect x="10" y="15" width="32" height="20" rx="3" fill="#5a7a68"/>
+          <polygon points="10,15 17,4 31,4 31,15" fill="#5a7a68" fill-opacity="0.8"/>
+          <rect x="11" y="16" width="11" height="6" rx="1" fill="#5a7a68" fill-opacity="0.35"/>
+          <path d="M42,14 L56,5 L60,8 L46,18 Z" fill="#5a7a68" fill-opacity="0.9"/>
+          <circle cx="20" cy="35" r="6" fill="#0a1410" stroke="#5a7a68" stroke-width="2.5"/>
+          <circle cx="20" cy="35" r="2" fill="#5a7a68"/>
+          <circle cx="33" cy="35" r="6" fill="#0a1410" stroke="#5a7a68" stroke-width="2.5"/>
+          <circle cx="33" cy="35" r="2" fill="#5a7a68"/>
+        </svg>
+        Other
       </button>
+
+    </div>
+
+    <div class="other-machine-wrap" id="otherMachineWrap">
+      <input type="text" id="otherMachineInput" placeholder="e.g. Altec, Rayco, John Deere…" oninput="onOtherMachine()" autocomplete="off" />
     </div>
 
     <div class="sets-section">
@@ -699,34 +825,24 @@
       <div class="collect-grid">
         <button class="collect-card selected" id="cardDropoff" onclick="setCollect('dropoff')">
           <span class="cc-icon">🏠</span>
-          I'll drop off
+          Drop Off &amp; Pick Up
+          <div style="font-size:0.68rem;color:var(--muted);margin-top:4px;">No charge</div>
         </button>
         <button class="collect-card" id="cardCollect" onclick="setCollect('collect')">
-          <span class="cc-icon">🚗</span>
-          You collect &amp; return
+          <span class="cc-icon">🚛</span>
+          Delivery
+          <div style="font-size:0.68rem;color:var(--muted);margin-top:4px;">From $10</div>
         </button>
       </div>
     </div>
 
     <div class="zone-panel" id="zonePanel">
       <div class="zone-panel-inner">
-        <svg class="zone-map" viewBox="0 0 200 180" aria-hidden="true">
-          <circle cx="100" cy="100" r="18" class="zone-ring" data-zone="zone1"/>
-          <circle cx="100" cy="100" r="36" class="zone-ring" data-zone="zone2"/>
-          <circle cx="100" cy="100" r="54" class="zone-ring" data-zone="zone3"/>
-          <circle cx="100" cy="100" r="72" class="zone-ring" data-zone="zone4"/>
-          <circle cx="100" cy="100" r="88" class="zone-ring" data-zone="zone5"/>
-          <circle cx="100" cy="100" r="4" fill="#4a9e3f"/>
-          <text x="100" y="90" text-anchor="middle" fill="#5a7a68" font-size="7" font-family="DM Sans,sans-serif">Sam's workshop</text>
-        </svg>
-        <select id="zoneSelect" onchange="onZoneChange()">
-          <option value="zone1">Freshwater / Edge Hill / Whitfield (+$10)</option>
-          <option value="zone2">Cairns CBD / Smithfield / Stratford / Manunda (+$20)</option>
-          <option value="zone3">Redlynch / Yorkeys Knob / Kewarra Beach (+$30)</option>
-          <option value="zone4">Trinity Beach / Clifton Beach / Palm Cove (+$40)</option>
-          <option value="zone5">Edmonton / Gordonvale / White Rock (+$50)</option>
-          <option value="portdouglas">Port Douglas — Sam will confirm price</option>
-        </select>
+        <div class="suburb-wrap">
+          <input class="suburb-input" id="suburbInput" type="text" placeholder="Type your suburb…" autocomplete="off" oninput="onSuburbInput()" />
+          <div class="suburb-suggestions" id="suburbSuggestions"></div>
+          <div class="suburb-result none" id="suburbResult" style="display:none;"></div>
+        </div>
       </div>
     </div>
 
@@ -742,22 +858,29 @@
     <div class="float-section">
       <div class="float-group" id="grpName">
         <input type="text" id="custName" placeholder=" " autocomplete="name" oninput="onInput('grpName','custName')" />
-        <label for="custName">Your name</label>
+        <label for="custName">Your name *</label>
+        <span class="input-check">✓</span>
+      </div>
+
+      <div class="float-group" id="grpCompany">
+        <input type="text" id="custCompany" placeholder=" " autocomplete="organization" oninput="onInput('grpCompany','custCompany')" />
+        <label for="custCompany">Company *</label>
         <span class="input-check">✓</span>
       </div>
 
       <div class="float-group" id="grpPhone">
         <input type="tel" id="custPhone" placeholder=" " autocomplete="tel" inputmode="tel" oninput="onInput('grpPhone','custPhone')" />
-        <label for="custPhone">Mobile number</label>
+        <label for="custPhone">Mobile number *</label>
         <span class="input-check">✓</span>
       </div>
+      <div class="field-note" id="phoneNote" style="display:none;color:var(--danger);">Please enter a valid Australian mobile number</div>
 
       <div class="float-group" id="grpEmail">
         <input type="email" id="custEmail" placeholder=" " autocomplete="email" oninput="onInput('grpEmail','custEmail')" />
         <label for="custEmail">Email (optional)</label>
         <span class="input-check">✓</span>
       </div>
-      <div class="field-note">Email is optional — for a PDF copy of your quote</div>
+      <div class="field-note">Email optional — for a PDF copy of your quote</div>
     </div>
 
     <div class="turnaround-strip" id="turnaroundStrip">
@@ -798,44 +921,54 @@
 
 <script>
   /* ── STATE ── */
-  let selectedMachine = null;
-  let sets            = 1;
-  let isEmergency     = false;
-  let collectMode     = 'dropoff';
-  let currentStep     = 1;
-  let prevPrice       = 0;
-  let smsCopyText     = '';
-  let emailCopyText   = '';
+  let selectedMachine  = null;
+  let otherMachineText = '';
+  let sets             = 1;
+  let isEmergency      = false;
+  let collectMode      = 'dropoff';
+  let selectedSuburb   = null;   // { name, fee } — fee can be null (call to confirm)
+  let currentStep      = 1;
+  let prevPrice        = 0;
+  let smsCopyText      = '';
+  let emailCopyText    = '';
 
-  const ZONES = {
-    zone1:       { fee: 10,   label: 'Freshwater / Edge Hill / Whitfield' },
-    zone2:       { fee: 20,   label: 'Cairns CBD / Smithfield / Stratford / Manunda' },
-    zone3:       { fee: 30,   label: 'Redlynch / Yorkeys Knob / Kewarra Beach' },
-    zone4:       { fee: 40,   label: 'Trinity Beach / Clifton Beach / Palm Cove' },
-    zone5:       { fee: 50,   label: 'Edmonton / Gordonvale / White Rock' },
-    portdouglas: { fee: null, label: 'Port Douglas' },
+  /* ── SUBURB LOOKUP ── */
+  const SUBURBS = {
+    // $10 — within ~10km of Freshwater
+    'freshwater':10,'edge hill':10,'whitfield':10,'barron':10,'stratford':10,
+    'smithfield':10,'caravonica':10,'cairns north':10,'parramatta park':10,
+    'westcourt':10,'cairns':10,'cairns city':10,'cairns cbd':10,
+    'manunda':10,'mooroobool':10,'kanimbla':10,'manoora':10,'bungalow':10,
+    'aeroglen':10,'portsmith':10,
+    // $20 — within ~20km
+    'woree':20,'earlville':20,'redlynch':20,'yorkeys knob':20,
+    'holloways beach':20,'trinity beach':20,'trinity park':20,
+    'mt sheridan':20,'mount sheridan':20,'edmonton':20,'bentley park':20,
+    'white rock':20,'gordonvale':20,'machans beach':20,
+    // $30 — within ~30km
+    'kewarra beach':30,'clifton beach':30,'palm cove':30,
+    // $40 — within ~40km
+    'ellis beach':40,'buchan point':40,
+    // Call to confirm
+    'port douglas':null,'mossman':null,'daintree':null,'cape tribulation':null,
+    'mareeba':null,'atherton':null,'innisfail':null,'kuranda':null,
+    'cardwell':null,'mission beach':null,'tully':null,'babinda':null,
+    'ravenshoe':null,'malanda':null,'yungaburra':null,
   };
 
   /* ── PRICE ── */
-  function basePrice()       { return sets * 120 * (isEmergency ? 2 : 1); }
-  function getZone()         { return collectMode === 'collect' ? document.getElementById('zoneSelect').value : 'dropoff'; }
-  function collectionFee()   {
+  function basePrice()     { return sets * 120 * (isEmergency ? 2 : 1); }
+  function collectionFee() {
     if (collectMode !== 'collect') return 0;
-    const z = getZone();
-    if (z === 'portdouglas') return null;
-    return ZONES[z] ? ZONES[z].fee : 0;
+    if (!selectedSuburb) return null;   // not yet selected
+    return selectedSuburb.fee;          // fee can be null = call to confirm
   }
   function totalPrice() {
     const cf = collectionFee();
     if (cf === null) return null;
     return basePrice() + cf;
   }
-  function zoneLabel() {
-    if (collectMode !== 'collect') return null;
-    const z = getZone();
-    return ZONES[z] ? ZONES[z].label : null;
-  }
-  function isPortDouglas() { return collectMode === 'collect' && getZone() === 'portdouglas'; }
+  function isCallToConfirm() { return collectMode === 'collect' && selectedSuburb && selectedSuburb.fee === null; }
 
   function animatePrice(target) {
     const el = document.getElementById('tickerAmount');
@@ -859,17 +992,16 @@
   }
 
   function updateTicker() {
-    const bp = basePrice();
+    const machineName = selectedMachine === 'Other' ? (otherMachineText || 'Other') : (selectedMachine || '—');
     const tp = totalPrice();
-    const zl = zoneLabel();
-    const zone = getZone();
-
     animatePrice(tp);
-
-    let breakdown = sets + ' set' + (sets > 1 ? 's' : '') + ' · ' + (selectedMachine || '—');
+    let breakdown = sets + ' set' + (sets > 1 ? 's' : '') + ' · ' + machineName;
     if (isEmergency) breakdown += ' · emergency';
-    if (collectMode === 'collect' && zone === 'portdouglas') breakdown += ' · Port Douglas';
-    else if (collectMode === 'collect' && zl) breakdown += ' · collect · ' + zl.split(' / ')[0];
+    if (collectMode === 'collect') {
+      if (!selectedSuburb) breakdown += ' · delivery (select suburb)';
+      else if (selectedSuburb.fee === null) breakdown += ' · delivery TBC';
+      else breakdown += ' · delivery $' + selectedSuburb.fee;
+    }
     document.getElementById('tickerBreakdown').textContent = breakdown;
   }
 
@@ -878,7 +1010,20 @@
     document.querySelectorAll('.machine-card').forEach(c => c.classList.remove('selected'));
     btn.classList.add('selected');
     selectedMachine = btn.dataset.machine;
+    const wrap = document.getElementById('otherMachineWrap');
+    if (selectedMachine === 'Other') {
+      wrap.classList.add('open');
+      document.getElementById('otherMachineInput').focus();
+    } else {
+      wrap.classList.remove('open');
+      otherMachineText = '';
+    }
     heroRecede();
+    updateTicker();
+  }
+
+  function onOtherMachine() {
+    otherMachineText = document.getElementById('otherMachineInput').value.trim();
     updateTicker();
   }
 
@@ -906,15 +1051,68 @@
     document.getElementById('cardCollect').classList.toggle('selected', mode === 'collect');
     const panel = document.getElementById('zonePanel');
     panel.classList.toggle('open', mode === 'collect');
+    if (mode === 'dropoff') { selectedSuburb = null; }
     updateTicker();
   }
 
-  /* ── ZONE CHANGE ── */
-  function onZoneChange() {
-    const zone = document.getElementById('zoneSelect').value;
-    document.querySelectorAll('.zone-ring').forEach(r => r.classList.remove('active'));
-    const ring = document.querySelector(`.zone-ring[data-zone="${zone}"]`);
-    if (ring) ring.classList.add('active');
+  /* ── SUBURB LOOKUP ── */
+  function onSuburbInput() {
+    const raw = document.getElementById('suburbInput').value.trim();
+    const key = raw.toLowerCase();
+    const sugEl = document.getElementById('suburbSuggestions');
+    const resEl = document.getElementById('suburbResult');
+    selectedSuburb = null;
+
+    if (key.length < 2) {
+      sugEl.innerHTML = '';
+      resEl.style.display = 'none';
+      updateTicker();
+      return;
+    }
+
+    // Exact match
+    if (SUBURBS.hasOwnProperty(key)) {
+      selectSuburbByKey(key, raw);
+      sugEl.innerHTML = '';
+      return;
+    }
+
+    // Partial matches
+    const matches = Object.keys(SUBURBS).filter(s => s.startsWith(key)).slice(0, 5);
+    if (matches.length) {
+      sugEl.innerHTML = matches.map(m =>
+        `<button class="suburb-pill" onclick="selectSuburbByKey('${m}','${m.replace(/'/g,"\\'")}')">
+           ${m.charAt(0).toUpperCase() + m.slice(1)}
+         </button>`
+      ).join('');
+      resEl.style.display = 'none';
+    } else if (key.length >= 3) {
+      sugEl.innerHTML = '';
+      resEl.className = 'suburb-result confirm';
+      resEl.textContent = 'Suburb not in our standard list — Sam will confirm delivery pricing';
+      resEl.style.display = 'block';
+      selectedSuburb = { name: raw, fee: null };
+    } else {
+      sugEl.innerHTML = '';
+      resEl.style.display = 'none';
+    }
+    updateTicker();
+  }
+
+  function selectSuburbByKey(key, displayName) {
+    const fee = SUBURBS[key];
+    selectedSuburb = { name: displayName || key, fee };
+    document.getElementById('suburbInput').value = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+    document.getElementById('suburbSuggestions').innerHTML = '';
+    const resEl = document.getElementById('suburbResult');
+    if (fee === null) {
+      resEl.className = 'suburb-result confirm';
+      resEl.textContent = selectedSuburb.name.charAt(0).toUpperCase() + selectedSuburb.name.slice(1) + ' — Sam will confirm delivery pricing';
+    } else {
+      resEl.className = 'suburb-result';
+      resEl.textContent = selectedSuburb.name.charAt(0).toUpperCase() + selectedSuburb.name.slice(1) + ' — Delivery fee: $' + fee;
+    }
+    resEl.style.display = 'block';
     updateTicker();
   }
 
@@ -975,17 +1173,37 @@
         });
         return false;
       }
+      if (selectedMachine === 'Other' && !otherMachineText) {
+        document.getElementById('otherMachineInput').focus();
+        document.getElementById('otherMachineInput').style.borderColor = 'var(--danger)';
+        setTimeout(() => document.getElementById('otherMachineInput').style.borderColor = '', 1200);
+        return false;
+      }
       return true;
     }
     return true;
   }
 
+  function isValidAusPhone(p) {
+    const digits = p.replace(/[\s\-().+]/g, '');
+    // Accept: 04XXXXXXXX, +614XXXXXXXX, 614XXXXXXXX
+    return /^(04\d{8}|(\+?61)4\d{8})$/.test(digits);
+  }
+
   function validateStep3() {
     let ok = true;
-    const name  = document.getElementById('custName').value.trim();
-    const phone = document.getElementById('custPhone').value.trim();
-    if (!name)  { shakeField('grpName');  ok = false; }
-    if (!phone) { shakeField('grpPhone'); ok = false; }
+    const name    = document.getElementById('custName').value.trim();
+    const company = document.getElementById('custCompany').value.trim();
+    const phone   = document.getElementById('custPhone').value.trim();
+    if (!name)    { shakeField('grpName');    ok = false; }
+    if (!company) { shakeField('grpCompany'); ok = false; }
+    if (!phone || !isValidAusPhone(phone)) {
+      shakeField('grpPhone');
+      document.getElementById('phoneNote').style.display = 'block';
+      ok = false;
+    } else {
+      document.getElementById('phoneNote').style.display = 'none';
+    }
     return ok;
   }
 
@@ -1015,69 +1233,66 @@
   function submitQuote() {
     if (!validateStep3()) return;
 
-    const name  = document.getElementById('custName').value.trim();
-    const phone = document.getElementById('custPhone').value.trim();
-    const email = document.getElementById('custEmail').value.trim();
-    const ref   = generateRef();
-    const zone  = getZone();
-    const bp    = basePrice();
-    const cf    = collectionFee();
-    const tp    = totalPrice();
-    const zl    = zoneLabel();
-    const pd    = isPortDouglas();
-    const today = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+    const name    = document.getElementById('custName').value.trim();
+    const company = document.getElementById('custCompany').value.trim();
+    const phone   = document.getElementById('custPhone').value.trim();
+    const email   = document.getElementById('custEmail').value.trim();
+    const ref     = generateRef();
+    const bp      = basePrice();
+    const cf      = collectionFee();
+    const tp      = totalPrice();
+    const today   = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+    const machineName = selectedMachine === 'Other' ? otherMachineText : selectedMachine;
+    const suburbName  = selectedSuburb ? selectedSuburb.name : null;
+    const callConfirm = isCallToConfirm();
 
     const payload = {
       ref,
       submittedAt: Date.now(),
       status: 'pending',
-      customer: { name, phone, email },
+      customer: { name, company, phone, email },
       quote: {
-        machineType: selectedMachine,
+        machineType: machineName,
         sets,
         isEmergency,
         basePrice: bp,
         collectionRequired: collectMode === 'collect',
-        zone,
-        zoneLabel: zl,
+        suburb: suburbName,
         collectionFee: cf || 0,
         totalPrice: tp
       }
     };
 
-    // Write to shared localStorage (same origin as app at steadyeco.com/app)
     try {
       const existing = JSON.parse(localStorage.getItem('se_pending_quotes') || '[]');
       existing.push(payload);
       localStorage.setItem('se_pending_quotes', JSON.stringify(existing));
     } catch(e) { console.warn('se: could not write pending quote', e); }
 
-    // Pre-generate copy text
-    smsCopyText  = buildSMS(name, ref, bp, cf, tp, zl, pd);
-    emailCopyText = buildEmail(name, ref, bp, cf, tp, zl, pd, today);
+    smsCopyText   = buildSMS(name, ref, bp, cf, tp, suburbName, callConfirm);
+    emailCopyText = buildEmail(name, ref, bp, cf, tp, suburbName, callConfirm, today);
 
-    showConfirmation(ref, tp, bp, sets, pd, zl, cf);
+    showConfirmation(ref, tp, bp, sets, callConfirm, suburbName, cf);
   }
 
   /* ── CONFIRMATION ── */
-  function showConfirmation(ref, tp, bp, s, pd, zl, cf) {
-    // Hide form, show ticker hidden state
+  function showConfirmation(ref, tp, bp, s, callConfirm, suburbName, cf) {
     document.getElementById('step3').classList.remove('active');
     document.getElementById('priceTicker').style.display = 'none';
 
-    // Populate confirm panel
+    const machineName = selectedMachine === 'Other' ? otherMachineText : selectedMachine;
     const priceEl = document.getElementById('confirmPrice');
     const breakEl = document.getElementById('confirmBreakdown');
 
-    if (pd) {
+    if (callConfirm) {
       priceEl.textContent = 'Call to confirm';
       priceEl.className = 'confirm-price call-price';
-      breakEl.textContent = s + ' set' + (s > 1 ? 's' : '') + ' · ' + selectedMachine + ' · Collection: Sam will confirm';
+      breakEl.textContent = s + ' set' + (s > 1 ? 's' : '') + ' · ' + machineName + ' · Delivery: Sam will confirm';
     } else {
       priceEl.textContent = '$' + tp;
       priceEl.className = 'confirm-price';
-      let bk = s + ' set' + (s > 1 ? 's' : '') + ' · ' + selectedMachine + ' · $' + bp;
-      if (cf > 0 && zl) bk += ' · Collect ' + zl.split(' / ')[0] + ' $' + cf;
+      let bk = s + ' set' + (s > 1 ? 's' : '') + ' · ' + machineName + ' · $' + bp;
+      if (cf > 0 && suburbName) bk += ' · Delivery ' + suburbName + ' $' + cf;
       breakEl.textContent = bk;
     }
 
@@ -1108,21 +1323,21 @@
   }
 
   /* ── SMS & EMAIL BUILDERS ── */
-  function buildSMS(name, ref, bp, cf, tp, zl, pd) {
+  function buildSMS(name, ref, bp, cf, tp, suburbName, callConfirm) {
     const fn = name.split(' ')[0];
     const blades = sets * 2;
+    const machineName = selectedMachine === 'Other' ? otherMachineText : selectedMachine;
     let msg = 'Hi ' + fn + ', thanks for reaching out to Steady Eco.\n\n';
     msg += "Here's your quote:\n";
-    msg += '• ' + sets + ' set' + (sets > 1 ? 's' : '') + ' (' + blades + ' blades) · ' + selectedMachine;
+    msg += '• ' + sets + ' set' + (sets > 1 ? 's' : '') + ' (' + blades + ' blades) · ' + machineName;
     if (isEmergency) msg += ' · emergency rate';
     msg += ' · $' + bp + '\n';
-    if (collectMode === 'collect' && !pd && cf > 0 && zl) {
-      msg += '• Collection & return (' + zl + ') · $' + cf + '\n';
+    if (collectMode === 'collect' && !callConfirm && cf > 0 && suburbName) {
+      msg += '• Delivery (' + suburbName + ') · $' + cf + '\n';
     }
     msg += '\n';
-    if (pd) {
-      msg += 'Total: Call to confirm (Port Douglas collection)\n';
-      msg += 'Collection fee TBC — Sam will confirm.\n';
+    if (callConfirm) {
+      msg += 'Total: Call to confirm (delivery pricing TBC)\n';
     } else {
       msg += 'Total: $' + tp + '\n';
       msg += 'Payment due on pickup.\n';
@@ -1132,8 +1347,9 @@
     return msg;
   }
 
-  function buildEmail(name, ref, bp, cf, tp, zl, pd, today) {
+  function buildEmail(name, ref, bp, cf, tp, suburbName, callConfirm, today) {
     const blades = sets * 2;
+    const machineName = selectedMachine === 'Other' ? otherMachineText : selectedMachine;
     const line = '──────────────────────────────';
     let msg = 'Subject: Quote ' + ref + ' — Woodchipper Blade Sharpening · Steady Eco\n\n';
     msg += 'Hi ' + name + ',\n\n';
@@ -1141,20 +1357,20 @@
     msg += line + '\n';
     msg += 'QUOTE ' + ref + ' · ' + today + '\n';
     msg += line + '\n\n';
-    msg += 'Machine:          ' + selectedMachine + '\n';
+    msg += 'Machine:          ' + machineName + '\n';
     msg += 'Sets (blades):    ' + sets + ' set' + (sets > 1 ? 's' : '') + ' (' + blades + ' blades)\n';
     if (isEmergency) msg += 'Rate:             Emergency (2×)\n';
     msg += '\n';
     msg += 'Blade sharpening: $' + bp + '\n';
     if (collectMode === 'collect') {
-      if (pd) {
-        msg += 'Collection (Port Douglas): TBC — Sam will confirm\n';
-      } else if (cf > 0 && zl) {
-        msg += 'Collection & return (' + zl + '): $' + cf + '\n';
+      if (callConfirm) {
+        msg += 'Delivery (' + (suburbName || 'your area') + '): TBC — Sam will confirm\n';
+      } else if (cf > 0 && suburbName) {
+        msg += 'Delivery (' + suburbName + '): $' + cf + '\n';
       }
     }
     msg += '\n';
-    if (pd) {
+    if (callConfirm) {
       msg += 'TOTAL: Call to confirm\n\n';
     } else {
       msg += 'TOTAL: $' + tp + '\n\n';
