@@ -1394,6 +1394,20 @@
   </div>
 
   <!-- ═══════════════════════════════ SETTINGS ═════════════════════════════════ -->
+  <!-- ═══════════════════════════════ WEBSITE ENQUIRIES ════════════════════════════════ -->
+  <div class="screen" id="screen-website-enquiries">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+      <button class="back-btn" style="margin-bottom:0;" onclick="goHome()">← Home</button>
+      <div class="section-label" style="margin-bottom:0;">Website Enquiries</div>
+      <button onclick="refreshWebsiteEnquiries()" style="margin-left:auto;background:none;border:none;color:var(--muted);font-size:0.82rem;cursor:pointer;padding:4px 0;">↻ Refresh</button>
+    </div>
+    <div style="font-size:0.76rem;color:var(--muted);margin-bottom:18px;line-height:1.5;">Quotes submitted via steadyeco.com. Tap Review to import into the app.</div>
+    <div id="websiteEnquiriesList">
+      <div class="empty-state"><div class="empty-icon">🌐</div><div class="empty-title">No pending enquiries</div><div class="empty-sub">Website quotes will appear here when submitted</div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ SETTINGS ═════════════════════════════════════════ -->
   <div class="screen" id="screen-settings">
     <button class="back-btn" onclick="goHome()">← Home</button>
     <div class="section-label" style="margin-bottom:16px;">App Settings</div>
@@ -1843,19 +1857,25 @@
     let alerts = '';
     // Pending website quotes — highest priority
     const pending = JSON.parse(localStorage.getItem('se_pending_quotes') || '[]');
-    pending.forEach(p => {
-      const name = p.customer?.name || 'Unknown';
-      const machine = p.quote?.machineType || '';
-      const sets = p.quote?.sets || 1;
-      const total = p.quote?.totalPrice != null ? `$${p.quote.totalPrice}` : 'Call';
-      const ref = p.ref || '';
-      alerts += `<div class="dash-alert" style="border-color:#52C483;background:rgba(82,196,131,0.08);">
-        <div class="dash-alert-title" style="color:#52C483;">🌐 New Website Enquiry</div>
-        <div class="dash-alert-body">${esc(name)} · ${esc(machine)} · ${sets} set${sets!==1?'s':''} · ${total} · ${esc(ref)}</div>
-        <div class="dash-alert-actions">
-          <button class="dash-alert-btn" style="background:#52C483;" onclick="showPendingQuoteModal('${ref}')">Review &amp; Import</button>
-        </div></div>`;
-    });
+    if (pending.length > 0) {
+      pending.slice(0, 2).forEach(p => {
+        const name = p.customer?.name || 'Unknown';
+        const machine = p.quote?.machineType || '';
+        const sets = p.quote?.sets || 1;
+        const total = p.quote?.totalPrice != null ? `$${p.quote.totalPrice}` : 'Call';
+        const ref = p.ref || '';
+        alerts += `<div class="dash-alert" style="border-color:#52C483;background:rgba(82,196,131,0.08);">
+          <div class="dash-alert-title" style="color:#52C483;cursor:pointer;" onclick="showWebsiteEnquiries()">🌐 Website Enquiry${pending.length > 1 ? ' (' + pending.length + ')' : ''}</div>
+          <div class="dash-alert-body">${esc(name)} · ${esc(machine)} · ${sets} set${sets!==1?'s':''} · ${total} · ${esc(ref)}</div>
+          <div class="dash-alert-actions">
+            <button class="dash-alert-btn" style="background:#52C483;" onclick="showPendingQuoteModal('${ref}')">Review &amp; Import</button>
+            <button class="dash-alert-btn ghost" onclick="showWebsiteEnquiries()">View All</button>
+          </div></div>`;
+      });
+      if (pending.length > 2) {
+        alerts += `<div style="text-align:center;padding:6px 0 2px;"><button onclick="showWebsiteEnquiries()" style="background:none;border:none;color:#52C483;font-size:0.82rem;cursor:pointer;">+ ${pending.length - 2} more — View All →</button></div>`;
+      }
+    }
     jobs.filter(j => j.scheduledDate === tomorrowStr && (j.status === 'booked' || j.status === 'in_progress')).forEach(j => {
       const sms = `Hi ${j.customerName.split(' ')[0]}, confirming your blade sharpening ${j.delivery === 'collection' ? 'collection' : 'drop-off'} tomorrow. Any questions give me a call. — ${settings.business || 'Steady Eco'}`;
       alerts += `<div class="dash-alert">
@@ -3023,6 +3043,23 @@
     if (document.visibilityState === 'hidden') { lockApp(); }
   });
 
+  // Detect new website enquiries in real time when app is open in the same browser as the quote form
+  window.addEventListener('storage', e => {
+    if (e.key === 'se_pending_quotes') {
+      refreshDashboard();
+      const weScreen = document.getElementById('screen-website-enquiries');
+      if (weScreen && weScreen.classList.contains('active')) refreshWebsiteEnquiries();
+    }
+  });
+
+  // 30-second poll — fallback for detecting new quotes (e.g. form opened in another tab)
+  setInterval(() => {
+    if (document.getElementById('pin-screen').classList.contains('hidden')) {
+      const dash = document.getElementById('screen-dashboard');
+      if (dash && dash.classList.contains('active')) refreshDashboard();
+    }
+  }, 30000);
+
   function updatePinDots(containerId) {
     const buf = containerId === 'pinDots' ? pinBuffer : cpBuffer;
     for (let i = 0; i < 4; i++) {
@@ -3409,7 +3446,9 @@
       delivery: q.collectionRequired ? 'collection' : 'dropoff',
       total: q.totalPrice || q.basePrice || 0,
       paymentMethod: 'cash',
-      preferredDate: null,
+      machineBrand: q.machineType || null,
+      bladeType: q.bladeType || null,
+      preferredDate: q.preferredDate || null,
       createdAt: new Date().toISOString(),
       websiteRef: p.ref
     };
@@ -3429,6 +3468,50 @@
     const updated = pending.filter(p => p.ref !== ref);
     localStorage.setItem('se_pending_quotes', JSON.stringify(updated));
     refreshDashboard();
+  }
+
+  function showWebsiteEnquiries() {
+    showScreen('website-enquiries', 'dashboard');
+    refreshWebsiteEnquiries();
+  }
+
+  function refreshWebsiteEnquiries() {
+    const el = document.getElementById('websiteEnquiriesList');
+    if (!el) return;
+    const pending = JSON.parse(localStorage.getItem('se_pending_quotes') || '[]');
+    if (pending.length === 0) {
+      el.innerHTML = `<div class="empty-state"><div class="empty-icon">🌐</div><div class="empty-title">No pending enquiries</div><div class="empty-sub">Website quotes will appear here when submitted</div></div>`;
+      return;
+    }
+    el.innerHTML = pending.map(p => {
+      const c = p.customer || {};
+      const q = p.quote || {};
+      const total = q.totalPrice != null ? `$${q.totalPrice}` : 'Call';
+      const submittedDate = p.submittedAt ? new Date(p.submittedAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+      const ref = p.ref || '';
+      return `<div class="card" style="margin-bottom:12px;border-left:3px solid #52C483;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div>
+            <div style="font-size:0.9rem;font-weight:700;color:var(--text);">${esc(c.name || 'Unknown')}</div>
+            <div style="font-size:0.72rem;color:var(--muted);margin-top:3px;">${esc(ref)}${submittedDate ? ' · ' + submittedDate : ''}</div>
+          </div>
+          <div style="font-size:1rem;font-weight:700;color:#52C483;">${total}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+          ${q.machineType ? `<span style="font-size:0.72rem;background:var(--card);border-radius:6px;padding:4px 8px;color:var(--text-secondary);">${esc(q.machineType)}</span>` : ''}
+          ${q.bladeType ? `<span style="font-size:0.72rem;background:var(--card);border-radius:6px;padding:4px 8px;color:var(--text-secondary);">${esc(q.bladeType)}</span>` : ''}
+          <span style="font-size:0.72rem;background:var(--card);border-radius:6px;padding:4px 8px;color:var(--text-secondary);">${(q.sets||1)} set${(q.sets||1)!==1?'s':''}</span>
+          ${q.isEmergency ? `<span style="font-size:0.72rem;background:rgba(217,79,79,0.15);border-radius:6px;padding:4px 8px;color:var(--danger);">Emergency</span>` : ''}
+          ${q.collectionRequired ? `<span style="font-size:0.72rem;background:var(--card);border-radius:6px;padding:4px 8px;color:var(--text-secondary);">Collect &amp; return</span>` : ''}
+          ${q.preferredDate ? `<span style="font-size:0.72rem;background:var(--card);border-radius:6px;padding:4px 8px;color:var(--amber);">📅 ${q.preferredDate}</span>` : ''}
+          ${c.phone ? `<span style="font-size:0.72rem;background:var(--card);border-radius:6px;padding:4px 8px;color:var(--text-secondary);">📞 ${esc(c.phone)}</span>` : ''}
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="showPendingQuoteModal('${esc(ref)}')" style="flex:1;background:#52C483;color:#0A110D;border:none;border-radius:10px;padding:12px;font-size:0.85rem;font-weight:700;cursor:pointer;">Review &amp; Import</button>
+          <button onclick="dismissPendingQuote('${esc(ref)}');refreshWebsiteEnquiries();" style="flex:0;background:transparent;border:1px solid var(--border-light);color:var(--muted);border-radius:10px;padding:12px 14px;font-size:0.85rem;cursor:pointer;">✕</button>
+        </div>
+      </div>`;
+    }).join('');
   }
 
 </script>
