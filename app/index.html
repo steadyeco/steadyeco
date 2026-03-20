@@ -1290,14 +1290,14 @@
     <div class="copy-block">
       <div class="copy-block-header">
         <span class="copy-block-title">💬 SMS</span>
-        <button class="copy-btn" onclick="copyText('qdSmsText', this)">Copy</button>
+        <button class="copy-btn" onclick="sendSMSFromEl('qdSmsText','quote')">Send SMS</button>
       </div>
       <div class="copy-block-text" id="qdSmsText"></div>
     </div>
     <div class="copy-block">
       <div class="copy-block-header">
         <span class="copy-block-title">📧 Email</span>
-        <button class="copy-btn" onclick="copyText('qdEmailText', this)">Copy</button>
+        <button class="copy-btn" onclick="sendEmailFromEl('qdEmailText','quote')">Send Email</button>
       </div>
       <div class="copy-block-text" id="qdEmailText"></div>
     </div>
@@ -1352,14 +1352,14 @@
     <div class="copy-block">
       <div class="copy-block-header">
         <span class="copy-block-title">💬 SMS</span>
-        <button class="copy-btn" onclick="copyText('invSmsText',this)">Copy</button>
+        <button class="copy-btn" onclick="sendSMSFromEl('invSmsText','invoice')">Send SMS</button>
       </div>
       <div class="copy-block-text" id="invSmsText"></div>
     </div>
     <div class="copy-block">
       <div class="copy-block-header">
         <span class="copy-block-title">📧 Email</span>
-        <button class="copy-btn" onclick="copyText('invEmailText',this)">Copy</button>
+        <button class="copy-btn" onclick="sendEmailFromEl('invEmailText','invoice')">Send Email</button>
       </div>
       <div class="copy-block-text" id="invEmailText"></div>
     </div>
@@ -1821,7 +1821,7 @@
         <div class="dash-alert-title">📅 Job Tomorrow</div>
         <div class="dash-alert-body">${esc(j.customerName)} · ${esc(j.ref || '')} · ${j.delivery === 'collection' ? 'Collection &amp; delivery' : 'Drop-off'}</div>
         <div class="dash-alert-actions">
-          <button class="dash-alert-btn" onclick="copyRaw(${JSON.stringify(sms)},this)">Copy Reminder SMS</button>
+          <button class="dash-alert-btn" onclick="sendJobReminderSMS('${j.id}')">Send Reminder SMS</button>
           <button class="dash-alert-btn ghost" onclick="showJobDetail('${j.id}','dashboard')">View Job</button>
         </div></div>`;
     });
@@ -1992,7 +1992,7 @@
       const dateDisp = new Date(j.scheduledDate+'T12:00:00').toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
       const sms = `Hi ${j.customerName.split(' ')[0]}, your blade sharpening is booked for ${dateDisp}. ${j.delivery==='collection'?'We\'ll collect and return your blades.':'Drop off your blades and we\'ll have them ready for pick-up.'} Any questions, give me a call. — ${settings.business||'Steady Eco'}`;
       confirmSec.innerHTML = `<div class="copy-block" style="margin-top:0;">
-        <div class="copy-block-header"><span class="copy-block-title">💬 Booking Confirmation SMS</span><button class="copy-btn" onclick="copyRaw(${JSON.stringify(sms)},this)">Copy</button></div>
+        <div class="copy-block-header"><span class="copy-block-title">💬 Booking Confirmation SMS</span><button class="copy-btn" onclick="sendJobReminderSMS('${j.id}')">Send SMS</button></div>
         <div class="copy-block-text" id="jdConfirmSmsText"></div></div>`;
       document.getElementById('jdConfirmSmsText').textContent = sms;
     } else {
@@ -2756,6 +2756,56 @@
   }
 
   // Step 10 — one-tap payment reminder (opens native SMS app)
+  function sendSMSFromEl(elId, type) {
+    const text = document.getElementById(elId).textContent;
+    let phone = '';
+    if (type === 'quote') {
+      const q = quotes.find(x => x.id === currentQuoteId);
+      const c = customers.find(x => x.id === q?.customerId);
+      phone = c?.phone?.replace(/\s/g,'') || '';
+    } else if (type === 'invoice') {
+      const inv = invoices.find(x => x.id === currentInvoiceId);
+      const c = customers.find(x => x.id === inv?.customerId);
+      phone = c?.phone?.replace(/\s/g,'') || '';
+    }
+    if (phone) window.location.href = `sms:${phone}?body=${encodeURIComponent(text)}`;
+    else showToast('No phone number on file');
+  }
+
+  function sendEmailFromEl(elId, type) {
+    const text = document.getElementById(elId).textContent;
+    let email = '', subject = 'Steady Eco';
+    if (type === 'quote') {
+      const q = quotes.find(x => x.id === currentQuoteId);
+      const c = customers.find(x => x.id === q?.customerId);
+      email = c?.email || '';
+      subject = `Quote ${q?.ref || ''} — Steady Eco`;
+    } else if (type === 'invoice') {
+      const inv = invoices.find(x => x.id === currentInvoiceId);
+      const c = customers.find(x => x.id === inv?.customerId);
+      email = c?.email || '';
+      subject = `Invoice ${inv?.ref || ''} — Steady Eco`;
+    }
+    if (email) window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+    else showToast('No email address on file');
+  }
+
+  function sendJobReminderSMS(jobId) {
+    const j = jobs.find(x => x.id === jobId); if (!j) return;
+    const c = customers.find(x => x.id === j.customerId);
+    const phone = c?.phone?.replace(/\s/g,'') || '';
+    const fn = j.customerName.split(' ')[0] || 'there';
+    let msg;
+    if (j.scheduledDate) {
+      const dateDisp = new Date(j.scheduledDate+'T12:00:00').toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
+      msg = `Hi ${fn}, your blade sharpening is booked for ${dateDisp}. ${j.delivery==='collection'?'We\'ll collect and return your blades.':'Drop off your blades and we\'ll have them ready for pick-up.'} Any questions, give me a call. — ${settings.business||'Steady Eco'}`;
+    } else {
+      msg = `Hi ${fn}, confirming your blade sharpening ${j.delivery==='collection'?'collection':'drop-off'} tomorrow. Any questions give me a call. — ${settings.business||'Steady Eco'}`;
+    }
+    if (phone) window.location.href = `sms:${phone}?body=${encodeURIComponent(msg)}`;
+    else showToast('No phone number on file');
+  }
+
   function sendPaymentReminderSMS(invoiceId) {
     const inv = invoices.find(i => i.id === invoiceId); if (!inv) return;
     const c = customers.find(x => x.id === inv.customerId);
