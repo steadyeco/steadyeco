@@ -1064,6 +1064,7 @@
       bottom: 0; left: 0; right: 0;
       z-index: 99;
       background: var(--green-accent);
+      padding-bottom: env(safe-area-inset-bottom);
     }
     .mobile-cta-bar a {
       display: block;
@@ -1432,8 +1433,8 @@
     }
   </style>
   <!-- GSAP + ScrollTrigger CDN (Pillar 3) -->
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" onerror="document.body.classList.add('js-ready','no-gsap')"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" onerror="document.body.classList.add('js-ready','no-gsap')"></script>
 </head>
 <body>
 
@@ -1874,6 +1875,7 @@
 
       // Fallback: if reduced motion or GSAP failed to load, show everything immediately
       if (reducedMotion || typeof gsap === 'undefined') {
+        document.body.classList.add('js-ready');
         document.querySelectorAll('.fade-in').forEach(el => el.classList.add('visible'));
         document.querySelectorAll('.section-title').forEach(el => el.classList.add('revealed'));
         return;

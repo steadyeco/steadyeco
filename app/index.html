@@ -105,7 +105,7 @@
       flex: 1;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      padding: 24px 20px calc(36px + var(--safe-bottom));
+      padding: 24px 20px calc(88px + var(--safe-bottom));
     }
     .screen.active { display: block; }
 
@@ -533,13 +533,15 @@
     /* ══════════════════════════════ TOAST ══════════════════════════════════ */
     .toast {
       position: fixed;
-      bottom: calc(24px + var(--safe-bottom));
-      left: 50%; transform: translateX(-50%) translateY(16px);
-      background: var(--bg-elevated); border: 1px solid var(--green-accent);
-      color: var(--green-bright); font-size: 0.75rem; font-weight: 600; letter-spacing: 1.5px;
-      padding: 11px 22px; opacity: 0; transition: all 0.3s;
-      pointer-events: none; white-space: nowrap; z-index: 300;
-      text-transform: uppercase;
+      bottom: calc(88px + var(--safe-bottom));
+      left: 50%; transform: translateX(-50%) translateY(10px);
+      background: rgba(82,196,131,0.12);
+      border: 0.5px solid rgba(82,196,131,0.35);
+      color: var(--green-accent);
+      font-size: 0.8rem; font-weight: 500;
+      padding: 10px 22px; border-radius: 20px;
+      opacity: 0; transition: opacity 0.2s, transform 0.2s;
+      pointer-events: none; white-space: nowrap; z-index: 9990;
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -684,6 +686,56 @@
     .inv-line-table > div { border-color:#ddd !important; color:#000 !important; }
     .status-badge { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
   }
+  /* ══════════════════════════════════════════════════════════════
+     FLOATING ACTION DOCK
+     ══════════════════════════════════════════════════════════════ */
+  #se-dock {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: calc(64px + var(--safe-bottom));
+    background: rgba(10,17,13,0.96);
+    border-top: 0.5px solid rgba(82,196,131,0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-around;
+    padding: 0 4px;
+    padding-bottom: var(--safe-bottom);
+    z-index: 1000;
+  }
+  .se-dock-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 10px 12px 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 12px;
+    min-width: 56px;
+    min-height: 52px;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.12s;
+  }
+  .se-dock-btn:active { background: rgba(82,196,131,0.12); transform: scale(0.94); }
+  .se-dock-btn svg {
+    width: 22px; height: 22px;
+    stroke: var(--muted);
+    fill: none; stroke-width: 1.6;
+    stroke-linecap: round; stroke-linejoin: round;
+    transition: stroke 0.15s;
+  }
+  .se-dock-btn span {
+    font-size: 9px; font-family: 'Inter', sans-serif;
+    letter-spacing: 0.03em; color: var(--muted);
+    transition: color 0.15s;
+  }
+  .se-dock-btn.active svg { stroke: var(--green-accent); }
+  .se-dock-btn.active span { color: var(--green-accent); }
+
   /* ══════════════════════════════════════════════════════════════
      PIN LOCK
      ══════════════════════════════════════════════════════════════ */
@@ -1078,6 +1130,8 @@
       <a class="action-btn" id="detailCallBtn" href="#">📞 Call</a>
       <a class="action-btn" id="detailSMSBtn"  href="#">💬 Message</a>
     </div>
+    <!-- Step 5 — quick action buttons -->
+    <div id="customerQuickActions"></div>
 
     <div class="section-label" style="margin-bottom:8px;">Notes</div>
     <div class="info-row"><span class="info-row-value" id="detailNotes" style="text-align:left;max-width:100%;color:var(--text-secondary);">—</span></div>
@@ -1316,6 +1370,32 @@
     <button class="btn-full btn-ghost" onclick="exportData()">Export Backup (JSON)</button>
   </div>
 
+  <!-- ════════════════════════════════════════════════════════════
+       FLOATING ACTION DOCK
+       ════════════════════════════════════════════════════════════ -->
+  <nav id="se-dock" aria-label="Main navigation">
+    <button class="se-dock-btn active" id="dock-home" onclick="dockNavigate('dashboard')" aria-label="Dashboard">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Today</span>
+    </button>
+    <button class="se-dock-btn" id="dock-customer" onclick="dockNavigate('new-customer')" aria-label="New Customer">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+      <span>Customer</span>
+    </button>
+    <button class="se-dock-btn" id="dock-job" onclick="dockNavigate('new-job')" aria-label="New Job">
+      <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+      <span>Job</span>
+    </button>
+    <button class="se-dock-btn" id="dock-quote" onclick="dockNavigate('new-quote')" aria-label="New Quote">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      <span>Quote</span>
+    </button>
+    <button class="se-dock-btn" id="dock-invoice" onclick="dockNavigate('invoices')" aria-label="Invoices">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      <span>Invoice</span>
+    </button>
+  </nav>
+
 </div>
 <div class="toast" id="toast"></div>
 
@@ -1323,13 +1403,22 @@
   // ══════════════════════════════════════════════════════════════
   //  DATA
   // ══════════════════════════════════════════════════════════════
-  let customers = JSON.parse(localStorage.getItem('se_customers') || '[]');
-  let quotes    = JSON.parse(localStorage.getItem('se_quotes')    || '[]');
-  let jobs      = JSON.parse(localStorage.getItem('se_jobs')      || '[]');
-  let invoices  = JSON.parse(localStorage.getItem('se_invoices')  || '[]');
-  let settings  = JSON.parse(localStorage.getItem('se_settings')  || '{"name":"Sam","business":"Steady Eco"}');
+  function safeLoad(key, fallback) {
+    try { return JSON.parse(localStorage.getItem(key) || fallback); }
+    catch(e) { console.warn('se: corrupt data for', key, '— reset to default'); return JSON.parse(fallback); }
+  }
+  let customers = safeLoad('se_customers', '[]');
+  let quotes    = safeLoad('se_quotes',    '[]');
+  let jobs      = safeLoad('se_jobs',      '[]');
+  let invoices  = safeLoad('se_invoices',  '[]');
+  let settings  = safeLoad('se_settings',  '{"name":"Sam","business":"Steady Eco"}');
   let nextRef    = parseInt(localStorage.getItem('se_next_ref')    || '1');
   let nextInvRef = parseInt(localStorage.getItem('se_next_inv')    || '1');
+
+  // Escape user-supplied text before injecting into innerHTML
+  function esc(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
 
   let currentCustomerId = null;
   let currentQuoteId    = null;
@@ -1463,10 +1552,18 @@
         <div class="dash-alert-title">⚠️ Invoice Overdue</div>
         <div class="dash-alert-body">${inv.customerName} · ${inv.ref} · $${inv.total} overdue</div>
         <div class="dash-alert-actions">
-          <button class="dash-alert-btn" onclick="copyRaw(${JSON.stringify(sms)},this)">Copy Nudge SMS</button>
+          <button class="dash-alert-btn" onclick="sendPaymentReminderSMS('${inv.id}')">Send Reminder SMS</button>
           <button class="dash-alert-btn ghost" onclick="showInvoiceDetail('${inv.id}','dashboard')">View Invoice</button>
         </div></div>`;
     });
+    // Step 13 — predictive prompts
+    generatePredictivePrompts().forEach(p => {
+      alerts += `<div class="dash-alert" style="border-color:rgba(232,168,56,0.3);">
+        <div class="dash-alert-body" style="color:var(--amber);">${p.icon} ${p.text}</div>
+        <div class="dash-alert-actions"><button class="dash-alert-btn" onclick="${p.action}">${p.btn}</button></div>
+      </div>`;
+    });
+
     document.getElementById('dashAlerts').innerHTML = alerts;
 
     const jobEl = document.getElementById('dashActiveJobs');
@@ -1524,10 +1621,13 @@
     const ref       = j.ref || '';
     return `<div class="job-card ${j.status}" onclick="showJobDetail('${j.id}', '${from}')">
       <div class="job-card-top">
-        <div><div class="job-card-name">${j.customerName}</div>${ref ? `<div class="job-card-ref">${ref}</div>` : ''}</div>
+        <div><div class="job-card-name">${esc(j.customerName)}</div>${ref ? `<div class="job-card-ref">${esc(ref)}</div>` : ''}</div>
         <div class="job-card-total${paidCls}">$${j.total}</div>
       </div>
-      <div><span class="status-badge status-${j.status}">${STATUS_LABEL[j.status]}</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span class="status-badge status-${j.status}" onclick="event.stopPropagation();quickAdvanceStatus('${j.id}')" title="Tap to advance status" style="cursor:pointer;">${STATUS_LABEL[j.status]}</span>
+        <button onclick="event.stopPropagation();quickAddPhoto('${j.id}')" style="background:none;border:none;padding:4px 8px;cursor:pointer;color:var(--muted);font-size:0.75rem;" title="Add photo">📷 ${j.photos&&j.photos.length?`<span style="color:var(--text-secondary)">${j.photos.length}</span>`:'+'}</button>
+      </div>
       <div class="job-card-meta">${dateStr} · ${j.sets} set${j.sets>1?'s':''} · ${j.delivery==='collection'?'Collection':'Drop-off'}</div>
     </div>`;
   }
@@ -1828,6 +1928,7 @@
     document.getElementById('detailCallBtn').href=c.phone?`tel:${c.phone}`:'#';
     document.getElementById('detailSMSBtn').href=c.phone?`sms:${c.phone}`:'#';
     renderCustomerJobHistory(id); renderCustomerInvoiceHistory(id); renderCustomerQuoteHistory(id);
+    renderCustomerQuickActions(id);
     showScreen('customer-detail', from);
   }
 
@@ -2233,8 +2334,13 @@
         const dataUrl = canvas.toDataURL('image/jpeg', 0.65);
         const j = jobs.find(x=>x.id===currentJobId); if (!j) return;
         if (!j.photos) j.photos=[];
+        // Check storage isn't near capacity (warn at 4MB of 5MB limit)
+        let storageUsed = 0;
+        try { for (let k in localStorage) { if (localStorage.hasOwnProperty(k)) storageUsed += (localStorage[k].length + k.length) * 2; } } catch(e) {}
+        if (storageUsed > 4 * 1024 * 1024) { showToast('Storage nearly full — delete old photos first'); return; }
         j.photos.push({ id:Date.now().toString(), dataUrl, takenAt:new Date().toISOString() });
-        save(); renderJobPhotos(j); showToast('Photo saved');
+        try { save(); renderJobPhotos(j); showToast('Photo saved'); }
+        catch(e) { j.photos.pop(); showToast('Storage full — delete old photos to free space'); }
       };
       img.src = ev.target.result;
     };
@@ -2274,6 +2380,114 @@
     setTimeout(()=>t.classList.remove('show'),2500);
   }
 
+
+  // ══════════════════════════════════════════════════════════════
+  //  QUICK ACTIONS (Steps 5, 6, 7, 10, 11)
+  // ══════════════════════════════════════════════════════════════
+
+  // Step 7 — tap status pill on job card to advance status
+  function quickAdvanceStatus(jobId) {
+    const j = jobs.find(x => x.id === jobId);
+    if (!j || !STATUS_NEXT[j.status]) { showToast('Already complete'); return; }
+    // Step 6 — auto-draft invoice when advancing to 'complete'
+    const now = new Date().toISOString();
+    if (j.status === 'in_progress') { j.status = 'complete'; j.completedAt = now; save(); showToast(STATUS_LABEL['complete']); refreshDashboard(); renderJobs(); autoCreateInvoiceDraft(j.id); return; }
+    if (j.status === 'booked')      { j.status = 'in_progress'; j.startedAt = now; }
+    else if (j.status === 'complete') { j.status = 'paid'; j.paidAt = now; }
+    save(); showToast(STATUS_LABEL[j.status]); refreshDashboard(); renderJobs();
+  }
+
+  // Step 6 — auto-draft invoice when job reaches 'complete'
+  function autoCreateInvoiceDraft(jobId) {
+    const j = jobs.find(x => x.id === jobId); if (!j) return;
+    if (invoices.find(i => i.jobId === jobId)) return; // already exists
+    const linkedQuote = j.quoteId ? quotes.find(q => q.id === j.quoteId) : null;
+    const paymentMethod = (linkedQuote && linkedQuote.paymentMethod) || 'cash';
+    const { subtotal, gst } = calcGST(j.total);
+    const dueDate = new Date(Date.now() + 14*24*60*60*1000).toISOString().slice(0,10);
+    const inv = { id: Date.now().toString(), ref: getNextInvRef(), customerId: j.customerId, customerName: j.customerName, jobId: j.id, quoteId: j.quoteId, sets: j.sets, jobType: j.jobType, delivery: j.delivery, subtotal, gst, total: j.total, paymentMethod, issueDate: new Date().toISOString().slice(0,10), dueDate, status: 'draft', sentAt: null, paidAt: null, createdAt: new Date().toISOString() };
+    invoices.push(inv); save();
+    showToast('Invoice draft created — tap Invoices to review');
+  }
+
+  // Step 11 — camera shortcut on job card (without navigating to job detail)
+  function quickAddPhoto(jobId) {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = 'image/*'; input.capture = 'environment';
+    input.onchange = function(e) {
+      const file = e.target.files[0]; if (!file) return;
+      const savedCurrent = currentJobId;
+      currentJobId = jobId;
+      handleJobPhoto(e);
+      currentJobId = savedCurrent;
+    };
+    input.click();
+  }
+
+  // Step 10 — one-tap payment reminder (opens native SMS app)
+  function sendPaymentReminderSMS(invoiceId) {
+    const inv = invoices.find(i => i.id === invoiceId); if (!inv) return;
+    const c = customers.find(x => x.id === inv.customerId);
+    const phone = c?.phone?.replace(/\s/g,'') || '';
+    const fn = (inv.customerName || '').split(' ')[0] || 'there';
+    const msg = `Hi ${fn}, just a reminder that invoice ${inv.ref} for $${inv.total} is overdue. Please arrange payment when you get a chance — ${settings.business || 'Steady Eco'}`;
+    if (phone) { window.location.href = `sms:${phone}?body=${encodeURIComponent(msg)}`; }
+    else { navigator.clipboard.writeText(msg).then(() => showToast('Message copied — no phone on file')).catch(() => showToast('No phone number on file')); }
+  }
+
+  // Step 5 — customer quick actions injected into showCustomerDetail
+  function renderCustomerQuickActions(customerId) {
+    const el = document.getElementById('customerQuickActions'); if (!el) return;
+    el.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:16px 0 8px;">
+        <button onclick="openNewJob(null,'customer-detail');document.getElementById('jobCustomerSelect').value='${customerId}';document.getElementById('jobOneoffField').style.display='none';" style="padding:12px 6px;background:rgba(82,196,131,0.08);border:0.5px solid rgba(82,196,131,0.25);border-radius:10px;color:var(--green-accent);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;">+ Job</button>
+        <button onclick="openNewQuote('${customerId}','customer-detail')" style="padding:12px 6px;background:rgba(82,196,131,0.08);border:0.5px solid rgba(82,196,131,0.25);border-radius:10px;color:var(--green-accent);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;">+ Quote</button>
+        <button onclick="showInvoicesScreen()" style="padding:12px 6px;background:rgba(82,196,131,0.08);border:0.5px solid rgba(82,196,131,0.25);border-radius:10px;color:var(--green-accent);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;">+ Invoice</button>
+      </div>`;
+  }
+
+  // Step 13 — predictive dashboard prompts
+  function generatePredictivePrompts() {
+    const now = new Date();
+    const prompts = [];
+    // Jobs in workshop > 3 days without status progression
+    jobs.filter(j => j.status === 'in_progress').forEach(j => {
+      const since = new Date(j.startedAt || j.createdAt);
+      const days = Math.floor((now - since) / 86400000);
+      if (days >= 3) prompts.push({ icon:'⚠️', text:`${j.customerName.split(' ')[0]} — on site ${days}d`, action:`showJobDetail('${j.id}','dashboard')`, btn:'View' });
+    });
+    // Invoices sent > 7 days unpaid
+    invoices.filter(i => i.status === 'sent').forEach(i => {
+      const days = Math.floor((now - new Date(i.sentAt || i.createdAt)) / 86400000);
+      if (days >= 7) prompts.push({ icon:'💰', text:`${i.ref} unpaid — ${days} days`, action:`sendPaymentReminderSMS('${i.id}')`, btn:'Remind' });
+    });
+    // Jobs complete > 2 days (not invoiced/paid)
+    jobs.filter(j => j.status === 'complete').forEach(j => {
+      const days = Math.floor((now - new Date(j.completedAt || j.createdAt)) / 86400000);
+      if (days >= 2) prompts.push({ icon:'📋', text:`${j.customerName.split(' ')[0]} — ready ${days}d`, action:`createInvoiceFromJob('${j.id}','dashboard')`, btn:'Invoice' });
+    });
+    return prompts.slice(0, 3);
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  DOCK NAVIGATION
+  // ══════════════════════════════════════════════════════════════
+  function setDockActive(section) {
+    const map = { dashboard:'dock-home', 'new-customer':'dock-customer', 'new-job':'dock-job', 'new-quote':'dock-quote', invoices:'dock-invoice' };
+    document.querySelectorAll('.se-dock-btn').forEach(b => b.classList.remove('active'));
+    const target = map[section];
+    if (target) document.getElementById(target)?.classList.add('active');
+  }
+
+  function dockNavigate(section) {
+    switch (section) {
+      case 'dashboard':    goHome(); setDockActive('dashboard'); break;
+      case 'new-customer': openAddCustomer(null); setDockActive('new-customer'); break;
+      case 'new-job':      openNewJob(null, 'dashboard'); setDockActive('new-job'); break;
+      case 'new-quote':    openNewQuote(null, 'dashboard'); setDockActive('new-quote'); break;
+      case 'invoices':     showInvoicesScreen(); setDockActive('invoices'); break;
+    }
+  }
 
   // ══════════════════════════════════════════════════════════════
   //  PIN LOCK SYSTEM
@@ -2503,7 +2717,97 @@
     }, 600);
   }
 
+  // ══════════════════════════════════════════════════════════════
+  //  STEP 3 — SWIPE GESTURES
+  // ══════════════════════════════════════════════════════════════
+  function addSwipeActions(element, actions) {
+    if (!element) return;
+    let startX = 0, currentX = 0, isDragging = false;
+    const THRESHOLD = 80;
+    element.addEventListener('touchstart', e => { startX = e.touches[0].clientX; isDragging = true; element.style.transition = 'none'; }, { passive: true });
+    element.addEventListener('touchmove', e => {
+      if (!isDragging) return;
+      currentX = e.touches[0].clientX - startX;
+      const bounded = Math.max(-120, Math.min(120, currentX));
+      element.style.transform = `translateX(${bounded}px)`;
+      if (bounded > 40 && actions.right)      element.style.background = actions.right.color;
+      else if (bounded < -40 && actions.left) element.style.background = actions.left.color;
+      else                                     element.style.background = '';
+    }, { passive: true });
+    element.addEventListener('touchend', () => {
+      isDragging = false;
+      element.style.transition = 'transform 0.22s cubic-bezier(0.23,1,0.32,1), background 0.2s';
+      element.style.transform = 'translateX(0)';
+      element.style.background = '';
+      if      (currentX >  THRESHOLD && actions.right) actions.right.action();
+      else if (currentX < -THRESHOLD && actions.left)  actions.left.action();
+      currentX = 0;
+    });
+  }
+
+  function attachJobSwipes() {
+    document.querySelectorAll('.job-card').forEach(card => {
+      const id = card.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+      if (!id) return;
+      const j = jobs.find(x => x.id === id); if (!j) return;
+      addSwipeActions(card, {
+        right: { color: 'rgba(82,196,131,0.12)', action: () => quickAdvanceStatus(id) },
+        left:  { color: 'rgba(232,168,56,0.12)', action: () => { currentJobId = id; const existInv = invoices.find(i=>i.jobId===id); existInv ? showInvoiceDetail(existInv.id,'jobs') : (j.status==='complete'||j.status==='paid') ? createInvoiceFromJob(id,'jobs') : showToast('Complete job first'); } }
+      });
+    });
+  }
+
+  function attachInvoiceSwipes() {
+    document.querySelectorAll('.invoice-card').forEach(card => {
+      const id = card.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+      if (!id) return;
+      const inv = invoices.find(x => x.id === id); if (!inv) return;
+      addSwipeActions(card, {
+        right: { color: 'rgba(82,196,131,0.12)', action: () => { if(invStatus(inv)==='draft'||invStatus(inv)==='sent'||invStatus(inv)==='overdue') advanceInvoiceStatus(id); else showToast('Already paid'); } },
+        left:  { color: 'rgba(232,168,56,0.12)', action: () => sendPaymentReminderSMS(id) }
+      });
+    });
+  }
+
+  // Patch renderJobs and renderInvoices to attach swipes after render
+  const _origRenderJobs = renderJobs;
+  renderJobs = function() { _origRenderJobs(); setTimeout(attachJobSwipes, 50); };
+  const _origRenderInvoices = renderInvoices;
+  renderInvoices = function() { _origRenderInvoices(); setTimeout(attachInvoiceSwipes, 50); };
+
+  // ══════════════════════════════════════════════════════════════
+  //  STEP 8 — PRICING CATALOGUE
+  // ══════════════════════════════════════════════════════════════
+  function initPriceCatalogue() {
+    if (localStorage.getItem('se_price_catalogue')) return;
+    localStorage.setItem('se_price_catalogue', JSON.stringify([
+      { id:'cat_1', name:'Standard blade sharpening', unit:'per set (2 blades)', price:120 },
+      { id:'cat_2', name:'Emergency blade sharpening (2× rate)', unit:'per set (2 blades)', price:240 },
+      { id:'cat_3', name:'Collection & delivery', unit:'flat', price:20 },
+      { id:'cat_4', name:'Single blade sharpening', unit:'per blade', price:60 },
+      { id:'cat_5', name:'Blade inspection & report', unit:'per set', price:25 }
+    ]));
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  STEP 9 — MACHINE TEMPLATES
+  // ══════════════════════════════════════════════════════════════
+  function initMachineTemplates() {
+    if (localStorage.getItem('se_machine_templates')) return;
+    localStorage.setItem('se_machine_templates', JSON.stringify([
+      { make:'Bandit',     blade_type:'double_edge', typical_count:2 },
+      { make:'Vermeer',    blade_type:'double_edge', typical_count:2 },
+      { make:'Morbark',    blade_type:'double_edge', typical_count:2 },
+      { make:'Timberwolf', blade_type:'double_hollow', typical_count:2 },
+      { make:'Rayco',      blade_type:'single_edge', typical_count:1 },
+      { make:'Greenmech',  blade_type:'double_hollow', typical_count:2 },
+      { make:'Husqvarna',  blade_type:'single_edge', typical_count:1 }
+    ]));
+  }
+
   // ── Boot ───────────────────────────────────────────────────────
+  initPriceCatalogue();
+  initMachineTemplates();
   initPin();
 </script>
 </body>
