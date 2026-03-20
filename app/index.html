@@ -13,14 +13,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    button, a, [role="button"] { -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
 
     :root {
-      /* ── Surfaces ── */
-      --bg:            #0A110D;
-      --bg-alt:        #111A14;
-      --bg-elevated:   #192A1E;
-      --card:          #152019;
-      --card-hover:    #192A1E;
+      /* ── Surfaces (five-level elevation stack) ── */
+      --bg:            #0A110D;   /* L0 — base canvas */
+      --bg-alt:        #111A14;   /* L1 — header, page backgrounds */
+      --card:          #152019;   /* L2 — list cards */
+      --card-hover:    #1C2A1F;   /* L2 active */
+      --bg-elevated:   #1F2B22;   /* L3 — sheets, modals */
+      --bg-component:  #263320;   /* L4 — inputs, chips */
+      --border-inner:  rgba(255,255,255,0.06); /* subtle elevation cue */
 
       /* ── Brand greens ── */
       --green-accent:  #52C483;
@@ -28,11 +31,11 @@
       --green-muted:   #2D6E4A;
       --green-bright:  #7DD9A0;
 
-      /* ── Text ── */
-      --text:          #EDF5F0;
-      --text-secondary:#9ABBA6;
-      --muted:         #5A7A66;
-      --muted-light:   #9ABBA6;
+      /* ── Text (opacity-based hierarchy on dark green canvas) ── */
+      --text:          rgba(237,245,240,0.92);  /* primary  — 92% */
+      --text-secondary:rgba(237,245,240,0.60);  /* secondary — 60% */
+      --muted:         rgba(237,245,240,0.38);  /* tertiary  — 38% */
+      --muted-light:   rgba(237,245,240,0.60);  /* alias = secondary */
 
       /* ── Borders ── */
       --border:        #1E3028;
@@ -46,6 +49,12 @@
       --teal:          #4A8FAA;
       --teal-bg:       #102030;
 
+      /* ── Animation tokens ── */
+      --anim-quick:    180ms;
+      --anim-standard: 280ms;
+      --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+      --ease-out:      cubic-bezier(0.16, 1.00, 0.30, 1);
+
       --safe-top:    env(safe-area-inset-top);
       --safe-bottom: env(safe-area-inset-bottom);
     }
@@ -55,9 +64,10 @@
       background: var(--bg);
       color: var(--text);
       font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif;
-      font-size: 16px;
-      line-height: 1.5;
+      font-size: 17px;
+      line-height: 1.55;
       overflow: hidden;
+      overscroll-behavior: none;
       -webkit-font-smoothing: antialiased;
     }
 
@@ -154,10 +164,11 @@
     }
     .stat-box {
       background: var(--card);
+      border: 1px solid var(--border-inner);
       padding: 20px 18px 16px;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
-      transition: background 0.15s;
+      transition: background var(--anim-quick) var(--ease-out);
     }
     .stat-box:active { background: var(--card-hover); }
     .stat-box-num {
@@ -216,7 +227,8 @@
       background: var(--card);
       padding: 16px 18px;
       cursor: pointer;
-      transition: background 0.15s;
+      contain: content;
+      transition: background var(--anim-quick) var(--ease-out);
       -webkit-tap-highlight-color: transparent;
       border-left: 3px solid transparent;
     }
@@ -280,7 +292,7 @@
       cursor: pointer;
       border: none;
       margin-bottom: 2px;
-      transition: all 0.2s;
+      transition: background var(--anim-quick) var(--ease-out), transform var(--anim-quick) var(--ease-spring);
       -webkit-tap-highlight-color: transparent;
     }
     .job-advance-btn.booked      { background: var(--teal);  color: #0A110D; }
@@ -320,7 +332,8 @@
       align-items: center;
       gap: 14px;
       cursor: pointer;
-      transition: background 0.15s;
+      contain: content;
+      transition: background var(--anim-quick) var(--ease-out);
       -webkit-tap-highlight-color: transparent;
     }
     .customer-card:active { background: var(--card-hover); }
@@ -352,7 +365,7 @@
       display: flex; flex-direction: column; gap: 4px;
       padding: 14px 16px;
       margin-bottom: 2px;
-      transition: border-color 0.2s;
+      transition: border-color var(--anim-quick) var(--ease-out);
     }
     .field:focus-within { border-color: var(--green-accent); }
     .field label { font-size: 0.58rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text-secondary); font-weight: 500; }
@@ -370,7 +383,8 @@
       font-size: 0.75rem; font-weight: 700;
       letter-spacing: 2.5px; text-transform: uppercase;
       cursor: pointer; border: none; margin-bottom: 2px;
-      transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+      transition: background var(--anim-quick) var(--ease-out), color var(--anim-quick) var(--ease-out), border-color var(--anim-quick) var(--ease-out), transform var(--anim-quick) var(--ease-out);
+      -webkit-tap-highlight-color: transparent;
     }
     .btn-green  { background: var(--green-accent); color: #0A110D; }
     .btn-green:active { background: var(--green-bright); }
@@ -415,7 +429,8 @@
       letter-spacing: 1.5px; text-transform: uppercase;
       padding: 15px 10px; cursor: pointer; text-align: center;
       text-decoration: none; display: block;
-      transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+      transition: background var(--anim-quick) var(--ease-out), color var(--anim-quick) var(--ease-out), border-color var(--anim-quick) var(--ease-out);
+      -webkit-tap-highlight-color: transparent;
     }
     .action-btn:active { border-color: var(--green-accent); color: var(--green-accent); }
 
@@ -435,7 +450,8 @@
       background: var(--card); border: 1px solid var(--border);
       border-left: 3px solid var(--green-accent);
       padding: 14px 16px; margin-bottom: 2px;
-      cursor: pointer; transition: background 0.15s;
+      cursor: pointer; contain: content;
+      transition: background var(--anim-quick) var(--ease-out);
       -webkit-tap-highlight-color: transparent;
     }
     .history-quote-card.emergency { border-left-color: var(--amber); }
@@ -455,7 +471,8 @@
       color: var(--text-secondary); font-family: 'Inter', sans-serif;
       font-size: 0.72rem; font-weight: 600;
       letter-spacing: 1.5px; text-transform: uppercase;
-      padding: 16px 8px; cursor: pointer; transition: all 0.2s;
+      padding: 16px 8px; cursor: pointer;
+      transition: background var(--anim-quick) var(--ease-out), color var(--anim-quick) var(--ease-out);
       -webkit-tap-highlight-color: transparent;
     }
     .toggle-btn.active         { background: var(--green-deep); color: var(--green-accent); }
@@ -493,7 +510,7 @@
 
     /* ══════════════════════════════ QUOTE LIST ══════════════════════════════ */
     .quote-list { display: flex; flex-direction: column; gap: 2px; }
-    .quote-card { background: var(--card); padding: 16px 18px; cursor: pointer; transition: background 0.15s; -webkit-tap-highlight-color: transparent; }
+    .quote-card { background: var(--card); padding: 16px 18px; cursor: pointer; contain: content; transition: background var(--anim-quick) var(--ease-out); -webkit-tap-highlight-color: transparent; }
     .quote-card:active { background: var(--card-hover); }
     .quote-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
     .quote-card-customer { font-size: 0.95rem; font-weight: 600; }
@@ -526,7 +543,7 @@
       background: none; border: 1px solid var(--border-light); color: var(--green-accent);
       font-family: 'Inter', sans-serif; font-size: 0.62rem; font-weight: 700;
       letter-spacing: 1.5px; text-transform: uppercase;
-      padding: 6px 14px; cursor: pointer; transition: all 0.2s;
+      padding: 6px 14px; cursor: pointer; transition: background var(--anim-quick) var(--ease-out), border-color var(--anim-quick) var(--ease-out);
     }
     .copy-btn:active { background: var(--green-deep); border-color: var(--green-accent); }
     .copy-block-text { padding: 16px; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.8; white-space: pre-wrap; word-break: break-word; }
@@ -554,7 +571,8 @@
 
     .invoice-card {
       background: var(--card); padding: 16px 18px;
-      cursor: pointer; transition: background 0.15s;
+      cursor: pointer; contain: content;
+      transition: background var(--anim-quick) var(--ease-out);
       -webkit-tap-highlight-color: transparent;
       border-left: 3px solid transparent;
       margin-bottom: 2px;
@@ -605,7 +623,8 @@
       font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 700;
       letter-spacing: 2px; text-transform: uppercase;
       cursor: pointer; border: none; margin-bottom: 2px;
-      transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+      transition: background var(--anim-quick) var(--ease-out), transform var(--anim-quick) var(--ease-spring);
+      -webkit-tap-highlight-color: transparent;
     }
     .inv-advance-btn.draft   { background: var(--teal);         color: #0A110D; }
     .inv-advance-btn.sent    { background: var(--green-accent);  color: #0A110D; }
@@ -727,12 +746,12 @@
     stroke: var(--muted);
     fill: none; stroke-width: 1.6;
     stroke-linecap: round; stroke-linejoin: round;
-    transition: stroke 0.15s;
+    transition: stroke var(--anim-quick) var(--ease-out);
   }
   .se-dock-btn span {
     font-size: 9px; font-family: 'Inter', sans-serif;
     letter-spacing: 0.03em; color: var(--muted);
-    transition: color 0.15s;
+    transition: color var(--anim-quick) var(--ease-out);
   }
   .se-dock-btn.active svg { stroke: var(--green-accent); }
   .se-dock-btn.active span { color: var(--green-accent); }
@@ -1405,19 +1424,216 @@
 
 <script>
   // ══════════════════════════════════════════════════════════════
-  //  DATA
+  //  DATA — IndexedDB v2 with one-time localStorage migration
   // ══════════════════════════════════════════════════════════════
+
+  const DB_NAME    = 'steadyeco';
+  const DB_VERSION = 2;
+  const DB_STORES  = ['customers','quotes','jobs','invoices','settings','meta'];
+
+  let db = null;
+  let _dbReadyResolve;
+  const dbReady = new Promise(r => { _dbReadyResolve = r; });
+
+  // Used by migration and as localStorage fallback
   function safeLoad(key, fallback) {
     try { return JSON.parse(localStorage.getItem(key) || fallback); }
     catch(e) { console.warn('se: corrupt data for', key, '— reset to default'); return JSON.parse(fallback); }
   }
-  let customers = safeLoad('se_customers', '[]');
-  let quotes    = safeLoad('se_quotes',    '[]');
-  let jobs      = safeLoad('se_jobs',      '[]');
-  let invoices  = safeLoad('se_invoices',  '[]');
-  let settings  = safeLoad('se_settings',  '{"name":"Sam","business":"Steady Eco"}');
-  let nextRef    = parseInt(localStorage.getItem('se_next_ref')    || '1');
-  let nextInvRef = parseInt(localStorage.getItem('se_next_inv')    || '1');
+
+  // In-memory data (populated from IDB on boot)
+  let customers = [];
+  let quotes    = [];
+  let jobs      = [];
+  let invoices  = [];
+  let settings  = { name: 'Sam', business: 'Steady Eco' };
+  let nextRef    = 1;
+  let nextInvRef = 1;
+
+  // ── Open IDB and create schema ─────────────────────────────────
+  function openDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+
+      req.onupgradeneeded = (e) => {
+        const idb = e.target.result;
+        // Create stores if missing (v1 → v2)
+        if (!idb.objectStoreNames.contains('customers')) idb.createObjectStore('customers', { keyPath: 'id' });
+        if (!idb.objectStoreNames.contains('quotes'))    idb.createObjectStore('quotes',    { keyPath: 'id' });
+        if (!idb.objectStoreNames.contains('jobs'))      idb.createObjectStore('jobs',      { keyPath: 'id' });
+        if (!idb.objectStoreNames.contains('invoices'))  idb.createObjectStore('invoices',  { keyPath: 'id' });
+        if (!idb.objectStoreNames.contains('settings'))  idb.createObjectStore('settings',  { keyPath: 'key' });
+        if (!idb.objectStoreNames.contains('meta'))      idb.createObjectStore('meta',      { keyPath: 'key' });
+      };
+
+      req.onsuccess = (e) => {
+        const idb = e.target.result;
+        // Run migration once if localStorage data still exists
+        if (localStorage.getItem('se_customers') !== null) {
+          migrateFromLocalStorage(idb).then(() => resolve(idb)).catch(() => resolve(idb));
+        } else {
+          resolve(idb);
+        }
+      };
+
+      req.onerror   = () => reject(req.error);
+      req.onblocked = () => console.warn('se: IDB blocked — close other tabs and reload');
+    });
+  }
+
+  // ── One-time migration: localStorage → IDB ─────────────────────
+  // Reads existing data, writes to IDB, clears localStorage only after success
+  function migrateFromLocalStorage(idb) {
+    const mc  = safeLoad('se_customers', '[]');
+    const mq  = safeLoad('se_quotes',    '[]');
+    const mj  = safeLoad('se_jobs',      '[]');
+    const mi  = safeLoad('se_invoices',  '[]');
+    const ms  = safeLoad('se_settings',  '{"name":"Sam","business":"Steady Eco"}');
+    const mnr = parseInt(localStorage.getItem('se_next_ref') || '1');
+    const mni = parseInt(localStorage.getItem('se_next_inv') || '1');
+
+    return new Promise((resolve, reject) => {
+      const tx = idb.transaction(DB_STORES, 'readwrite');
+      // Clear then write — all in one transaction so it's atomic
+      tx.objectStore('customers').clear(); mc.forEach(r => tx.objectStore('customers').put(r));
+      tx.objectStore('quotes').clear();    mq.forEach(r => tx.objectStore('quotes').put(r));
+      tx.objectStore('jobs').clear();      mj.forEach(r => tx.objectStore('jobs').put(r));
+      tx.objectStore('invoices').clear();  mi.forEach(r => tx.objectStore('invoices').put(r));
+      tx.objectStore('settings').put({ key: 'main', data: ms });
+      tx.objectStore('meta').put({ key: 'nextRef', value: mnr });
+      tx.objectStore('meta').put({ key: 'nextInv',  value: mni });
+
+      tx.oncomplete = () => {
+        // Remove from localStorage only after IDB write confirmed
+        ['se_customers','se_quotes','se_jobs','se_invoices',
+         'se_settings','se_next_ref','se_next_inv'].forEach(k => localStorage.removeItem(k));
+        console.log(`se: migrated ${mc.length} customers, ${mj.length} jobs, ${mi.length} invoices → IndexedDB`);
+        resolve();
+      };
+      tx.onerror = () => { console.error('se: migration failed', tx.error); reject(tx.error); };
+    });
+  }
+
+  // ── Load all data from IDB into in-memory vars ─────────────────
+  // All requests initiated synchronously — no awaits between them
+  function loadAllData(idb) {
+    return new Promise((resolve, reject) => {
+      const tx = idb.transaction(DB_STORES, 'readonly');
+      const rc = tx.objectStore('customers').getAll();
+      const rq = tx.objectStore('quotes').getAll();
+      const rj = tx.objectStore('jobs').getAll();
+      const ri = tx.objectStore('invoices').getAll();
+      const rs = tx.objectStore('settings').get('main');
+      const rn = tx.objectStore('meta').get('nextRef');
+      const rv = tx.objectStore('meta').get('nextInv');
+      tx.oncomplete = () => {
+        customers  = rc.result || [];
+        quotes     = rq.result || [];
+        jobs       = rj.result || [];
+        invoices   = ri.result || [];
+        settings   = rs.result ? rs.result.data : { name: 'Sam', business: 'Steady Eco' };
+        nextRef    = rn.result ? rn.result.value : 1;
+        nextInvRef = rv.result ? rv.result.value : 1;
+        resolve();
+      };
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  CRYPTO — AES-256-GCM, key derived from PIN via PBKDF2
+  // ══════════════════════════════════════════════════════════════
+  let cryptoKey = null;                    // AES-256-GCM key — in memory only, never persisted
+  const CRYPTO_SALT_KEY = 'se_crypto_salt'; // salt is not secret, lives in localStorage
+
+  const CUSTOMER_PII = ['name', 'phone', 'abn'];
+  const INVOICE_PII  = ['customerName', 'total', 'subtotal', 'gst'];
+
+  async function getOrCreateSalt() {
+    let b64 = localStorage.getItem(CRYPTO_SALT_KEY);
+    if (!b64) {
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      b64 = btoa(String.fromCharCode(...salt));
+      localStorage.setItem(CRYPTO_SALT_KEY, b64);
+    }
+    return Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  }
+
+  // Derive AES-256-GCM key from raw PIN string using PBKDF2
+  async function deriveKey(pin) {
+    const salt        = await getOrCreateSalt();
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveKey']
+    );
+    return crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt, iterations: 200000, hash: 'SHA-256' },
+      keyMaterial,
+      { name: 'AES-GCM', length: 256 },
+      false, ['encrypt', 'decrypt']
+    );
+  }
+
+  // Encrypt a single field value → returns { __enc, iv, ct } object
+  async function encryptField(val) {
+    if (!cryptoKey || val === null || val === undefined || val === '') return val;
+    if (val && val.__enc) return val; // already encrypted — skip
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv }, cryptoKey,
+      new TextEncoder().encode(String(val))
+    );
+    return {
+      __enc: true,
+      iv: btoa(String.fromCharCode(...iv)),
+      ct: btoa(String.fromCharCode(...new Uint8Array(ct)))
+    };
+  }
+
+  // Decrypt a { __enc, iv, ct } object → plaintext string
+  async function decryptField(obj) {
+    if (!obj || !obj.__enc || !cryptoKey) return obj;
+    try {
+      const iv = Uint8Array.from(atob(obj.iv), c => c.charCodeAt(0));
+      const ct = Uint8Array.from(atob(obj.ct), c => c.charCodeAt(0));
+      return new TextDecoder().decode(
+        await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, cryptoKey, ct)
+      );
+    } catch(e) { console.error('se: decryption failed', e); return null; }
+  }
+
+  // Return an encrypted COPY of record — never modifies the in-memory record
+  async function encryptRecord(record, fields) {
+    const enc = { ...record };
+    for (const f of fields) {
+      if (enc[f] !== null && enc[f] !== undefined && enc[f] !== '' && !(enc[f] && enc[f].__enc)) {
+        enc[f] = await encryptField(enc[f]);
+      }
+    }
+    return enc;
+  }
+
+  // Return a decrypted COPY of record
+  async function decryptRecord(record, fields) {
+    const dec = { ...record };
+    for (const f of fields) {
+      if (dec[f] && dec[f].__enc) dec[f] = await decryptField(dec[f]);
+    }
+    return dec;
+  }
+
+  // Decrypt all PII fields in the in-memory arrays after PIN entry
+  async function decryptAllInMemory() {
+    if (!cryptoKey) return;
+    customers = await Promise.all(customers.map(c => decryptRecord(c, CUSTOMER_PII)));
+    invoices  = await Promise.all(invoices.map(async i => {
+      const dec = await decryptRecord(i, INVOICE_PII);
+      // Numeric fields come back as strings after decryption — restore types
+      if (typeof dec.total    === 'string') dec.total    = parseFloat(dec.total);
+      if (typeof dec.subtotal === 'string') dec.subtotal = parseFloat(dec.subtotal);
+      if (typeof dec.gst      === 'string') dec.gst      = parseFloat(dec.gst);
+      return dec;
+    }));
+  }
 
   // Escape user-supplied text before injecting into innerHTML
   function esc(str) {
@@ -1449,14 +1665,16 @@
     const year = new Date().getFullYear();
     const ref  = `SCO-${year}-${String(nextRef).padStart(4,'0')}`;
     nextRef++;
-    localStorage.setItem('se_next_ref', String(nextRef));
+    if (db) { const tx = db.transaction('meta','readwrite'); tx.objectStore('meta').put({ key:'nextRef', value:nextRef }); }
+    else { localStorage.setItem('se_next_ref', String(nextRef)); }
     return ref;
   }
   function getNextInvRef() {
     const year = new Date().getFullYear();
     const ref  = `INV-${year}-${String(nextInvRef).padStart(4,'0')}`;
     nextInvRef++;
-    localStorage.setItem('se_next_inv', String(nextInvRef));
+    if (db) { const tx = db.transaction('meta','readwrite'); tx.objectStore('meta').put({ key:'nextInv', value:nextInvRef }); }
+    else { localStorage.setItem('se_next_inv', String(nextInvRef)); }
     return ref;
   }
   function calcGST(totalIncGST) {
@@ -1470,15 +1688,31 @@
     return inv.status;
   }
 
-  function save() {
-    try {
-      localStorage.setItem('se_customers', JSON.stringify(customers));
-      localStorage.setItem('se_quotes',    JSON.stringify(quotes));
-      localStorage.setItem('se_jobs',      JSON.stringify(jobs));
-      localStorage.setItem('se_invoices',  JSON.stringify(invoices));
-      localStorage.setItem('se_settings',  JSON.stringify(settings));
-    } catch(e) {
-      showToast('⚠️ Save failed — storage may be full');
+  async function save() {
+    if (db) {
+      if (!cryptoKey) { showToast('⚠️ Save failed — app locked'); return; }
+      // Encrypt PII in copies BEFORE opening IDB transaction (avoids transaction expiry)
+      const encCustomers = await Promise.all(customers.map(c => encryptRecord(c, CUSTOMER_PII)));
+      const encInvoices  = await Promise.all(invoices.map(i  => encryptRecord(i, INVOICE_PII)));
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(['customers','quotes','jobs','invoices','settings'], 'readwrite');
+        const cs = tx.objectStore('customers'); cs.clear(); encCustomers.forEach(r => cs.put(r));
+        const qs = tx.objectStore('quotes');    qs.clear(); quotes.forEach(r    => qs.put(r));
+        const js = tx.objectStore('jobs');      js.clear(); jobs.forEach(r      => js.put(r));
+        const is = tx.objectStore('invoices');  is.clear(); encInvoices.forEach(r  => is.put(r));
+        tx.objectStore('settings').put({ key: 'main', data: settings });
+        tx.oncomplete = resolve;
+        tx.onerror = () => { showToast('⚠️ Save failed'); reject(tx.error); };
+      });
+    } else {
+      // Fallback: localStorage (IDB unavailable — no encryption in fallback)
+      try {
+        localStorage.setItem('se_customers', JSON.stringify(customers));
+        localStorage.setItem('se_quotes',    JSON.stringify(quotes));
+        localStorage.setItem('se_jobs',      JSON.stringify(jobs));
+        localStorage.setItem('se_invoices',  JSON.stringify(invoices));
+        localStorage.setItem('se_settings',  JSON.stringify(settings));
+      } catch(e) { showToast('⚠️ Save failed — storage may be full'); }
     }
   }
 
@@ -2415,9 +2649,11 @@
         const j = jobs.find(x=>x.id===capturedJobId); if (!j) return;
         if (!j.photos) j.photos=[];
         // Check storage isn't near capacity (warn at 4MB of 5MB limit)
-        let storageUsed = 0;
-        try { for (let k in localStorage) { if (localStorage.hasOwnProperty(k)) storageUsed += (localStorage[k].length + k.length) * 2; } } catch(e) {}
-        if (storageUsed > 4 * 1024 * 1024) { showToast('Storage nearly full — delete old photos first'); return; }
+        if (navigator.storage && navigator.storage.estimate) {
+          navigator.storage.estimate().then(({usage, quota}) => {
+            if (quota && usage / quota > 0.85) showToast('Storage nearly full — delete old photos first');
+          });
+        }
         j.photos.push({ id:Date.now().toString(), dataUrl, takenAt:new Date().toISOString() });
         try { save(); renderJobPhotos(j); showToast('Photo saved'); }
         catch(e) { j.photos.pop(); showToast('Storage full — delete old photos to free space'); }
@@ -2623,7 +2859,8 @@
     document.getElementById('pin-screen').classList.add('hidden');
     localStorage.setItem(PIN_ATTEMPTS, '0');
     resetInactivityTimer();
-    refreshDashboard();
+    // Wait for IDB load, then decrypt PII, then render
+    dbReady.then(() => decryptAllInMemory()).then(() => refreshDashboard());
   }
 
   function resetInactivityTimer() {
@@ -2633,6 +2870,7 @@
   }
 
   function lockApp() {
+    cryptoKey = null; // discard key — must re-derive from PIN on next unlock
     sessionStorage.removeItem('se_unlocked');
     sessionStorage.removeItem('se_unlock_time');
     pinBuffer = '';
@@ -2640,6 +2878,8 @@
     document.getElementById('pinSubtitle').textContent = 'Operational Access';
     document.getElementById('pinKeypad').classList.remove('disabled');
     document.getElementById('pin-screen').classList.remove('hidden');
+    // Reload encrypted data from IDB — clears plaintext PII from memory
+    if (db) loadAllData(db).catch(err => console.error('se: reload on lock failed', err));
     // Check lockout state on re-lock
     const lockout = parseInt(localStorage.getItem(PIN_LOCKOUT) || '0');
     if (lockout && Date.now() < lockout) showCooldown(lockout);
@@ -2681,6 +2921,7 @@
     const entered = await sha256(pinBuffer);
     const stored  = localStorage.getItem(PIN_KEY);
     if (entered === stored) {
+      cryptoKey = await deriveKey(pinBuffer); // derive AES key from raw PIN
       unlockApp();
     } else {
       pinWrongAttempt();
@@ -2699,6 +2940,7 @@
     } else if (pinBuffer === pinSetupFirst) {
       // Step 2 match — save and unlock
       localStorage.setItem(PIN_KEY, await sha256(pinBuffer));
+      cryptoKey = await deriveKey(pinBuffer);
       pinSetupMode  = false;
       pinSetupFirst = '';
       unlockApp();
@@ -2770,11 +3012,12 @@
   let cpBuffer   = '';
   let cpStage    = 'verify';   // 'verify' | 'new' | 'confirm'
   let cpNewHash  = '';
+  let cpNewPin   = '';
   let cpAttempts = 0;
   const CP_MAX_ATTEMPTS = 3;
 
   function openChangePinModal() {
-    cpBuffer = ''; cpStage = 'verify'; cpNewHash = ''; cpAttempts = 0;
+    cpBuffer = ''; cpStage = 'verify'; cpNewHash = ''; cpNewPin = ''; cpAttempts = 0;
     updatePinDots('cpDots');
     document.getElementById('cpSubtitle').textContent = 'Enter Current PIN';
     document.getElementById('cpKeypad').classList.remove('disabled');
@@ -2783,7 +3026,7 @@
 
   function closeChangePinModal() {
     document.getElementById('change-pin-modal').classList.remove('visible');
-    cpBuffer = ''; cpStage = 'verify'; cpNewHash = ''; cpAttempts = 0;
+    cpBuffer = ''; cpStage = 'verify'; cpNewHash = ''; cpNewPin = ''; cpAttempts = 0;
   }
 
   function cpInput(digit) {
@@ -2818,6 +3061,7 @@
         }
       }
     } else if (cpStage === 'new') {
+      cpNewPin  = cpBuffer;
       cpNewHash = await sha256(cpBuffer);
       cpStage = 'confirm'; cpBuffer = '';
       updatePinDots('cpDots');
@@ -2825,11 +3069,14 @@
     } else if (cpStage === 'confirm') {
       const confirmHash = await sha256(cpBuffer);
       if (confirmHash === cpNewHash) {
+        cryptoKey = await deriveKey(cpNewPin);
+        await save();
         localStorage.setItem(PIN_KEY, cpNewHash);
+        cpNewPin = '';
         closeChangePinModal();
         showToast('Access code updated');
       } else {
-        cpNewHash = '';
+        cpNewHash = ''; cpNewPin = '';
         cpStage = 'new';
         cpWrongAttempt("PINs didn't match — enter new PIN again");
       }
@@ -2912,6 +3159,41 @@
   renderInvoices = function() { _origRenderInvoices(); clearTimeout(_invSwipeTimer); _invSwipeTimer = setTimeout(attachInvoiceSwipes, 50); };
 
   // ── Boot ───────────────────────────────────────────────────────
+  // Request persistent storage so iOS never silently evicts app data
+  if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persist();
+  }
+
+  // Open IndexedDB while PIN screen is visible — resolves dbReady when data is loaded
+  if (window.indexedDB) {
+    openDB().then((database) => {
+      db = database;
+      return loadAllData(db);
+    }).then(() => {
+      _dbReadyResolve(true);
+    }).catch((err) => {
+      console.error('se: IDB failed — falling back to localStorage', err);
+      customers  = safeLoad('se_customers', '[]');
+      quotes     = safeLoad('se_quotes',    '[]');
+      jobs       = safeLoad('se_jobs',      '[]');
+      invoices   = safeLoad('se_invoices',  '[]');
+      settings   = safeLoad('se_settings',  '{"name":"Sam","business":"Steady Eco"}');
+      nextRef    = parseInt(localStorage.getItem('se_next_ref') || '1');
+      nextInvRef = parseInt(localStorage.getItem('se_next_inv') || '1');
+      _dbReadyResolve(false);
+    });
+  } else {
+    // IDB not supported — use localStorage
+    customers  = safeLoad('se_customers', '[]');
+    quotes     = safeLoad('se_quotes',    '[]');
+    jobs       = safeLoad('se_jobs',      '[]');
+    invoices   = safeLoad('se_invoices',  '[]');
+    settings   = safeLoad('se_settings',  '{"name":"Sam","business":"Steady Eco"}');
+    nextRef    = parseInt(localStorage.getItem('se_next_ref') || '1');
+    nextInvRef = parseInt(localStorage.getItem('se_next_inv') || '1');
+    _dbReadyResolve(false);
+  }
+
   initPin();
 </script>
 </body>
