@@ -1096,6 +1096,8 @@
     <div class="info-row"><span class="info-row-label">Sets</span>      <span class="info-row-value" id="jdSets"></span></div>
     <div class="info-row"><span class="info-row-label">Service</span>   <span class="info-row-value" id="jdJobType"></span></div>
     <div class="info-row"><span class="info-row-label">Delivery</span>  <span class="info-row-value" id="jdDelivery"></span></div>
+    <div class="info-row" id="jdMachineBrandRow" style="display:none;"><span class="info-row-label">Machine</span><span class="info-row-value" id="jdMachineBrand"></span></div>
+    <div class="info-row" id="jdBladeTypeRow" style="display:none;"><span class="info-row-label">Blade Type</span><span class="info-row-value" id="jdBladeType"></span></div>
     <div class="info-row" id="jdNotesRow" style="display:none;"><span class="info-row-label">Notes</span><span class="info-row-value" id="jdNotes" style="text-align:left;max-width:100%;"></span></div>
     <div class="info-row" id="jdQuoteRow" style="display:none;"><span class="info-row-label">Quote Ref</span><span class="info-row-value" id="jdQuoteRef" style="color:var(--green-accent);cursor:pointer;"></span></div>
 
@@ -1226,6 +1228,26 @@
       <button class="stepper-btn" onclick="changeSets(-1)">−</button>
       <div class="stepper-val" id="setsDisplay">1<span class="stepper-unit">set</span></div>
       <button class="stepper-btn" onclick="changeSets(1)">+</button>
+    </div>
+
+    <span class="form-label" style="display:flex;align-items:center;gap:6px;">Machine Brand <span style="font-size:10px;font-weight:400;color:var(--muted);letter-spacing:0;text-transform:none;">(optional)</span></span>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px;" id="machineBrandGroup">
+      <button class="toggle-btn" onclick="setQMachineBrand('Bandit',this)">Bandit</button>
+      <button class="toggle-btn" onclick="setQMachineBrand('Vermeer',this)">Vermeer</button>
+      <button class="toggle-btn" onclick="setQMachineBrand('Morbark',this)">Morbark</button>
+      <button class="toggle-btn" onclick="setQMachineBrand('Rayco',this)">Rayco</button>
+      <button class="toggle-btn" onclick="setQMachineBrand('Timberwolf',this)">Timber&shy;wolf</button>
+      <button class="toggle-btn" onclick="setQMachineBrand('Greenmech',this)">Green&shy;mech</button>
+      <button class="toggle-btn" onclick="setQMachineBrand('Jensen',this)">Jensen</button>
+      <button class="toggle-btn" onclick="setQMachineBrand('Other',this)">Other</button>
+    </div>
+
+    <span class="form-label" style="display:flex;align-items:center;gap:6px;">Blade Type <span style="font-size:10px;font-weight:400;color:var(--muted);letter-spacing:0;text-transform:none;">(optional)</span></span>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:6px;" id="bladeTypeGroup">
+      <button class="toggle-btn" onclick="setQBladeType('Straight / Flat',this)">Straight / Flat</button>
+      <button class="toggle-btn" onclick="setQBladeType('Knife Set',this)">Knife Set</button>
+      <button class="toggle-btn" onclick="setQBladeType('Disc Blade',this)">Disc Blade</button>
+      <button class="toggle-btn" onclick="setQBladeType('Counter Blade',this)">Counter Blade</button>
     </div>
 
     <span class="form-label">Service Type</span>
@@ -1391,6 +1413,23 @@
 
     <div class="section-label" style="margin-top:36px; margin-bottom:12px;">Data</div>
     <button class="btn-full btn-ghost" onclick="exportData()">Export Backup (JSON)</button>
+
+    <div class="section-label" style="margin-top:36px; margin-bottom:12px;">Blade Angle Reference</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;letter-spacing:0.3px;">Factory specifications on file — grind target per brand</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+      <div style="display:flex;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--bg-elevated);">
+        <span style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1.5px;">Brand</span>
+        <span style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1.5px;">Angle</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border-inner);"><span style="font-size:14px;color:var(--text);">Bandit</span><span style="font-size:14px;color:var(--green-accent);">30°</span></div>
+      <div style="display:flex;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border-inner);"><span style="font-size:14px;color:var(--text);">Vermeer</span><span style="font-size:14px;color:var(--green-accent);">30°</span></div>
+      <div style="display:flex;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border-inner);"><span style="font-size:14px;color:var(--text);">Morbark</span><span style="font-size:14px;color:var(--green-accent);">31°</span></div>
+      <div style="display:flex;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border-inner);"><span style="font-size:14px;color:var(--text);">Rayco</span><span style="font-size:14px;color:var(--green-accent);">30°</span></div>
+      <div style="display:flex;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border-inner);"><span style="font-size:14px;color:var(--text);">Timberwolf</span><span style="font-size:14px;color:var(--amber);">25°–35°</span></div>
+      <div style="display:flex;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border-inner);"><span style="font-size:14px;color:var(--text);">Greenmech</span><span style="font-size:14px;color:var(--green-accent);">30°</span></div>
+      <div style="display:flex;justify-content:space-between;padding:10px 16px;"><span style="font-size:14px;color:var(--text);">Jensen</span><span style="font-size:14px;color:var(--green-accent);">30°</span></div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:8px;">Timberwolf varies by model — confirm on enquiry.</div>
   </div>
 
   <!-- ════════════════════════════════════════════════════════════
@@ -1648,7 +1687,9 @@
   let previousScreen    = 'dashboard';
 
   let qSets = 1, qJobType = 'standard', qDelivery = 'dropoff', qPayment = 'cash';
+  let qMachineBrand = '', qBladeType = '';
   let jSets = 1, jJobType = 'standard', jDelivery = 'dropoff', jFromQuoteId = null;
+  let jMachineBrand = '', jBladeType = '';
 
   let calYear  = new Date().getFullYear();
   let calMonth = new Date().getMonth();
@@ -1929,6 +1970,10 @@
     document.getElementById('jdSets').textContent     = `${j.sets} set${j.sets>1?'s':''} (${j.sets*2} blades)`;
     document.getElementById('jdJobType').textContent  = j.jobType === 'emergency' ? 'Emergency (2× rate)' : 'Standard';
     document.getElementById('jdDelivery').textContent = j.delivery === 'collection' ? 'Collection & delivery ($20)' : 'Drop-off & pick-up';
+    const mbRow = document.getElementById('jdMachineBrandRow');
+    const btRow = document.getElementById('jdBladeTypeRow');
+    if (j.machineBrand) { mbRow.style.display='flex'; document.getElementById('jdMachineBrand').textContent=j.machineBrand; } else { mbRow.style.display='none'; }
+    if (j.bladeType)   { btRow.style.display='flex'; document.getElementById('jdBladeType').textContent=j.bladeType; }   else { btRow.style.display='none'; }
     const ds = j.scheduledDate
       ? new Date(j.scheduledDate+'T12:00:00').toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'})
       : 'Not scheduled';
@@ -2029,6 +2074,7 @@
 
     if (presetQuote) {
       jFromQuoteId=presetQuote.id; jSets=presetQuote.sets; jJobType=presetQuote.jobType; jDelivery=presetQuote.delivery;
+      jMachineBrand=presetQuote.machineBrand||''; jBladeType=presetQuote.bladeType||'';
       const jb=document.querySelectorAll('#jobTypeGroupJ .toggle-btn');
       jb[0].className='toggle-btn'+(jJobType==='standard'?' active':'');
       jb[1].className='toggle-btn'+(jJobType==='emergency'?' active-warning':'');
@@ -2062,7 +2108,7 @@
     const customerId=sel.value||null;
     const customerName=customerId?(customers.find(x=>x.id===customerId)||{}).name||'Unknown':document.getElementById('jobOneoffName').value.trim()||'One-off';
     const {total}=calcJobTotal();
-    const j={ id:Date.now().toString(), ref:getNextRef(), customerId, customerName, quoteId:jFromQuoteId, sets:jSets, jobType:jJobType, delivery:jDelivery, total, status:'booked', scheduledDate:document.getElementById('jobDate').value||null, notes:document.getElementById('jobNotes').value.trim(), createdAt:new Date().toISOString(), startedAt:null, completedAt:null, paidAt:null, photos:[] };
+    const j={ id:Date.now().toString(), ref:getNextRef(), customerId, customerName, quoteId:jFromQuoteId, sets:jSets, jobType:jJobType, delivery:jDelivery, total, status:'booked', scheduledDate:document.getElementById('jobDate').value||null, notes:document.getElementById('jobNotes').value.trim(), machineBrand:jMachineBrand||null, bladeType:jBladeType||null, createdAt:new Date().toISOString(), startedAt:null, completedAt:null, paidAt:null, photos:[] };
     jobs.push(j); save(); showToast('Job booked');
     showJobDetail(j.id, previousScreen);
   }
@@ -2312,10 +2358,12 @@
   }
 
   function openNewQuote(presetId, from) {
-    qSets=1; qJobType='standard'; qDelivery='dropoff'; qPayment='cash';
+    qSets=1; qJobType='standard'; qDelivery='dropoff'; qPayment='cash'; qMachineBrand=''; qBladeType='';
     document.querySelectorAll('#jobTypeGroup  .toggle-btn').forEach((b,i)=>b.className='toggle-btn'+(i===0?' active':''));
     document.querySelectorAll('#deliveryGroup .toggle-btn').forEach((b,i)=>b.className='toggle-btn'+(i===0?' active':''));
     document.querySelectorAll('#paymentGroup  .toggle-btn').forEach((b,i)=>b.className='toggle-btn'+(i===0?' active':''));
+    document.querySelectorAll('#machineBrandGroup .toggle-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('#bladeTypeGroup .toggle-btn').forEach(b=>b.classList.remove('active'));
     document.getElementById('quotePreferredDate').value='';
     document.getElementById('quoteDateLabel').textContent='Preferred Pick-up Date';
     const sel=document.getElementById('quoteCustomerSelect');
@@ -2351,11 +2399,23 @@
   function calcQuoteTotal() { const r=qJobType==='emergency'?BASE*2:BASE; return {rate:r,total:qSets*r+(qDelivery==='collection'?20:0)}; }
   function updatePricePreview() { const {rate,total}=calcQuoteTotal(); document.getElementById('pricePreviewAmount').textContent=`$${total}`; let b=`${qSets} set${qSets>1?'s':''} × $${rate}`; if(qDelivery==='collection') b+=' + $20 delivery'; document.getElementById('pricePreviewBreakdown').textContent=b; }
 
+  function setQMachineBrand(brand, btn) {
+    qMachineBrand = (qMachineBrand === brand) ? '' : brand;
+    document.querySelectorAll('#machineBrandGroup .toggle-btn').forEach(b => b.classList.remove('active'));
+    if (qMachineBrand) btn.classList.add('active');
+  }
+
+  function setQBladeType(type, btn) {
+    qBladeType = (qBladeType === type) ? '' : type;
+    document.querySelectorAll('#bladeTypeGroup .toggle-btn').forEach(b => b.classList.remove('active'));
+    if (qBladeType) btn.classList.add('active');
+  }
+
   function saveQuote() {
     const sel=document.getElementById('quoteCustomerSelect'), customerId=sel.value||null;
     const customerName=customerId?(customers.find(x=>x.id===customerId)||{}).name||'Unknown':document.getElementById('quoteOneoffName').value.trim()||'One-off';
     const {total}=calcQuoteTotal();
-    const q={id:Date.now().toString(), ref:getNextRef(), customerId, customerName, sets:qSets, jobType:qJobType, delivery:qDelivery, total, paymentMethod:qPayment, preferredDate:document.getElementById('quotePreferredDate').value||null, createdAt:new Date().toISOString()};
+    const q={id:Date.now().toString(), ref:getNextRef(), customerId, customerName, sets:qSets, jobType:qJobType, delivery:qDelivery, total, paymentMethod:qPayment, preferredDate:document.getElementById('quotePreferredDate').value||null, machineBrand:qMachineBrand||null, bladeType:qBladeType||null, createdAt:new Date().toISOString()};
     quotes.push(q); save(); showToast('Quote saved');
     showQuoteDetail(q.id, previousScreen);
   }
@@ -2398,7 +2458,9 @@
       const ds=new Date(q.preferredDate+'T12:00:00').toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short'});
       dateLine=`\n${q.delivery==='collection'?'Collection date':'Pick-up date'}: ${ds}`;
     }
-    return `Hi ${fn}, here's your quote from Steady Eco:\n\n${q.sets} set${q.sets>1?'s':''} of blades — $${bt}${q.jobType==='emergency'?' (emergency rate)':''}\n${dl}${dateLine}\n\nTotal: $${q.total}\n${payLine}\nRef: ${q.ref||'—'}\n\nSteady Eco`;
+    const machineLine = q.machineBrand ? `\nMachine: ${q.machineBrand}` : '';
+    const bladeLine   = q.bladeType   ? `\nBlade type: ${q.bladeType}` : '';
+    return `Hi ${fn}, here's your quote from Steady Eco:\n\n${q.sets} set${q.sets>1?'s':''} of blades — $${bt}${q.jobType==='emergency'?' (emergency rate)':''}${machineLine}${bladeLine}\n${dl}${dateLine}\n\nTotal: $${q.total}\n${payLine}\nRef: ${q.ref||'—'}\n\nSteady Eco`;
   }
 
   function buildEmail(q) {
@@ -2414,7 +2476,9 @@
       const ds=new Date(q.preferredDate+'T12:00:00').toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
       dateSection=`\n${q.delivery==='collection'?'Collection date':'Preferred pick-up date'}:  ${ds}`;
     }
-    return `Hi ${fn},\n\nThank you for getting in touch. Here is your quote for woodchipper blade sharpening.\n\nQUOTE REFERENCE: ${q.ref||'—'}\n\nQUOTE SUMMARY\n─────────────────────\nSets of blades:  ${q.sets} (${q.sets*2} blades)\nService type:    ${st}\nDelivery:        ${dl}${dateSection}\nPayment method:  ${payMethod}\n\nBREAKDOWN\n─────────────────────\nBlades (${q.sets} × $${r}/set):  $${bt}.00${q.delivery==='collection'?'\nCollection & delivery:  $20.00':''}\n\nTOTAL:  $${q.total}.00\n─────────────────────\n\nPayment is due on pickup.\n\nKind regards,\n${biz}\nABN 49 553 784 085`;
+    const machineSection = q.machineBrand ? `\nMachine brand:   ${q.machineBrand}` : '';
+    const bladeSection   = q.bladeType   ? `\nBlade type:      ${q.bladeType}` : '';
+    return `Hi ${fn},\n\nThank you for getting in touch. Here is your quote for woodchipper blade sharpening.\n\nQUOTE REFERENCE: ${q.ref||'—'}\n\nQUOTE SUMMARY\n─────────────────────\nSets of blades:  ${q.sets} (${q.sets*2} blades)\nService type:    ${st}\nDelivery:        ${dl}${dateSection}${machineSection}${bladeSection}\nPayment method:  ${payMethod}\n\nBREAKDOWN\n─────────────────────\nBlades (${q.sets} × $${r}/set):  $${bt}.00${q.delivery==='collection'?'\nCollection & delivery:  $20.00':''}\n\nTOTAL:  $${q.total}.00\n─────────────────────\n\nPayment is due on pickup.\n\nKind regards,\n${biz}\nABN 49 553 784 085`;
   }
 
   function deleteCurrentQuote() {

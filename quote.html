@@ -794,6 +794,17 @@
       <input type="text" id="otherMachineInput" placeholder="e.g. Altec, Rayco, John Deere…" oninput="onOtherMachine()" autocomplete="off" />
     </div>
 
+    <div class="jtype-section" style="margin-bottom:28px;">
+      <div class="step-label">Blade Type <span style="font-weight:400;letter-spacing:0;text-transform:none;font-size:9px;color:var(--muted);">(optional)</span></div>
+      <div class="jtype-row" style="grid-template-columns:1fr 1fr;">
+        <button class="jtype-btn" id="bt1" onclick="selectBladeType('Straight / Flat Blade', this)">Straight / Flat</button>
+        <button class="jtype-btn" id="bt2" onclick="selectBladeType('Knife Set', this)">Knife Set</button>
+        <button class="jtype-btn" id="bt3" onclick="selectBladeType('Disc Blade', this)">Disc Blade</button>
+        <button class="jtype-btn" id="bt4" onclick="selectBladeType('Counter Blade', this)">Counter Blade</button>
+      </div>
+      <div style="margin-top:8px;font-size:10px;color:var(--muted);padding-left:2px;">Not sure? Leave blank — we'll confirm on pickup.</div>
+    </div>
+
     <div class="sets-section">
       <div class="step-label">Number of Sets</div>
       <div class="sets-row">
@@ -864,7 +875,7 @@
 
       <div class="float-group" id="grpCompany">
         <input type="text" id="custCompany" placeholder=" " autocomplete="organization" oninput="onInput('grpCompany','custCompany')" />
-        <label for="custCompany">Company *</label>
+        <label for="custCompany">Company Name (optional)</label>
         <span class="input-check">✓</span>
       </div>
 
@@ -874,6 +885,13 @@
         <span class="input-check">✓</span>
       </div>
       <div class="field-note" id="phoneNote" style="display:none;color:var(--danger);">Please enter a valid Australian mobile number</div>
+
+      <div class="float-group" id="grpDate">
+        <input type="date" id="custDate" placeholder=" " oninput="onInput('grpDate','custDate')" style="padding-top:22px;padding-bottom:8px;padding-left:14px;color-scheme:dark;" />
+        <label for="custDate" style="pointer-events:none;">Preferred Drop-Off Date (optional)</label>
+        <span class="input-check">✓</span>
+      </div>
+      <div class="field-note">Optional — we'll confirm availability</div>
 
       <div class="float-group" id="grpEmail">
         <input type="email" id="custEmail" placeholder=" " autocomplete="email" oninput="onInput('grpEmail','custEmail')" />
@@ -931,6 +949,7 @@
   let prevPrice        = 0;
   let smsCopyText      = '';
   let emailCopyText    = '';
+  let selectedBladeType = '';    // optional blade type
 
   /* ── SUBURB LOOKUP ── */
   const SUBURBS = {
@@ -1025,6 +1044,13 @@
   function onOtherMachine() {
     otherMachineText = document.getElementById('otherMachineInput').value.trim();
     updateTicker();
+  }
+
+  /* ── BLADE TYPE ── */
+  function selectBladeType(type, btn) {
+    selectedBladeType = (selectedBladeType === type) ? '' : type; // toggle
+    document.querySelectorAll('#bt1,#bt2,#bt3,#bt4').forEach(b => b.className = 'jtype-btn');
+    if (selectedBladeType) btn.classList.add('active-std');
   }
 
   /* ── STEPPER ── */
@@ -1193,10 +1219,8 @@
   function validateStep3() {
     let ok = true;
     const name    = document.getElementById('custName').value.trim();
-    const company = document.getElementById('custCompany').value.trim();
     const phone   = document.getElementById('custPhone').value.trim();
     if (!name)    { shakeField('grpName');    ok = false; }
-    if (!company) { shakeField('grpCompany'); ok = false; }
     if (!phone || !isValidAusPhone(phone)) {
       shakeField('grpPhone');
       document.getElementById('phoneNote').style.display = 'block';
@@ -1234,7 +1258,6 @@
     if (!validateStep3()) return;
 
     const name    = document.getElementById('custName').value.trim();
-    const company = document.getElementById('custCompany').value.trim();
     const phone   = document.getElementById('custPhone').value.trim();
     const email   = document.getElementById('custEmail').value.trim();
     const ref     = generateRef();
@@ -1242,9 +1265,11 @@
     const cf      = collectionFee();
     const tp      = totalPrice();
     const today   = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+    const company     = document.getElementById('custCompany').value.trim();
     const machineName = selectedMachine === 'Other' ? otherMachineText : selectedMachine;
     const suburbName  = selectedSuburb ? selectedSuburb.name : null;
     const callConfirm = isCallToConfirm();
+    const preferredDate = document.getElementById('custDate').value;
 
     const payload = {
       ref,
@@ -1253,13 +1278,15 @@
       customer: { name, company, phone, email },
       quote: {
         machineType: machineName,
+        bladeType: selectedBladeType || null,
         sets,
         isEmergency,
         basePrice: bp,
         collectionRequired: collectMode === 'collect',
         suburb: suburbName,
         collectionFee: cf || 0,
-        totalPrice: tp
+        totalPrice: tp,
+        preferredDate: preferredDate || null
       }
     };
 
@@ -1269,8 +1296,8 @@
       localStorage.setItem('se_pending_quotes', JSON.stringify(existing));
     } catch(e) { console.warn('se: could not write pending quote', e); }
 
-    smsCopyText   = buildSMS(name, ref, bp, cf, tp, suburbName, callConfirm);
-    emailCopyText = buildEmail(name, ref, bp, cf, tp, suburbName, callConfirm, today);
+    smsCopyText   = buildSMS(name, ref, bp, cf, tp, suburbName, callConfirm, preferredDate);
+    emailCopyText = buildEmail(name, ref, bp, cf, tp, suburbName, callConfirm, today, preferredDate);
 
     showConfirmation(ref, tp, bp, sets, callConfirm, suburbName, cf);
   }
@@ -1323,7 +1350,7 @@
   }
 
   /* ── SMS & EMAIL BUILDERS ── */
-  function buildSMS(name, ref, bp, cf, tp, suburbName, callConfirm) {
+  function buildSMS(name, ref, bp, cf, tp, suburbName, callConfirm, preferredDate) {
     const fn = name.split(' ')[0];
     const blades = sets * 2;
     const machineName = selectedMachine === 'Other' ? otherMachineText : selectedMachine;
@@ -1332,9 +1359,11 @@
     msg += '• ' + sets + ' set' + (sets > 1 ? 's' : '') + ' (' + blades + ' blades) · ' + machineName;
     if (isEmergency) msg += ' · emergency rate';
     msg += ' · $' + bp + '\n';
+    if (selectedBladeType) msg += '• Blade type: ' + selectedBladeType + '\n';
     if (collectMode === 'collect' && !callConfirm && cf > 0 && suburbName) {
       msg += '• Delivery (' + suburbName + ') · $' + cf + '\n';
     }
+    if (preferredDate) msg += '• Preferred date: ' + preferredDate + '\n';
     msg += '\n';
     if (callConfirm) {
       msg += 'Total: Call to confirm (delivery pricing TBC)\n';
@@ -1347,7 +1376,7 @@
     return msg;
   }
 
-  function buildEmail(name, ref, bp, cf, tp, suburbName, callConfirm, today) {
+  function buildEmail(name, ref, bp, cf, tp, suburbName, callConfirm, today, preferredDate) {
     const blades = sets * 2;
     const machineName = selectedMachine === 'Other' ? otherMachineText : selectedMachine;
     const line = '──────────────────────────────';
@@ -1359,7 +1388,9 @@
     msg += line + '\n\n';
     msg += 'Machine:          ' + machineName + '\n';
     msg += 'Sets (blades):    ' + sets + ' set' + (sets > 1 ? 's' : '') + ' (' + blades + ' blades)\n';
+    if (selectedBladeType) msg += 'Blade type:       ' + selectedBladeType + '\n';
     if (isEmergency) msg += 'Rate:             Emergency (2×)\n';
+    if (preferredDate) msg += 'Preferred date:   ' + preferredDate + '\n';
     msg += '\n';
     msg += 'Blade sharpening: $' + bp + '\n';
     if (collectMode === 'collect') {
@@ -1411,6 +1442,11 @@
 
   /* ── INIT ── */
   updateTicker();
+  // Set minimum date on preferred date input to today
+  (function() {
+    const dateInput = document.getElementById('custDate');
+    if (dateInput) dateInput.min = new Date().toISOString().split('T')[0];
+  })();
 </script>
 </body>
 </html>
