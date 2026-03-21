@@ -2333,13 +2333,13 @@
       const encCustomers = await Promise.all(customers.map(c => encryptRecord(c, CUSTOMER_PII)));
       const encJobs      = await Promise.all(jobs.map(j      => encryptRecord(j, JOB_PII)));
       const encInvoices  = await Promise.all(invoices.map(i  => encryptRecord(i, INVOICE_PII)));
+      const encSettings  = await encryptRecord(settings, SETTINGS_PII);
       return new Promise((resolve, reject) => {
         const tx = db.transaction(['customers','quotes','jobs','invoices','settings'], 'readwrite');
         const cs = tx.objectStore('customers'); cs.clear(); encCustomers.forEach(r => cs.put(r));
         const qs = tx.objectStore('quotes');    qs.clear(); quotes.forEach(r    => qs.put(r));
         const js = tx.objectStore('jobs');      js.clear(); encJobs.forEach(r   => js.put(r));
         const is = tx.objectStore('invoices');  is.clear(); encInvoices.forEach(r  => is.put(r));
-        const encSettings = await encryptRecord(settings, SETTINGS_PII);
         tx.objectStore('settings').put({ key: 'main', data: encSettings });
         tx.oncomplete = resolve;
         tx.onerror = () => { showToast('⚠️ Save failed'); reject(tx.error); };
