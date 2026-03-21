@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Land Regeneration Insights — FNQ Ecological Contractor Blog | Steady Eco Cairns</title>
+  <meta name="description" content="Guides and insights for FNQ landholders, councils, and investors on carbon farming, ACCU projects, ecological restoration, and government contracting in Far North Queensland.">
+  <link rel="canonical" href="https://steadyeco.com/land-regeneration/insights">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── DESIGN SYSTEM ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0f0a;
+      --bg-alt: #0f1a0f;
+      --card: #111e11;
+      --green-accent: #4a9e3f;
+      --gold: #c8a84b;
+      --text: #e8ede6;
+      --muted: #7a8f76;
+      --border: rgba(74,158,63,0.12);
+      --border-hover: rgba(74,158,63,0.4);
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body: 'DM Sans', system-ui, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--muted);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.75;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 40px;
+    }
+
+    section { padding: 120px 0; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 24px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10,15,10,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      transition: padding 300ms ease;
+    }
+
+    nav.scrolled { padding: 16px 40px; }
+
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 300;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+    }
+
+    .nav-logo span { color: var(--green-accent); }
+
+    nav ul {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      list-style: none;
+    }
+
+    nav ul a {
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 200ms ease;
+    }
+
+    nav ul a:hover,
+    nav ul a.active { color: var(--text); }
+
+    nav ul a.active { border-bottom: 1px solid var(--green-accent); padding-bottom: 2px; }
+
+    .nav-phone {
+      color: var(--green-accent) !important;
+      font-weight: 400 !important;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+      padding-top: 100px;
+    }
+
+    .hero-ghost {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: var(--font-display);
+      font-size: clamp(6rem, 18vw, 18rem);
+      font-weight: 300;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(74,158,63,0.06);
+      white-space: nowrap;
+      pointer-events: none;
+      letter-spacing: 0.08em;
+      user-select: none;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      max-width: 880px;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--green-accent);
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .eyebrow::before {
+      content: '';
+      width: 40px;
+      height: 1px;
+      background: var(--green-accent);
+      display: block;
+    }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(3.2rem, 7vw, 7rem);
+      font-weight: 300;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 32px;
+    }
+
+    .hero h1 .line-dim { color: rgba(232,237,230,0.35); }
+    .hero h1 .line-accent { color: var(--green-accent); }
+
+    /* Word reveal */
+    .w {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 600ms ease, transform 600ms ease;
+    }
+    .w.in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .hero-intro {
+      font-size: clamp(1rem, 1.5vw, 1.15rem);
+      color: var(--muted);
+      max-width: 560px;
+      line-height: 1.8;
+      margin-bottom: 48px;
+      font-weight: 300;
+    }
+
+    .hero-ctas { display: flex; gap: 20px; flex-wrap: wrap; }
+
+    /* ── BUTTONS ── */
+    .btn-primary {
+      display: inline-block;
+      padding: 16px 40px;
+      background: var(--green-accent);
+      color: #fff;
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 400;
+      border-radius: 2px;
+      transition: background 200ms ease, transform 200ms ease;
+    }
+    .btn-primary:hover { background: #3d8a34; transform: translateY(-2px); }
+
+    .btn-outline {
+      display: inline-block;
+      padding: 15px 40px;
+      border: 1px solid rgba(74,158,63,0.5);
+      color: var(--text);
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 400;
+      border-radius: 2px;
+      transition: border-color 200ms ease, color 200ms ease, transform 200ms ease;
+    }
+    .btn-outline:hover {
+      border-color: var(--green-accent);
+      color: var(--green-accent);
+      transform: translateY(-2px);
+    }
+
+    /* ── BREADCRUMB ── */
+    .breadcrumb {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(122,143,118,0.5);
+      margin-bottom: 40px;
+    }
+    .breadcrumb a { color: rgba(122,143,118,0.5); text-decoration: none; transition: color 200ms ease; }
+    .breadcrumb a:hover { color: var(--green-accent); }
+    .breadcrumb span { margin: 0 10px; }
+
+    /* ── SECTION LABELS ── */
+    .section-label {
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--green-accent);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .section-label::before {
+      content: '';
+      width: 32px;
+      height: 1px;
+      background: var(--green-accent);
+    }
+
+    .section-heading {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 300;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    .section-intro {
+      font-size: 1rem;
+      color: var(--muted);
+      max-width: 600px;
+      margin-bottom: 64px;
+      line-height: 1.8;
+    }
+
+    /* ── ARTICLE CARDS ── */
+    .articles-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .article-card {
+      background: var(--card);
+      border: 1px solid rgba(74,158,63,0.15);
+      border-radius: 2px;
+      padding: 40px 36px;
+      transition: border-color 300ms ease, transform 300ms ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .article-card:hover {
+      border-color: rgba(74,158,63,0.4);
+      transform: translateY(-4px);
+    }
+
+    .article-cat {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--green-accent);
+      display: block;
+      margin-bottom: 14px;
+    }
+
+    .article-card h3 {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 300;
+      color: var(--text);
+      line-height: 1.3;
+      margin-bottom: 16px;
+      letter-spacing: -0.01em;
+    }
+
+    .article-card p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.75;
+      margin-bottom: 28px;
+      flex: 1;
+    }
+
+    .article-link {
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--green-accent);
+      text-decoration: none;
+      transition: color 200ms ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .article-link:hover { color: var(--text); }
+
+    /* ── PULL QUOTE ── */
+    .pull-quote-section {
+      background: var(--bg);
+      padding: 100px 0;
+      text-align: center;
+    }
+
+    .pull-quote {
+      font-family: var(--font-display);
+      font-size: clamp(1.4rem, 2.8vw, 2rem);
+      font-style: italic;
+      font-weight: 300;
+      color: var(--gold);
+      max-width: 800px;
+      margin: 0 auto;
+      line-height: 1.5;
+      letter-spacing: -0.01em;
+    }
+
+    .pull-quote::before,
+    .pull-quote::after {
+      content: '"';
+      color: rgba(200,168,75,0.3);
+    }
+
+    /* ── TOPIC CARDS ── */
+    .topics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .topic-card {
+      background: var(--card);
+      border: 1px solid rgba(74,158,63,0.15);
+      border-radius: 2px;
+      padding: 40px 36px;
+      transition: border-color 300ms ease, transform 300ms ease;
+    }
+    .topic-card:hover {
+      border-color: rgba(74,158,63,0.4);
+      transform: translateY(-6px);
+    }
+
+    .topic-card h3 {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 300;
+      color: var(--text);
+      margin-bottom: 16px;
+      letter-spacing: -0.01em;
+    }
+
+    .topic-card p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    /* ── CTA BAND ── */
+    .cta-band {
+      background: var(--bg);
+      padding: 120px 0;
+      text-align: center;
+    }
+
+    .cta-band h2 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 300;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      margin-bottom: 20px;
+    }
+
+    .cta-band p {
+      font-size: 1rem;
+      color: var(--muted);
+      max-width: 560px;
+      margin: 0 auto 48px;
+      line-height: 1.8;
+    }
+
+    /* ── RELATED CARDS ── */
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .related-card {
+      background: var(--card);
+      border: 1px solid rgba(74,158,63,0.15);
+      border-radius: 2px;
+      padding: 36px;
+      text-decoration: none;
+      display: block;
+      transition: border-color 300ms ease, transform 300ms ease;
+    }
+    .related-card:hover {
+      border-color: rgba(74,158,63,0.4);
+      transform: translateY(-6px);
+    }
+
+    .related-card .related-label {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--green-accent);
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    .related-card h4 {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 300;
+      color: var(--text);
+      margin-bottom: 12px;
+      letter-spacing: -0.01em;
+    }
+
+    .related-card p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--bg-alt);
+      border-top: 1px solid var(--border);
+      padding: 60px 0 40px;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 300;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+    }
+    .footer-logo span { color: var(--green-accent); }
+
+    .footer-tagline {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+
+    .footer-links a {
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 200ms ease;
+    }
+    .footer-links a:hover { color: var(--green-accent); }
+
+    .footer-bottom {
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+      font-size: 12px;
+      color: rgba(122,143,118,0.4);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* ── FADE IN ANIMATION ── */
+    .fade {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 700ms ease, transform 700ms ease;
+    }
+    .fade.in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .articles-grid,
+      .topics-grid,
+      .related-grid { grid-template-columns: 1fr; }
+      .container { padding: 0 24px; }
+      nav ul { gap: 20px; }
+      section { padding: 80px 0; }
+    }
+
+    @media (max-width: 640px) {
+      nav { padding: 20px 24px; }
+      .hero { min-height: auto; padding: 140px 0 80px; }
+      nav ul .nav-phone { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav id="nav">
+    <a href="/" class="nav-logo">Steady<span>Eco</span></a>
+    <ul>
+      <li><a href="/">Blade Sharpening</a></li>
+      <li><a href="/land-regeneration" class="active">Land Regeneration</a></li>
+      <li><a href="/land-regeneration/government-contracts">Government</a></li>
+      <li><a href="/about">About</a></li>
+      <li><a href="/land-regeneration/contact">Enquire</a></li>
+      <li><a href="tel:+61456190202" class="nav-phone">0456 190 202</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-ghost" aria-hidden="true">INSIGHTS</div>
+    <div class="container">
+      <div class="hero-inner">
+
+        <div class="breadcrumb">
+          <a href="/land-regeneration">Land Regeneration</a>
+          <span>›</span>
+          Insights
+        </div>
+
+        <div class="eyebrow">Land Regeneration — FNQ</div>
+
+        <h1
+          data-line-0-cls="line-dim"
+          data-line-0="Knowledge from"
+          data-line-1-cls="line-accent"
+          data-line-1="the Field"
+        >
+          <span class="line-dim">Knowledge from</span><br>
+          <span class="line-accent">the Field</span>
+        </h1>
+
+        <p class="hero-intro">
+          Practical guides, market context, and ecological knowledge for landholders, councils, and investors across Far North Queensland.
+        </p>
+
+        <div class="hero-ctas">
+          <a href="/land-regeneration" class="btn-outline">All Services</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 1: FEATURED ARTICLES -->
+  <section style="background: var(--bg-alt);">
+    <div class="container">
+      <div class="section-label">Latest Insights</div>
+      <h2 class="section-heading">From the Field</h2>
+      <p class="section-intro">Our most recent guides covering the questions we hear most often from landholders, council officers, and investors across FNQ.</p>
+
+      <div class="articles-grid observe">
+        <div class="article-card fade">
+          <span class="article-cat">Carbon Farming</span>
+          <h3>How Carbon Farming Works in Queensland</h3>
+          <p>The ACCU system, HIR methodology, and what FNQ landholders need to know before registering a carbon farming project.</p>
+          <a href="/land-regeneration/insights/carbon-farming-accu-queensland" class="article-link">Read Article →</a>
+        </div>
+
+        <div class="article-card fade">
+          <span class="article-cat">Contractor Guide</span>
+          <h3>Choosing an Ecological Restoration Contractor in FNQ</h3>
+          <p>What to look for — and what to avoid — when selecting a vegetation management or land regeneration contractor in Far North Queensland.</p>
+          <a href="/land-regeneration/insights/choosing-ecological-contractor-fnq" class="article-link">Read Article →</a>
+        </div>
+
+        <div class="article-card fade">
+          <span class="article-cat">Government Contracts</span>
+          <h3>How FNQ Councils Buy Ecological Services</h3>
+          <p>Procurement thresholds, FNQROC panels, TenderLink, and direct engagement — how local government buys land regeneration work in Far North Queensland.</p>
+          <a href="/land-regeneration/insights/fnq-council-ecological-procurement" class="article-link">Read Article →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PULL QUOTE -->
+  <div class="pull-quote-section">
+    <div class="container">
+      <p class="pull-quote fade">
+        The best ecological decisions come from understanding both the land and how the market for its restoration actually works.
+      </p>
+    </div>
+  </div>
+
+  <!-- SECTION 2: TOPICS WE COVER -->
+  <section style="background: var(--bg-alt);">
+    <div class="container">
+      <div class="section-label">Topics</div>
+      <h2 class="section-heading">What We Write About</h2>
+      <p class="section-intro">Our insights focus on the three areas that matter most to landholders, councils, and investors navigating ecological restoration in FNQ.</p>
+
+      <div class="topics-grid observe">
+        <div class="topic-card fade">
+          <h3>Carbon Farming &amp; ACCUs</h3>
+          <p>ACCU methodology, ERF registration, income estimates, and the difference between HIR and Environmental Planting. Plain-English guides for FNQ landholders considering a carbon project.</p>
+        </div>
+
+        <div class="topic-card fade">
+          <h3>Government &amp; Council Contracts</h3>
+          <p>Procurement thresholds, tender portals, capability statements, and direct engagement pathways. How local government in FNQ buys ecological services — and how contractors can access that work.</p>
+        </div>
+
+        <div class="topic-card fade">
+          <h3>FNQ Ecology &amp; Field Practice</h3>
+          <p>Vegetation types, weed priorities, native species selection, and seasonal considerations across the Wet Tropics, Tablelands, and Gulf region. Knowledge that comes from working in the field.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA BAND -->
+  <div class="cta-band">
+    <div class="container">
+      <h2 class="fade">Have a Question About Your Land?</h2>
+      <p class="fade">Our insights cover the most common questions we hear from landholders and council officers. If yours isn't answered here, contact us directly.</p>
+      <a href="/land-regeneration/contact" class="btn-primary fade">Ask Us Directly</a>
+    </div>
+  </div>
+
+  <!-- RELATED -->
+  <section style="background: var(--bg-alt);">
+    <div class="container">
+      <div class="section-label">Explore</div>
+      <h2 class="section-heading">Related Pages</h2>
+
+      <div class="related-grid observe">
+        <a href="/land-regeneration/carbon-farming" class="related-card fade">
+          <span class="related-label">Service</span>
+          <h4>Carbon Farming</h4>
+          <p>On-ground delivery for Environmental Planting carbon projects across FNQ — site assessment, planting, and MERI support.</p>
+        </a>
+
+        <a href="/land-regeneration/government-contracts" class="related-card fade">
+          <span class="related-label">Service</span>
+          <h4>Government Contracts</h4>
+          <p>Ecological services for councils and government agencies — weed management, vegetation monitoring, and revegetation delivery.</p>
+        </a>
+
+        <a href="/land-regeneration" class="related-card fade">
+          <span class="related-label">Hub</span>
+          <h4>Services Hub</h4>
+          <p>The full picture of what Steady Eco delivers across land regeneration, carbon farming, and government contracting in Far North Queensland.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div>
+          <a href="/" class="footer-logo">Steady<span>Eco</span></a>
+          <p class="footer-tagline">Ecological Restoration — Far North Queensland</p>
+        </div>
+        <div class="footer-links">
+          <a href="/land-regeneration">Land Regeneration</a>
+          <a href="/land-regeneration/insights">Insights</a>
+          <a href="/land-regeneration/government-contracts">Government</a>
+          <a href="/about">About</a>
+          <a href="/land-regeneration/contact">Contact</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 Steady Eco. Cairns, Far North Queensland.</span>
+        <span>ABN available on request</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JS: 4 BLOCKS -->
+  <script>
+    // Block 1: Nav scroll
+    (function () {
+      const nav = document.getElementById('nav');
+      window.addEventListener('scroll', function () {
+        nav.classList.toggle('scrolled', window.scrollY > 60);
+      }, { passive: true });
+    })();
+
+    // Block 2: Word reveal
+    (function () {
+      document.querySelectorAll('h1[data-line-0]').forEach(function (h1) {
+        const lines = [];
+        let i = 0;
+        while (h1.dataset['line' + i] !== undefined) {
+          lines.push({ text: h1.dataset['line' + i], cls: h1.dataset['line' + i + 'Cls'] || '' });
+          i++;
+        }
+        if (!lines.length) return;
+        h1.innerHTML = '';
+        lines.forEach(function (line, li) {
+          const span = document.createElement('span');
+          if (line.cls) span.className = line.cls;
+          const words = line.text.split(' ');
+          words.forEach(function (word, wi) {
+            const w = document.createElement('span');
+            w.className = 'w';
+            w.textContent = word;
+            w.style.transitionDelay = ((li * words.length + wi) * 60) + 'ms';
+            span.appendChild(w);
+            if (wi < words.length - 1) span.appendChild(document.createTextNode('\u00a0'));
+          });
+          h1.appendChild(span);
+          if (li < lines.length - 1) h1.appendChild(document.createElement('br'));
+        });
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            h1.querySelectorAll('.w').forEach(function (w) { w.classList.add('in'); });
+          });
+        });
+      });
+    })();
+
+    // Block 3: Intersection observer for .fade
+    (function () {
+      const obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in');
+            obs.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+
+      document.querySelectorAll('.fade').forEach(function (el, i) {
+        // stagger siblings in observe containers
+        const parent = el.closest('.observe');
+        if (parent) {
+          const siblings = Array.from(parent.querySelectorAll('.fade'));
+          el.style.transitionDelay = (siblings.indexOf(el) * 80) + 'ms';
+        }
+        obs.observe(el);
+      });
+    })();
+
+    // Block 4: Hero fade-in on load
+    (function () {
+      document.querySelectorAll('.hero .fade, .cta-band .fade, .pull-quote-section .fade').forEach(function (el) {
+        // these get picked up by observer above — ensure hero items animate in quickly
+        el.style.transitionDelay = '200ms';
+      });
+    })();
+  </script>
+</body>
+</html>

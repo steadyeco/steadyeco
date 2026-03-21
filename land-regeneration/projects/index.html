@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ecological Restoration Projects FNQ | Land Regeneration Portfolio — Steady Eco Cairns</title>
+  <meta name="description" content="Vegetation management, revegetation, weed control, erosion, and carbon farming projects across Far North Queensland. Cairns-based ecological contractor — accepting new projects." />
+  <meta property="og:title" content="Ecological Restoration Projects — Steady Eco Land Regeneration, FNQ" />
+  <meta property="og:description" content="Roadside vegetation, revegetation, invasive weed control, waterway restoration and carbon farming across Far North Queensland. Accepting new projects now." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://steadyeco.com/land-regeneration/projects" />
+  <meta property="og:locale" content="en_AU" />
+  <link rel="canonical" href="https://steadyeco.com/land-regeneration/projects" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","name":"Steady Eco Land Regeneration","url":"https://steadyeco.com","telephone":"+61456190202","address":{"@type":"PostalAddress","addressLocality":"Cairns","addressRegion":"QLD","addressCountry":"AU"},"description":"Ecological restoration contractor based in Cairns, Far North Queensland. Vegetation management, revegetation, weed control, erosion control, waterway restoration, and carbon farming.","areaServed":{"@type":"AdministrativeArea","name":"Far North Queensland"},"hasOfferCatalog":{"@type":"OfferCatalog","name":"Ecological Restoration Services","itemListElement":[{"@type":"Offer","itemOffered":{"@type":"Service","name":"Roadside Vegetation Management"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Post-Clearing Revegetation"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Invasive Weed Removal"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Waterway Restoration"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Carbon Farming Setup"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Government Ecological Works"}}]}}</script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0f0a; --bg-alt: #0f1a0f; --card: #111e11;
+      --green-accent: #4a9e3f; --gold: #c8a84b;
+      --text: #e8ede6; --muted: #7a8f76;
+      --border: rgba(74,158,63,0.12); --border-hover: rgba(74,158,63,0.4);
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body: 'DM Sans', system-ui, sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--muted); font-family: var(--font-body); font-size: 16px; line-height: 1.75; font-weight: 300; overflow-x: hidden; }
+    h1, h2, h3 { font-family: var(--font-display); font-weight: 300; color: var(--text); }
+    a { color: inherit; text-decoration: none; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
+    #scroll-bar { position: fixed; top: 0; left: 0; height: 2px; width: 0; background: var(--green-accent); z-index: 200; pointer-events: none; }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 24px 0; transition: background 0.5s ease, padding 0.4s ease, border-color 0.4s ease, transform 0.45s ease; border-bottom: 1px solid transparent; }
+    nav.scrolled { background: rgba(10,15,10,0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 16px 0; border-bottom-color: var(--border); }
+    nav.nav-hidden { transform: translateY(-100%); }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-family: var(--font-display); font-size: 1.5rem; font-weight: 300; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text); }
+    .nav-logo .g { color: var(--green-accent); }
+    .nav-links { display: flex; align-items: center; gap: 40px; list-style: none; }
+    .nav-links a { font-family: var(--font-body); font-size: 11px; font-weight: 400; color: var(--muted); text-transform: uppercase; letter-spacing: 0.15em; transition: color 0.3s ease; position: relative; padding-bottom: 4px; }
+    .nav-links a::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 1px; background: var(--green-accent); transition: width 0.3s ease; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
+    .nav-links a.active { color: var(--green-accent); }
+    .nav-phone { color: var(--green-accent) !important; border: 1px solid rgba(74,158,63,0.3) !important; padding: 8px 20px !important; }
+    .nav-phone::after { display: none !important; }
+    .nav-phone:hover { background: rgba(74,158,63,0.08) !important; }
+    .hamburger { display: none; flex-direction: column; gap: 6px; cursor: pointer; padding: 4px; background: none; border: none; }
+    .hamburger span { display: block; width: 22px; height: 1px; background: var(--text); transition: 0.3s; }
+    .mobile-menu { display: none; flex-direction: column; background: var(--bg); border-top: 1px solid var(--border); padding: 40px; gap: 32px; }
+    .mobile-menu a { font-family: var(--font-display); font-size: 2rem; font-weight: 300; color: var(--muted); letter-spacing: 0.05em; transition: color 0.3s ease; }
+    .mobile-menu a.active, .mobile-menu a:hover { color: var(--text); }
+    .mobile-menu.open { display: flex; }
+
+    /* ANIMATIONS */
+    .fade { opacity: 0; transform: translateY(30px); transition: opacity 0.9s ease, transform 0.9s ease; }
+    .fade.in { opacity: 1; transform: translateY(0); }
+
+    /* BREADCRUMB */
+    .breadcrumb { padding: 120px 0 0; background: var(--bg); }
+    .bc-inner { display: flex; align-items: center; gap: 10px; font-family: var(--font-body); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+    .bc-inner a { transition: color 0.3s ease; }
+    .bc-inner a:hover { color: var(--green-accent); }
+    .bc-inner .cur { color: var(--green-accent); }
+
+    /* PAGE HERO */
+    .page-hero { position: relative; padding: 48px 0 120px; overflow: hidden; background: var(--bg); }
+    .hero-ghost { position: absolute; bottom: -0.1em; left: -0.04em; font-family: var(--font-display); font-size: 14vw; font-weight: 300; text-transform: uppercase; color: var(--text); opacity: 0.028; letter-spacing: -0.02em; line-height: 1; pointer-events: none; user-select: none; white-space: nowrap; }
+    .page-eyebrow { font-family: var(--font-body); font-size: 11px; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green-accent); margin-bottom: 28px; display: flex; align-items: center; gap: 14px; }
+    .page-eyebrow::before { content: ''; display: block; width: 24px; height: 1px; background: var(--green-accent); }
+    .page-title { font-family: var(--font-display); font-size: clamp(48px, 7vw, 72px); letter-spacing: -0.02em; line-height: 1.05; color: var(--text); font-weight: 300; margin-bottom: 32px; }
+    .page-title .w { display: inline-block; opacity: 0; transform: translateY(16px); transition: opacity 0.7s ease, transform 0.7s ease; margin-right: 0.22em; }
+    .page-title .accent { color: var(--green-accent); }
+    .page-title .dim { color: var(--muted); }
+    .page-intro { font-size: 16px; line-height: 1.75; color: var(--muted); max-width: 580px; margin-bottom: 48px; opacity: 0; transform: translateY(12px); transition: opacity 0.8s ease 0.7s, transform 0.8s ease 0.7s; }
+    .page-intro.in { opacity: 1; transform: translateY(0); }
+    .hero-ctas { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; opacity: 0; transition: opacity 0.7s ease 0.9s; }
+    .hero-ctas.in { opacity: 1; }
+
+    /* BUTTONS */
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 16px 36px; font-family: var(--font-body); font-size: 11px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; border: 1px solid transparent; position: relative; overflow: hidden; transition: border-color 0.3s ease, color 0.3s ease; border-radius: 0; min-height: 48px; }
+    .btn-primary { background: var(--green-accent); color: #0a0f0a; border-color: var(--green-accent); }
+    .btn-primary::before { content: ''; position: absolute; left: -100%; top: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.12); transition: left 300ms ease; }
+    .btn-primary:hover::before { left: 0; }
+    .btn-outline { background: transparent; color: var(--text); border-color: rgba(74,158,63,0.3); }
+    .btn-outline:hover { border-color: var(--green-accent); color: var(--green-accent); }
+
+    /* SECTIONS */
+    section { padding: 120px 0; }
+
+    /* LABELS */
+    .label { font-family: var(--font-body); font-size: 11px; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green-accent); display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+    .label::before { content: ''; display: block; width: 24px; height: 1px; background: var(--green-accent); }
+
+    /* SECTION HEADINGS */
+    .sh { font-family: var(--font-display); font-size: clamp(1.8rem, 3.5vw, 3rem); letter-spacing: -0.02em; line-height: 1.05; color: var(--text); font-weight: 300; margin-bottom: 56px; }
+    .sh .accent { color: var(--green-accent); }
+
+    /* SCOPE CARDS */
+    .scope-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .scope-card { background: var(--card); border: 1px solid rgba(74,158,63,0.15); border-radius: 2px; padding: 40px 36px; transition: border-color 300ms ease, transform 300ms ease; }
+    .scope-card:hover { border-color: rgba(74,158,63,0.4); transform: translateY(-6px); }
+    .scope-card h3 { font-family: var(--font-display); font-size: 1.3rem; font-weight: 300; color: var(--text); margin-bottom: 12px; }
+    .scope-card p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+    .scope-num { font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.25em; color: rgba(74,158,63,0.5); margin-bottom: 16px; }
+
+    /* PULL QUOTE */
+    .pull-quote-section { padding: 80px 0; text-align: center; background: var(--bg); }
+    .pull-quote { font-family: var(--font-display); font-style: italic; font-size: 32px; color: var(--gold); line-height: 1.5; max-width: 800px; margin: 0 auto; }
+
+    /* PROJECT CARDS */
+    .project-card { background: var(--card); border: 1px solid rgba(74,158,63,0.15); border-radius: 2px; padding: 48px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 340px; gap: 56px; align-items: start; }
+    .project-card:last-child { margin-bottom: 0; }
+    .project-label { font-family: var(--font-body); font-size: 10px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green-accent); display: block; margin-bottom: 14px; }
+    .project-title { font-family: var(--font-display); font-size: 1.6rem; font-weight: 300; color: var(--text); line-height: 1.2; margin-bottom: 10px; }
+    .project-location { font-family: var(--font-body); font-size: 12px; letter-spacing: 0.1em; color: var(--muted); opacity: 0.7; margin-bottom: 20px; }
+    .project-desc { font-size: 14px; color: var(--muted); line-height: 1.75; }
+    .project-right { display: flex; flex-direction: column; gap: 12px; }
+    .detail-pill { background: rgba(74,158,63,0.06); border: 1px solid rgba(74,158,63,0.2); border-radius: 2px; padding: 8px 16px; font-size: 12px; display: flex; gap: 10px; align-items: baseline; }
+    .detail-pill .pill-label { color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+    .detail-pill .pill-value { color: var(--text); }
+    .photo-placeholder { background: rgba(74,158,63,0.04); border: 1px solid rgba(74,158,63,0.1); height: 160px; display: flex; align-items: center; justify-content: center; margin-top: 4px; }
+    .photo-placeholder span { font-family: var(--font-display); font-style: italic; font-size: 1rem; color: var(--muted); opacity: 0.6; text-align: center; padding: 0 20px; }
+
+    /* SCALE CARDS */
+    .scale-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .scale-card { background: var(--card); border: 1px solid rgba(74,158,63,0.15); border-radius: 2px; padding: 48px 40px; transition: border-color 300ms ease, transform 300ms ease; }
+    .scale-card:hover { border-color: rgba(74,158,63,0.4); transform: translateY(-6px); }
+    .scale-tag { font-family: var(--font-body); font-size: 10px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green-accent); display: block; margin-bottom: 16px; }
+    .scale-card h3 { font-family: var(--font-display); font-size: 1.4rem; font-weight: 300; color: var(--text); margin-bottom: 14px; }
+    .scale-card p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+    /* HONEST STATEMENT */
+    .honest-block { max-width: 760px; }
+    .honest-block p { font-size: 17px; line-height: 1.85; color: var(--muted); margin-bottom: 48px; }
+
+    /* CTA BAND */
+    .band { border: 1px solid rgba(74,158,63,0.2); padding: 72px 64px; position: relative; overflow: hidden; display: grid; grid-template-columns: 1fr auto; gap: 64px; align-items: center; }
+    .band::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--green-accent), transparent); }
+    .band h2 { font-family: var(--font-display); font-size: clamp(1.8rem, 3vw, 2.8rem); font-weight: 300; margin-bottom: 12px; }
+    .band p { font-size: 15px; color: var(--muted); line-height: 1.75; max-width: 480px; }
+    .band-actions { display: flex; flex-direction: column; gap: 12px; align-items: flex-end; min-width: 220px; }
+
+    /* RELATED SERVICES */
+    .related-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .related-card { background: var(--card); border: 1px solid rgba(74,158,63,0.15); border-radius: 2px; padding: 40px 36px; transition: border-color 300ms ease, transform 300ms ease; }
+    .related-card:hover { border-color: rgba(74,158,63,0.4); transform: translateY(-4px); }
+    .related-card h3 { font-family: var(--font-display); font-size: 1.2rem; font-weight: 300; color: var(--text); margin-bottom: 10px; }
+    .related-card p { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 20px; }
+    .card-link { font-family: var(--font-body); font-size: 11px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--green-accent); display: inline-flex; align-items: center; gap: 8px; transition: gap 0.3s ease; }
+    .card-link:hover { gap: 16px; }
+    .card-link::after { content: '→'; }
+
+    /* FOOTER */
+    footer { border-top: 1px solid var(--border); padding: 80px 0 56px; background: var(--bg); }
+    .footer-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 56px; }
+    .footer-logo { font-family: var(--font-display); font-size: 1.5rem; font-weight: 300; letter-spacing: 0.12em; text-transform: uppercase; display: block; margin-bottom: 16px; color: var(--text); }
+    .footer-logo .g { color: var(--green-accent); }
+    .footer-tagline { font-size: 14px; line-height: 1.7; color: var(--muted); max-width: 260px; }
+    .footer-col h4 { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; font-weight: 400; }
+    .footer-col a { display: block; font-size: 14px; color: var(--muted); margin-bottom: 10px; transition: color 0.3s ease; }
+    .footer-col a:hover { color: var(--green-accent); }
+    .footer-contact { text-align: right; }
+    .footer-contact a { color: var(--text); }
+    .footer-bottom { border-top: 1px solid var(--border); padding-top: 32px; margin-top: 56px; display: flex; justify-content: space-between; align-items: center; }
+    .footer-bottom p { font-size: 12px; color: rgba(122,143,118,0.4); letter-spacing: 0.05em; }
+
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      .scope-grid { grid-template-columns: repeat(2, 1fr); }
+      .scale-grid { grid-template-columns: repeat(2, 1fr); }
+      .related-grid { grid-template-columns: repeat(2, 1fr); }
+      .project-card { grid-template-columns: 1fr; gap: 36px; }
+    }
+    @media (max-width: 768px) {
+      section { padding: 80px 0; }
+      .container { padding: 0 24px; }
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .scope-grid { grid-template-columns: 1fr; }
+      .scale-grid { grid-template-columns: 1fr; }
+      .related-grid { grid-template-columns: 1fr; }
+      .project-card { padding: 32px 24px; grid-template-columns: 1fr; gap: 28px; }
+      .band { grid-template-columns: 1fr; gap: 40px; padding: 48px 24px; }
+      .band-actions { align-items: flex-start; }
+      .footer-grid { grid-template-columns: 1fr; gap: 40px; }
+      .footer-contact { text-align: left; }
+      .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+      .page-title { font-size: 48px !important; }
+      .pull-quote { font-size: 24px; }
+      .hero-ctas { flex-direction: column; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .fade, .page-title .w, .page-intro, .hero-ctas { transition: none !important; opacity: 1 !important; transform: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="scroll-bar" aria-hidden="true"></div>
+
+  <nav id="nav">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">Steady <span class="g">Eco</span></a>
+      <ul class="nav-links">
+        <li><a href="/">Blade Sharpening</a></li>
+        <li><a href="/land-regeneration" class="active">Land Regeneration</a></li>
+        <li><a href="/land-regeneration/government-contracts">Government</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/land-regeneration/contact">Enquire</a></li>
+        <li><a href="tel:+61456190202" class="nav-phone">0456 190 202</a></li>
+      </ul>
+      <button class="hamburger" onclick="toggleMenu()" aria-label="Open menu"><span></span><span></span><span></span></button>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="/">Blade Sharpening</a>
+      <a href="/land-regeneration" class="active">Land Regeneration</a>
+      <a href="/land-regeneration/government-contracts">Government</a>
+      <a href="/about">About</a>
+      <a href="/land-regeneration/contact">Enquire</a>
+    </div>
+  </nav>
+
+  <div class="breadcrumb">
+    <div class="container">
+      <div class="bc-inner">
+        <a href="/land-regeneration">Land Regeneration</a>
+        <span>›</span>
+        <span class="cur">Projects</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-hero">
+    <div class="hero-ghost" aria-hidden="true">PROJECTS</div>
+    <div class="container">
+      <div class="page-eyebrow">Field Work — Far North Queensland</div>
+      <h1 class="page-title">
+        <span data-line data-cls="dim">Where the Work</span><br>
+        <span data-line data-cls="accent">Gets Done</span>
+      </h1>
+      <p class="page-intro">Every site tells a different story. What stays the same: the standard we hold ourselves to and the outcomes we deliver for landholders, councils, and government agencies across FNQ.</p>
+      <div class="hero-ctas">
+        <a href="/land-regeneration/contact" class="btn btn-primary">Discuss Your Project</a>
+        <a href="/land-regeneration" class="btn btn-outline">Our Services</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: PROJECT TYPES -->
+  <section style="background: var(--bg-alt);" class="observe">
+    <div class="container">
+      <div class="label fade">Scope of Work</div>
+      <h2 class="sh fade">What a Steady Eco Project <span class="accent">Looks Like</span></h2>
+      <div class="scope-grid">
+        <div class="scope-card fade">
+          <div class="scope-num">01</div>
+          <h3>Roadside Vegetation Management</h3>
+          <p>Council roadside programs. Mulching, slashing, and vegetation clearing along public roads and infrastructure corridors.</p>
+        </div>
+        <div class="scope-card fade">
+          <div class="scope-num">02</div>
+          <h3>Post-Clearing Revegetation</h3>
+          <p>Native species planting following land clearing. MERI-compliant programs with ongoing monitoring and reporting.</p>
+        </div>
+        <div class="scope-card fade">
+          <div class="scope-num">03</div>
+          <h3>Invasive Weed Removal</h3>
+          <p>Property-wide or corridor-based weed programs. Manual and chemical treatment. Species-specific programs for Cairns and Wet Tropics weed priorities.</p>
+        </div>
+        <div class="scope-card fade">
+          <div class="scope-num">04</div>
+          <h3>Waterway Restoration</h3>
+          <p>Erosion control and riparian revegetation. Reef water quality eligible. Bioengineering and sediment management.</p>
+        </div>
+        <div class="scope-card fade">
+          <div class="scope-num">05</div>
+          <h3>Carbon Farming Setup</h3>
+          <p>ERF project development and ACCU methodology selection. Human-Induced Regeneration and Environmental Planting projects.</p>
+        </div>
+        <div class="scope-card fade">
+          <div class="scope-num">06</div>
+          <h3>Government Ecological Works</h3>
+          <p>Council and Queensland government ecological restoration contracts. Tender-ready delivery with compliance documentation.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PULL QUOTE -->
+  <div class="pull-quote-section observe">
+    <p class="pull-quote fade">"The land doesn't care about the paperwork.<br>But the people who fund restoration do — and we handle both."</p>
+  </div>
+
+  <!-- SECTION 2: PROJECT PROFILES -->
+  <section style="background: var(--bg-alt);" class="observe">
+    <div class="container">
+      <div class="label fade">Project Profiles</div>
+      <h2 class="sh fade">Recent <span class="accent">Work</span></h2>
+
+      <div class="project-card fade">
+        <div class="project-left">
+          <span class="project-label">Vegetation Management</span>
+          <h3 class="project-title">Roadside Corridor Program</h3>
+          <p class="project-location">Cairns Region — 2025</p>
+          <p class="project-desc">Multi-kilometre roadside vegetation management program. Mulching and clearing along an infrastructure corridor to reduce fire risk and maintain sight lines. Delivered on schedule with council sign-off.</p>
+        </div>
+        <div class="project-right">
+          <div class="detail-pill">
+            <span class="pill-label">Service</span>
+            <span class="pill-value">Vegetation Management</span>
+          </div>
+          <div class="detail-pill">
+            <span class="pill-label">Scale</span>
+            <span class="pill-value">~4km corridor</span>
+          </div>
+          <div class="detail-pill">
+            <span class="pill-label">Outcome</span>
+            <span class="pill-value">Council accepted, on schedule</span>
+          </div>
+          <div class="photo-placeholder">
+            <span>Site photography available on request</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-card fade">
+        <div class="project-left">
+          <span class="project-label">Revegetation</span>
+          <h3 class="project-title">Post-Clearing Native Planting</h3>
+          <p class="project-location">Tablelands, FNQ — 2025</p>
+          <p class="project-desc">Native species revegetation following approved land clearing on a rural property. Species selected to match local ecological community. MERI framework applied for monitoring.</p>
+        </div>
+        <div class="project-right">
+          <div class="detail-pill">
+            <span class="pill-label">Service</span>
+            <span class="pill-value">Revegetation</span>
+          </div>
+          <div class="detail-pill">
+            <span class="pill-label">Scale</span>
+            <span class="pill-value">~2ha</span>
+          </div>
+          <div class="detail-pill">
+            <span class="pill-label">Outcome</span>
+            <span class="pill-value">Establishment phase complete</span>
+          </div>
+          <div class="photo-placeholder">
+            <span>Site photography available on request</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-card fade">
+        <div class="project-left">
+          <span class="project-label">Weed Control</span>
+          <h3 class="project-title">Invasive Species Program</h3>
+          <p class="project-location">Wet Tropics Fringe — 2025</p>
+          <p class="project-desc">Multi-visit weed control program targeting Pond Apple, Rubber Vine, and Mission Grass on a rural property adjoining World Heritage Area. Chemical and manual methods.</p>
+        </div>
+        <div class="project-right">
+          <div class="detail-pill">
+            <span class="pill-label">Service</span>
+            <span class="pill-value">Weed Control</span>
+          </div>
+          <div class="detail-pill">
+            <span class="pill-label">Scale</span>
+            <span class="pill-value">~8ha</span>
+          </div>
+          <div class="detail-pill">
+            <span class="pill-label">Outcome</span>
+            <span class="pill-value">Infestation reduced, follow-up scheduled</span>
+          </div>
+          <div class="photo-placeholder">
+            <span>Site photography available on request</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 3: SCALE -->
+  <section style="background: var(--bg);" class="observe">
+    <div class="container">
+      <div class="label fade">Project Scale</div>
+      <h2 class="sh fade">From Single Blocks to <span class="accent">Multi-Year Programs</span></h2>
+      <div class="scale-grid">
+        <div class="scale-card fade">
+          <span class="scale-tag">Small Sites</span>
+          <h3>0.5 – 5ha</h3>
+          <p>Individual property revegetation, targeted weed control, and small erosion works. Fast turnaround — often quoted and mobilised within 2 weeks.</p>
+        </div>
+        <div class="scale-card fade">
+          <span class="scale-tag">Medium Programs</span>
+          <h3>5 – 50ha</h3>
+          <p>Multi-stage ecological works. Revegetation programs, weed management over multiple visits, waterway restoration. Typically 1–3 months.</p>
+        </div>
+        <div class="scale-card fade">
+          <span class="scale-tag">Government &amp; Council Scale</span>
+          <h3>50ha+</h3>
+          <p>Roadside programs, council ecological contracts, multi-year restoration. Tender-ready with full compliance documentation and progress reporting.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: HONEST STATEMENT -->
+  <section style="background: var(--bg-alt);" class="observe">
+    <div class="container">
+      <div class="label fade">Our Commitment</div>
+      <h2 class="sh fade">New Business. <span class="accent">Proven Capability.</span></h2>
+      <div class="honest-block fade">
+        <p>Steady Eco Land Regeneration is a new name in the FNQ ecological contractor market. Sam brings seven years of field experience and a deep knowledge of FNQ ecology, vegetation, and land — but we are building our formal project portfolio now. If you are considering engaging us, we welcome the opportunity to quote, visit your site, and demonstrate what we can do. We are not yet the biggest name in FNQ ecological restoration. We intend to be.</p>
+        <a href="/land-regeneration/contact" class="btn btn-primary">Be Part of Our First Projects</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA BAND -->
+  <section style="background: var(--bg);" class="observe">
+    <div class="container">
+      <div class="band fade">
+        <div>
+          <h2>Got a Project in Mind?</h2>
+          <p style="margin-top:12px;">Whether it's a single block or a multi-year council program — send us the details and we'll quote within 3 business days.</p>
+        </div>
+        <div class="band-actions">
+          <a href="/land-regeneration/contact" class="btn btn-primary">Discuss Your Project</a>
+          <a href="/land-regeneration" class="btn btn-outline">View Our Services</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RELATED -->
+  <section style="background: var(--bg-alt);" class="observe">
+    <div class="container">
+      <div class="label fade">Related</div>
+      <div class="related-grid" style="margin-top:8px;">
+        <div class="related-card fade">
+          <h3>Government Contracts</h3>
+          <p>Council and Queensland government ecological works. Tender-ready delivery with compliance documentation and procurement registration.</p>
+          <a href="/land-regeneration/government-contracts" class="card-link">Learn More</a>
+        </div>
+        <div class="related-card fade">
+          <h3>Carbon Farming</h3>
+          <p>ERF project setup, ACCU methodology selection, and Human-Induced Regeneration and Environmental Planting projects across FNQ.</p>
+          <a href="/land-regeneration/carbon-farming" class="card-link">Learn More</a>
+        </div>
+        <div class="related-card fade">
+          <h3>Capability Statement</h3>
+          <p>Full details on our services, equipment, insurance, compliance registrations, and service area — ready for procurement officers and landholders.</p>
+          <a href="/land-regeneration/capability-statement" class="card-link">Download</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <span class="footer-logo">Steady <span class="g">Eco</span></span>
+          <p class="footer-tagline">Land Regeneration — FNQ's first dedicated ecological restoration contractor. Cairns, Queensland.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Services</h4>
+          <a href="/land-regeneration/vegetation-management">Vegetation Management</a>
+          <a href="/land-regeneration/revegetation">Revegetation</a>
+          <a href="/land-regeneration/weed-control">Weed Control</a>
+          <a href="/land-regeneration/erosion-control">Erosion Control</a>
+          <a href="/land-regeneration/carbon-farming">Carbon Farming</a>
+          <a href="/land-regeneration/government-contracts">Government Contracts</a>
+        </div>
+        <div class="footer-col footer-contact">
+          <h4>Contact</h4>
+          <a href="tel:+61456190202">0456 190 202</a>
+          <a href="/land-regeneration/contact">Send Enquiry</a>
+          <a href="/land-regeneration/capability-statement">Capability Statement</a>
+          <a href="/land-regeneration/projects">Projects</a>
+          <a href="/land-regeneration">← Land Regeneration</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Steady Eco Land Regeneration — Cairns, Far North Queensland</p>
+        <p><a href="/">Also: Chipper Blade Sharpening →</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll progress bar
+    const scrollBar = document.getElementById('scroll-bar');
+    window.addEventListener('scroll', () => {
+      scrollBar.style.width = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight) * 100) + '%';
+    }, { passive: true });
+
+    // Nav scroll + hide
+    const nav = document.getElementById('nav');
+    let lastY = 0;
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY;
+      nav.classList.toggle('scrolled', y > 40);
+      nav.classList.toggle('nav-hidden', y > 120 && y > lastY);
+      lastY = y;
+    }, { passive: true });
+
+    // Mobile menu
+    function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
+
+    // IntersectionObserver fade-in with 60ms stagger
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const children = [...entry.target.querySelectorAll('.fade')];
+        if (children.length) {
+          children.forEach((c, i) => setTimeout(() => c.classList.add('in'), i * 60));
+        } else {
+          entry.target.classList.add('in');
+        }
+        io.unobserve(entry.target);
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+    document.querySelectorAll('.observe').forEach(el => io.observe(el));
+
+    // Word-by-word hero title reveal
+    function initHero() {
+      const h1 = document.querySelector('.page-title');
+      if (!h1) return;
+      h1.querySelectorAll('[data-line]').forEach(line => {
+        const cls = line.dataset.cls || '';
+        const words = line.textContent.trim().split(/\s+/);
+        line.innerHTML = words.map(w => `<span class="w ${cls}">${w}</span>`).join(' ');
+        line.removeAttribute('data-line');
+        line.removeAttribute('data-cls');
+        line.removeAttribute('class');
+      });
+      let idx = 0;
+      document.querySelectorAll('.page-title .w').forEach(w => {
+        const delay = 100 + idx++ * 80;
+        setTimeout(() => { w.style.opacity = '1'; w.style.transform = 'translateY(0)'; }, delay);
+      });
+      setTimeout(() => document.querySelector('.page-intro')?.classList.add('in'), 100 + idx * 80);
+      setTimeout(() => document.querySelector('.hero-ctas')?.classList.add('in'), 200 + idx * 80);
+    }
+    window.addEventListener('load', initHero);
+  </script>
+</body>
+</html>
