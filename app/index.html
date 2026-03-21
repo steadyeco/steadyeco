@@ -3718,20 +3718,34 @@
     const stored = localStorage.getItem(PIN_KEY);
     const isV2   = localStorage.getItem('se_pin_v') === '2';
     let match    = false;
-    if (isV2) {
-      match = (await hashPin(pinBuffer)) === stored;
-    } else {
-      // Legacy: bare SHA-256 — verify then silently migrate to PBKDF2
-      if ((await sha256(pinBuffer)) === stored) {
-        localStorage.setItem(PIN_KEY, await hashPin(pinBuffer));
-        localStorage.setItem('se_pin_v', '2');
-        match = true;
+
+    // Show "Checking..." while PBKDF2 runs — it takes ~1s on mobile
+    const keypad   = document.getElementById('pinKeypad');
+    const subtitle = document.getElementById('pinSubtitle');
+    keypad.classList.add('disabled');
+    subtitle.textContent = 'Checking…';
+
+    try {
+      if (isV2) {
+        match = (await hashPin(pinBuffer)) === stored;
+      } else {
+        // Legacy: bare SHA-256 — verify then silently migrate to PBKDF2
+        if ((await sha256(pinBuffer)) === stored) {
+          localStorage.setItem(PIN_KEY, await hashPin(pinBuffer));
+          localStorage.setItem('se_pin_v', '2');
+          match = true;
+        }
       }
+    } catch(e) {
+      console.error('se: verifyPin error', e);
     }
+
     if (match) {
       cryptoKey = await deriveKey(pinBuffer);
       unlockApp();
     } else {
+      subtitle.textContent = 'Operational Access';
+      keypad.classList.remove('disabled');
       pinWrongAttempt();
     }
   }
