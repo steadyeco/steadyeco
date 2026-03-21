@@ -3808,12 +3808,23 @@
       document.getElementById('pinSubtitle').textContent = 'Confirm your PIN';
     } else if (pinBuffer === pinSetupFirst) {
       // Step 2 match — save with PBKDF2 hash and unlock
-      localStorage.setItem(PIN_KEY, await hashPin(pinBuffer));
-      localStorage.setItem('se_pin_v', '2');
-      cryptoKey = await deriveKey(pinBuffer);
-      pinSetupMode  = false;
-      pinSetupFirst = '';
-      unlockApp();
+      keypad.classList.add('disabled');
+      document.getElementById('pinSubtitle').textContent = 'Setting up…';
+      try {
+        localStorage.setItem(PIN_KEY, await hashPin(pinBuffer));
+        localStorage.setItem('se_pin_v', '2');
+        cryptoKey = await deriveKey(pinBuffer);
+        pinSetupMode  = false;
+        pinSetupFirst = '';
+        unlockApp();
+      } catch(e) {
+        document.getElementById('pinSubtitle').textContent = 'Setup failed — try again';
+        keypad.classList.remove('disabled');
+        pinBuffer = '';
+        updatePinDots('pinDots');
+        pinSetupMode  = true;
+        pinSetupFirst = '';
+      }
     } else {
       // Step 2 mismatch — shake and restart
       pinSetupFirst = '';
