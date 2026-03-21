@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     button, a { -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
@@ -1296,31 +1297,30 @@
       localStorage.setItem('se_pending_quotes', JSON.stringify(existing));
     } catch(e) { console.warn('se: could not write pending quote', e); }
 
-    // Email notification via Formspree — fires regardless of PWA localStorage isolation
-    const fd = new FormData();
-    fd.append('_subject', `New Website Enquiry — ${ref}`);
-    fd.append('_gotcha', '');
-    if (email) fd.append('_replyto', email);
-    fd.append('Reference', ref);
-    fd.append('Customer Name', name);
-    fd.append('Phone', phone);
-    fd.append('Email', email || 'Not provided');
-    if (company) fd.append('Company', company);
-    fd.append('Machine', machineName || 'Not specified');
-    if (selectedBladeType) fd.append('Blade Type', selectedBladeType);
-    fd.append('Sets', `${sets} set${sets !== 1 ? 's' : ''} (${sets * 2} blades)`);
-    fd.append('Job Type', isEmergency ? 'Emergency' : 'Standard');
-    fd.append('Delivery', collectMode === 'collect' ? `Collect & return${suburbName ? ' — ' + suburbName : ''}` : 'Customer drop-off');
-    fd.append('Total', tp != null ? `$${tp}` : 'Call to confirm');
-    if (preferredDate) fd.append('Preferred Date', preferredDate);
-    fd.append('Submitted At', new Date().toLocaleString('en-AU', { timeZone: 'Australia/Brisbane' }));
-    fetch('https://formspree.io/f/xvzwlpko', {
-      method: 'POST',
-      body: fd,
-      headers: { Accept: 'application/json' }
-    }).then(res => {
-      if (!res.ok) console.warn('se: Formspree returned', res.status);
-    }).catch(err => console.warn('se: Formspree fetch failed', err));
+    // Email notification via EmailJS
+    const submittedAt = new Date().toLocaleString('en-AU', { timeZone: 'Australia/Brisbane' });
+    const msgLines = [
+      `Reference: ${ref}`,
+      `Name: ${name}`,
+      `Phone: ${phone}`,
+      `Email: ${email || 'Not provided'}`,
+      company ? `Company: ${company}` : null,
+      `Machine: ${machineName || 'Not specified'}`,
+      selectedBladeType ? `Blade Type: ${selectedBladeType}` : null,
+      `Sets: ${sets} set${sets !== 1 ? 's' : ''} (${sets * 2} blades)`,
+      `Job Type: ${isEmergency ? 'Emergency' : 'Standard'}`,
+      `Delivery: ${collectMode === 'collect' ? `Collect & return${suburbName ? ' — ' + suburbName : ''}` : 'Customer drop-off'}`,
+      `Total: ${tp != null ? '$' + tp : 'Call to confirm'}`,
+      preferredDate ? `Preferred Date: ${preferredDate}` : null,
+      `Submitted: ${submittedAt}`,
+    ].filter(Boolean).join('\n');
+    emailjs.send('service_y2r7mrc', 'template_35cka0p', {
+      subject:       `New Website Enquiry — ${ref}`,
+      from_name:     name,
+      reply_to:      email || 'noreply@steadyeco.com',
+      message:       msgLines,
+    }, 'M3WdZeueeGKrVL5jZ')
+    .catch(err => console.warn('se: EmailJS failed', err));
 
     smsCopyText   = buildSMS(name, ref, bp, cf, tp, suburbName, callConfirm, preferredDate);
     emailCopyText = buildEmail(name, ref, bp, cf, tp, suburbName, callConfirm, today, preferredDate);
