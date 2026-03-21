@@ -3700,12 +3700,16 @@
   }
 
   function pinInput(digit) {
-    const keypad = document.getElementById('pinKeypad');
-    if (keypad.classList.contains('disabled')) return;
-    if (pinBuffer.length >= 4) return;
-    pinBuffer += digit;
-    updatePinDots('pinDots');
-    if (pinBuffer.length === 4) verifyPin();
+    try {
+      const keypad = document.getElementById('pinKeypad');
+      if (keypad.classList.contains('disabled')) return;
+      if (pinBuffer.length >= 4) return;
+      pinBuffer += digit;
+      updatePinDots('pinDots');
+      if (pinBuffer.length === 4) verifyPin();
+    } catch(e) {
+      document.getElementById('pinSubtitle').textContent = 'ERR: ' + e.message;
+    }
   }
 
   function pinBackspace() {
