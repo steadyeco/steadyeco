@@ -933,10 +933,7 @@
   <div class="app-header">
     <div class="app-logo" onclick="goHome()">Steady <span>Eco</span></div>
     <div class="header-icons">
-      <button class="header-icon-btn" onclick="showJobsScreen()"              title="Jobs">📅</button>
-      <button class="header-icon-btn" onclick="openNewQuote(null,'dashboard')" title="New Quote">📋</button>
-      <button class="header-icon-btn" onclick="showInvoicesScreen()"         title="Invoices">📄</button>
-      <button class="header-icon-btn" onclick="showSettingsScreen()"         title="Settings">⚙️</button>
+      <button class="header-icon-btn" onclick="showSettingsScreen()" title="Settings">⚙️</button>
     </div>
   </div>
 
@@ -1721,25 +1718,17 @@
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       <span>Today</span>
     </button>
-    <button class="se-dock-btn" id="dock-customer" onclick="dockNavigate('new-customer')" aria-label="New Customer">
-      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-      <span>Customer</span>
-    </button>
-    <button class="se-dock-btn" id="dock-job" onclick="dockNavigate('new-job')" aria-label="New Job">
-      <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
-      <span>Job</span>
-    </button>
-    <button class="se-dock-btn" id="dock-quote" onclick="dockNavigate('new-quote')" aria-label="New Quote">
-      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-      <span>Quote</span>
-    </button>
-    <button class="se-dock-btn" id="dock-invoice" onclick="dockNavigate('invoices')" aria-label="Invoices">
-      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-      <span>Invoice</span>
+    <button class="se-dock-btn" id="dock-customer" onclick="dockNavigate('customers')" aria-label="Customers">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      <span>Customers</span>
     </button>
     <button class="se-dock-btn" id="dock-finance" onclick="dockNavigate('finance')" aria-label="Finance">
       <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       <span>Finance</span>
+    </button>
+    <button class="se-dock-btn" id="dock-budget" onclick="dockNavigate('budget')" aria-label="Budget">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      <span>Budget</span>
     </button>
   </nav>
 
@@ -3209,7 +3198,7 @@
   //  DOCK NAVIGATION
   // ══════════════════════════════════════════════════════════════
   function setDockActive(section) {
-    const map = { dashboard:'dock-home', 'new-customer':'dock-customer', 'new-job':'dock-job', 'new-quote':'dock-quote', invoices:'dock-invoice', finance:'dock-finance' };
+    const map = { dashboard:'dock-home', customers:'dock-customer', finance:'dock-finance', budget:'dock-budget' };
     document.querySelectorAll('.se-dock-btn').forEach(b => b.classList.remove('active'));
     const target = map[section];
     if (target) document.getElementById(target)?.classList.add('active');
@@ -3217,12 +3206,10 @@
 
   function dockNavigate(section) {
     switch (section) {
-      case 'dashboard':    goHome(); setDockActive('dashboard'); break;
-      case 'new-customer': openAddCustomer(null); setDockActive('new-customer'); break;
-      case 'new-job':      openNewJob(null, 'dashboard'); setDockActive('new-job'); break;
-      case 'new-quote':    openNewQuote(null, 'dashboard'); setDockActive('new-quote'); break;
-      case 'invoices':     showInvoicesScreen(); setDockActive('invoices'); break;
-      case 'finance':      showFinanceScreen(); break;
+      case 'dashboard': goHome(); setDockActive('dashboard'); break;
+      case 'customers': showCustomersScreen(); setDockActive('customers'); break;
+      case 'finance':   showFinanceScreen(); setDockActive('finance'); break;
+      case 'budget':    showFinanceScreen(); showFinTab('budget'); setDockActive('budget'); break;
     }
   }
 
