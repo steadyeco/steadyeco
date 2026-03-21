@@ -2381,11 +2381,12 @@
     document.getElementById('screen-' + id).classList.add('active');
   }
   function goHome() {
-    refreshDashboard();
+    // Show dashboard screen first — so the UI is never left blank even if refreshDashboard throws
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('screen-dashboard').classList.add('active');
     previousScreen = 'dashboard';
     setDockActive('dashboard');
+    try { refreshDashboard(); } catch(e) { console.error('se: refreshDashboard error', e); }
   }
   function goBack() {
     switch (previousScreen) {
@@ -2411,9 +2412,13 @@
   //  DASHBOARD
   // ══════════════════════════════════════════════════════════════
   function refreshDashboard() {
+    try { _refreshDashboardInner(); } catch(e) { console.error('se: refreshDashboard threw', e); }
+  }
+  function _refreshDashboardInner() {
     const today = new Date().toLocaleDateString('en-AU', { weekday:'long', day:'numeric', month:'long' });
     document.getElementById('dashDate').textContent      = today;
-    document.getElementById('greetName').textContent     = settings.name || 'Sam';
+    const settingsName = typeof settings.name === 'string' ? settings.name : 'Sam';
+    document.getElementById('greetName').textContent     = settingsName || 'Sam';
 
     const activeJobs = jobs.filter(j => j.status === 'booked' || j.status === 'in_progress');
     const unpaidInv  = invoices.filter(i => invStatus(i) === 'sent' || invStatus(i) === 'overdue').reduce((s,i) => s + i.total, 0);
@@ -2457,7 +2462,8 @@
       }
     }
     jobs.filter(j => j.scheduledDate === tomorrowStr && (j.status === 'booked' || j.status === 'in_progress')).forEach(j => {
-      const sms = `Hi ${j.customerName.split(' ')[0]}, confirming your blade sharpening ${j.delivery === 'collection' ? 'collection' : 'drop-off'} tomorrow. Any questions give me a call. — ${settings.business || 'Steady Eco'}`;
+      const jName = typeof j.customerName === 'string' ? j.customerName : '';
+      const sms = `Hi ${jName.split(' ')[0]}, confirming your blade sharpening ${j.delivery === 'collection' ? 'collection' : 'drop-off'} tomorrow. Any questions give me a call. — ${settings.business || 'Steady Eco'}`;
       alerts += `<div class="dash-alert">
         <div class="dash-alert-title">📅 Job Tomorrow</div>
         <div class="dash-alert-body">${esc(j.customerName)} · ${esc(j.ref || '')} · ${j.delivery === 'collection' ? 'Collection &amp; delivery' : 'Drop-off'}</div>
@@ -2467,7 +2473,8 @@
         </div></div>`;
     });
     invoices.filter(i => invStatus(i) === 'overdue').forEach(inv => {
-      const sms = `Hi ${inv.customerName.split(' ')[0]}, this is a reminder that invoice ${inv.ref} for $${inv.total} is now overdue. Please arrange payment at your earliest convenience. — ${settings.business || 'Steady Eco'}`;
+      const invName = typeof inv.customerName === 'string' ? inv.customerName : '';
+      const sms = `Hi ${invName.split(' ')[0]}, this is a reminder that invoice ${inv.ref} for $${inv.total} is now overdue. Please arrange payment at your earliest convenience. — ${settings.business || 'Steady Eco'}`;
       alerts += `<div class="dash-alert danger">
         <div class="dash-alert-title">⚠️ Invoice Overdue</div>
         <div class="dash-alert-body">${esc(inv.customerName)} · ${esc(inv.ref)} · $${inv.total} overdue</div>
@@ -3457,8 +3464,9 @@
   function sendJobReminderSMS(jobId) {
     const j = jobs.find(x => x.id === jobId); if (!j) return;
     const c = customers.find(x => x.id === j.customerId);
-    const phone = c?.phone?.replace(/\s/g,'') || '';
-    const fn = j.customerName.split(' ')[0] || 'there';
+    const phone = (typeof c?.phone === 'string' ? c.phone : '').replace(/\s/g,'');
+    const jnStr = typeof j.customerName === 'string' ? j.customerName : '';
+    const fn = jnStr.split(' ')[0] || 'there';
     let msg;
     if (j.scheduledDate) {
       const dateDisp = new Date(j.scheduledDate+'T12:00:00').toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
@@ -3473,8 +3481,9 @@
   function sendPaymentReminderSMS(invoiceId) {
     const inv = invoices.find(i => i.id === invoiceId); if (!inv) return;
     const c = customers.find(x => x.id === inv.customerId);
-    const phone = c?.phone?.replace(/\s/g,'') || '';
-    const fn = (inv.customerName || '').split(' ')[0] || 'there';
+    const phone = (typeof c?.phone === 'string' ? c.phone : '').replace(/\s/g,'');
+    const invNameStr = typeof inv.customerName === 'string' ? inv.customerName : '';
+    const fn = invNameStr.split(' ')[0] || 'there';
     const msg = `Hi ${fn}, just a reminder that invoice ${inv.ref} for $${inv.total} is overdue. Please arrange payment when you get a chance — ${settings.business || 'Steady Eco'}`;
     if (phone) { window.location.href = `sms:${phone}?body=${encodeURIComponent(msg)}`; }
     else { navigator.clipboard.writeText(msg).then(() => showToast('Message copied — no phone on file')).catch(() => showToast('No phone number on file')); }
@@ -3493,25 +3502,29 @@
 
   // Step 13 — predictive dashboard prompts
   function generatePredictivePrompts() {
-    const now = new Date();
-    const prompts = [];
-    // Jobs in workshop > 3 days without status progression
-    jobs.filter(j => j.status === 'in_progress').forEach(j => {
-      const since = new Date(j.startedAt || j.createdAt);
-      const days = Math.floor((now - since) / 86400000);
-      if (days >= 3) prompts.push({ icon:'⚠️', text:`${j.customerName.split(' ')[0]} — on site ${days}d`, action:`showJobDetail('${j.id}','dashboard')`, btn:'View' });
-    });
-    // Invoices sent > 7 days unpaid
-    invoices.filter(i => i.status === 'sent').forEach(i => {
-      const days = Math.floor((now - new Date(i.sentAt || i.createdAt)) / 86400000);
-      if (days >= 7) prompts.push({ icon:'💰', text:`${i.ref} unpaid — ${days} days`, action:`sendPaymentReminderSMS('${i.id}')`, btn:'Remind' });
-    });
-    // Jobs complete > 2 days (not invoiced/paid)
-    jobs.filter(j => j.status === 'complete').forEach(j => {
-      const days = Math.floor((now - new Date(j.completedAt || j.createdAt)) / 86400000);
-      if (days >= 2) prompts.push({ icon:'📋', text:`${j.customerName.split(' ')[0]} — ready ${days}d`, action:`createInvoiceFromJob('${j.id}','dashboard')`, btn:'Invoice' });
-    });
-    return prompts.slice(0, 3);
+    try {
+      const now = new Date();
+      const prompts = [];
+      // Jobs in workshop > 3 days without status progression
+      jobs.filter(j => j.status === 'in_progress').forEach(j => {
+        const since = new Date(j.startedAt || j.createdAt);
+        const days = Math.floor((now - since) / 86400000);
+        const firstName = typeof j.customerName === 'string' ? j.customerName.split(' ')[0] : '?';
+        if (days >= 3) prompts.push({ icon:'⚠️', text:`${firstName} — on site ${days}d`, action:`showJobDetail('${j.id}','dashboard')`, btn:'View' });
+      });
+      // Invoices sent > 7 days unpaid
+      invoices.filter(i => i.status === 'sent').forEach(i => {
+        const days = Math.floor((now - new Date(i.sentAt || i.createdAt)) / 86400000);
+        if (days >= 7) prompts.push({ icon:'💰', text:`${i.ref} unpaid — ${days} days`, action:`sendPaymentReminderSMS('${i.id}')`, btn:'Remind' });
+      });
+      // Jobs complete > 2 days (not invoiced/paid)
+      jobs.filter(j => j.status === 'complete').forEach(j => {
+        const days = Math.floor((now - new Date(j.completedAt || j.createdAt)) / 86400000);
+        const firstName = typeof j.customerName === 'string' ? j.customerName.split(' ')[0] : '?';
+        if (days >= 2) prompts.push({ icon:'📋', text:`${firstName} — ready ${days}d`, action:`createInvoiceFromJob('${j.id}','dashboard')`, btn:'Invoice' });
+      });
+      return prompts.slice(0, 3);
+    } catch(e) { console.error('se: generatePredictivePrompts error', e); return []; }
   }
 
   // ══════════════════════════════════════════════════════════════
