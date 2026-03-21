@@ -1297,24 +1297,30 @@
     } catch(e) { console.warn('se: could not write pending quote', e); }
 
     // Email notification via Formspree — fires regardless of PWA localStorage isolation
-    try {
-      const fd = new FormData();
-      fd.append('_subject', `New Website Enquiry — ${ref}`);
-      fd.append('Reference', ref);
-      fd.append('Customer Name', name);
-      fd.append('Phone', phone);
-      fd.append('Email', email || 'Not provided');
-      if (company) fd.append('Company', company);
-      fd.append('Machine', machineName || 'Not specified');
-      if (selectedBladeType) fd.append('Blade Type', selectedBladeType);
-      fd.append('Sets', `${sets} set${sets !== 1 ? 's' : ''} (${sets * 2} blades)`);
-      fd.append('Job Type', isEmergency ? 'Emergency' : 'Standard');
-      fd.append('Delivery', collectMode === 'collect' ? `Collect & return${suburbName ? ' — ' + suburbName : ''}` : 'Customer drop-off');
-      fd.append('Total', tp != null ? `$${tp}` : 'Call to confirm');
-      if (preferredDate) fd.append('Preferred Date', preferredDate);
-      fd.append('Submitted At', new Date().toLocaleString('en-AU', { timeZone: 'Australia/Brisbane' }));
-      fetch('https://formspree.io/f/xvzwlpko', { method: 'POST', body: fd, headers: { Accept: 'application/json' } });
-    } catch (e) { console.warn('se: notify failed', e); }
+    const fd = new FormData();
+    fd.append('_subject', `New Website Enquiry — ${ref}`);
+    fd.append('_gotcha', '');
+    if (email) fd.append('_replyto', email);
+    fd.append('Reference', ref);
+    fd.append('Customer Name', name);
+    fd.append('Phone', phone);
+    fd.append('Email', email || 'Not provided');
+    if (company) fd.append('Company', company);
+    fd.append('Machine', machineName || 'Not specified');
+    if (selectedBladeType) fd.append('Blade Type', selectedBladeType);
+    fd.append('Sets', `${sets} set${sets !== 1 ? 's' : ''} (${sets * 2} blades)`);
+    fd.append('Job Type', isEmergency ? 'Emergency' : 'Standard');
+    fd.append('Delivery', collectMode === 'collect' ? `Collect & return${suburbName ? ' — ' + suburbName : ''}` : 'Customer drop-off');
+    fd.append('Total', tp != null ? `$${tp}` : 'Call to confirm');
+    if (preferredDate) fd.append('Preferred Date', preferredDate);
+    fd.append('Submitted At', new Date().toLocaleString('en-AU', { timeZone: 'Australia/Brisbane' }));
+    fetch('https://formspree.io/f/xvzwlpko', {
+      method: 'POST',
+      body: fd,
+      headers: { Accept: 'application/json' }
+    }).then(res => {
+      if (!res.ok) console.warn('se: Formspree returned', res.status);
+    }).catch(err => console.warn('se: Formspree fetch failed', err));
 
     smsCopyText   = buildSMS(name, ref, bp, cf, tp, suburbName, callConfirm, preferredDate);
     emailCopyText = buildEmail(name, ref, bp, cf, tp, suburbName, callConfirm, today, preferredDate);
