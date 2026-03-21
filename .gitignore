@@ -17,6 +17,12 @@ Thumbs.db
 !blog-*.html
 !land-regeneration/index.html
 !land-regeneration/*.html
+!land-regeneration/vegetation-management/index.html
+!land-regeneration/revegetation/index.html
+!land-regeneration/weed-control/index.html
+!land-regeneration/erosion-control/index.html
+!land-regeneration/carbon-farming/index.html
+!land-regeneration/government-contracts/index.html
 !portal/index.html
 !portal/*.html
 *.com
