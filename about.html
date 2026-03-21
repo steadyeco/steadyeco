@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Steady Eco — From TrimsNQ to Land Regeneration, Cairns FNQ</title>
+  <meta name="description" content="The story behind Steady Eco — from a father's arborist legacy at TrimsNQ to FNQ's first ecological restoration business. Built in Cairns. Built in memory." />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="About Steady Eco — From TrimsNQ to Land Regeneration" />
+  <meta property="og:description" content="Steady Eco was built in memory of a professional arborist who shaped Far North Queensland's landscapes for decades. Where he worked the land, we restore it." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://steadyeco.com/about" />
+
+  <!-- Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "name": "About Steady Eco",
+    "description": "The story of Steady Eco — from TrimsNQ arborist services to ecological land regeneration across Far North Queensland.",
+    "url": "https://steadyeco.com/about",
+    "mainEntity": {
+      "@type": "Organization",
+      "name": "Steady Eco",
+      "url": "https://steadyeco.com",
+      "description": "FNQ-based business offering chipper blade sharpening and ecological land regeneration services across Far North Queensland.",
+      "foundingLocation": { "@type": "Place", "name": "Cairns, Queensland, Australia" }
+    }
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" onerror="document.body.classList.add('js-ready','no-gsap')"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #0a0f0a;
+      --bg-alt:       #0f1a0f;
+      --card:         #111a11;
+      --card-hover:   #162116;
+      --green-deep:   #1a3318;
+      --green-mid:    #2d5a27;
+      --green-accent: #4a9e3f;
+      --green-bright: #5cb84f;
+      --green-light:  #a8d4a2;
+      --gold:         #c8a84b;
+      --gold-dim:     #8a7030;
+      --text:         #e8ede6;
+      --muted:        #4a5e46;
+      --muted-light:  #7a8f76;
+      --border:       rgba(74, 158, 63, 0.15);
+      --border-light: rgba(74, 158, 63, 0.28);
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body:    'DM Sans', system-ui, sans-serif;
+      --label-size:    11px;
+      --label-spacing: 0.15em;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 16px; line-height: 1.6; font-weight: 300; overflow-x: hidden; }
+    h1, h2, h3 { font-family: var(--font-display); line-height: 1.05; font-weight: 300; }
+    a { color: inherit; text-decoration: none; }
+    .container { width: 100%; max-width: 1080px; margin: 0 auto; padding: 0 32px; }
+
+    .js-ready .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.9s ease, transform 0.9s ease; }
+    .js-ready .fade-in.visible { opacity: 1; transform: translateY(0); }
+    .js-ready .fade-in-delay-1 { transition-delay: 0.15s; }
+    .js-ready .fade-in-delay-2 { transition-delay: 0.3s; }
+    .js-ready .fade-in-delay-3 { transition-delay: 0.45s; }
+
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 15px 32px; font-family: var(--font-body); font-size: var(--label-size); font-weight: 500; letter-spacing: var(--label-spacing); text-transform: uppercase; border-radius: 0; cursor: pointer; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); border: 1px solid transparent; }
+    .btn-primary { background: var(--green-accent); color: var(--bg); border-color: var(--green-accent); }
+    .btn-primary:hover { background: var(--green-bright); transform: translateY(-1px); }
+    .btn-outline { background: transparent; color: var(--text); border-color: var(--border-light); }
+    .btn-outline:hover { border-color: var(--green-accent); color: var(--green-accent); transform: translateY(-1px); }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 24px 0; transition: background 0.5s ease, padding 0.4s ease, border-color 0.4s ease, transform 0.45s cubic-bezier(0.16, 1, 0.3, 1); border-bottom: 1px solid transparent; }
+    nav.nav-hidden { transform: translateY(-100%); }
+    nav.scrolled { background: rgba(10, 15, 10, 0.96); backdrop-filter: blur(20px); padding: 16px 0; border-bottom-color: var(--border); }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-family: var(--font-display); font-size: 1.5rem; font-weight: 300; letter-spacing: 0.12em; text-transform: uppercase; }
+    .nav-logo span { color: var(--green-accent); }
+    .nav-links { display: flex; align-items: center; gap: 40px; list-style: none; }
+    .nav-links a { font-family: var(--font-body); font-size: var(--label-size); font-weight: 400; color: var(--muted-light); text-transform: uppercase; letter-spacing: var(--label-spacing); transition: color 0.3s ease; position: relative; padding-bottom: 2px; }
+    .nav-links a::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 1px; background: var(--green-accent); transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-cta { color: var(--green-accent) !important; border: 1px solid var(--green-mid) !important; padding: 8px 20px !important; }
+    .nav-cta::after { display: none !important; }
+    .nav-cta:hover { background: var(--green-mid) !important; color: var(--text) !important; }
+    .hamburger { display: none; flex-direction: column; gap: 6px; cursor: pointer; padding: 4px; }
+    .hamburger span { display: block; width: 22px; height: 1px; background: var(--text); transition: 0.3s; }
+    .mobile-menu { display: none; flex-direction: column; background: var(--bg); border-top: 1px solid var(--border); padding: 32px; gap: 28px; }
+    .mobile-menu a { font-family: var(--font-display); font-size: 1.8rem; font-weight: 300; color: var(--muted-light); letter-spacing: 0.05em; transition: color 0.3s ease; }
+    .mobile-menu a:hover { color: var(--text); }
+    .mobile-menu.open { display: flex; }
+
+    /* PAGE HEADER */
+    .page-header { padding: 180px 0 80px; position: relative; overflow: hidden; }
+    .page-header-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 70% 60% at 30% 50%, rgba(26,51,24,0.4) 0%, transparent 70%); pointer-events: none; }
+    .page-header-ghost { position: absolute; bottom: -0.12em; left: -0.05em; font-family: var(--font-display); font-size: 16vw; font-weight: 300; text-transform: uppercase; color: var(--text); opacity: 0.028; letter-spacing: -0.02em; line-height: 1; pointer-events: none; user-select: none; white-space: nowrap; }
+    .page-tag { font-family: var(--font-body); font-size: var(--label-size); font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green-accent); margin-bottom: 28px; display: flex; align-items: center; gap: 14px; }
+    .page-tag::before { content: ''; display: block; width: 24px; height: 1px; background: var(--green-accent); }
+    .page-header h1 { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 6.5rem); font-weight: 300; line-height: 1.02; }
+    .page-header h1 span { color: var(--green-accent); }
+    .page-header h1 em { color: var(--muted-light); font-style: normal; }
+
+    /* STORY BODY */
+    .story-section { padding: 112px 0; }
+    .story-layout { display: grid; grid-template-columns: 280px 1fr; gap: 80px; }
+    .story-aside { position: sticky; top: 120px; height: fit-content; }
+    .story-chapter { font-family: var(--font-body); font-size: var(--label-size); letter-spacing: 0.2em; text-transform: uppercase; color: var(--green-accent); margin-bottom: 24px; }
+    .story-nav-list { list-style: none; }
+    .story-nav-list li { margin-bottom: 12px; }
+    .story-nav-list a { font-size: 0.82rem; color: var(--muted-light); transition: color 0.3s ease; display: flex; align-items: center; gap: 10px; }
+    .story-nav-list a::before { content: ''; display: block; width: 16px; height: 1px; background: var(--border-light); transition: all 0.3s ease; }
+    .story-nav-list a:hover { color: var(--text); }
+    .story-nav-list a:hover::before { width: 24px; background: var(--green-accent); }
+    .story-body { max-width: 640px; }
+    .story-body h2 { font-family: var(--font-display); font-size: clamp(1.8rem, 3vw, 2.8rem); font-weight: 300; margin-bottom: 24px; line-height: 1.12; }
+    .story-body h2 span { color: var(--gold); }
+    .story-body p { font-size: 0.95rem; color: var(--muted-light); line-height: 1.95; margin-bottom: 24px; font-weight: 300; }
+    .story-body p strong { color: var(--text); font-weight: 400; }
+    .story-divider { width: 40px; height: 1px; background: var(--border-light); margin: 56px 0; }
+    .pull-quote { font-family: var(--font-display); font-size: clamp(1.4rem, 2.5vw, 2rem); font-style: italic; font-weight: 300; color: var(--text); line-height: 1.5; margin: 48px 0; padding-left: 28px; border-left: 2px solid var(--gold); }
+
+    /* SERVICES CALLOUT */
+    .services-callout { padding: 80px 0 112px; }
+    .services-callout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: var(--border); }
+    .callout-card { background: var(--bg-alt); padding: 44px 40px; transition: background 0.3s ease; }
+    .callout-card:hover { background: var(--card-hover); }
+    .callout-card h3 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 300; margin-bottom: 10px; }
+    .callout-card h3 span { color: var(--green-accent); }
+    .callout-card p { font-size: 0.85rem; color: var(--muted-light); line-height: 1.8; margin-bottom: 20px; font-weight: 300; }
+    .callout-link { font-family: var(--font-body); font-size: var(--label-size); font-weight: 500; letter-spacing: var(--label-spacing); text-transform: uppercase; color: var(--green-accent); display: inline-flex; align-items: center; gap: 8px; transition: gap 0.3s ease; }
+    .callout-link:hover { gap: 14px; }
+    .callout-link::after { content: '→'; }
+
+    /* FOOTER */
+    footer { border-top: 1px solid var(--border); padding: 64px 0 48px; }
+    .footer-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 32px; border-top: 1px solid var(--border); margin-top: 48px; }
+    .footer-bottom p { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; }
+    .footer-inner { display: grid; grid-template-columns: 1fr auto 1fr; gap: 48px; align-items: start; }
+    .footer-brand { }
+    .footer-brand .logo-text { font-family: var(--font-display); font-size: 1.5rem; font-weight: 300; letter-spacing: 0.12em; text-transform: uppercase; display: inline-block; margin-bottom: 12px; }
+    .footer-brand .logo-text span { color: var(--green-accent); }
+    .footer-brand p { font-size: 0.82rem; color: var(--muted-light); line-height: 1.7; max-width: 260px; }
+    .footer-nav h4, .footer-contact h4 { font-size: var(--label-size); letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted-light); margin-bottom: 20px; font-weight: 400; }
+    .footer-nav a, .footer-contact a { display: block; font-size: 0.85rem; color: var(--muted-light); margin-bottom: 10px; transition: color 0.3s ease; }
+    .footer-nav a:hover, .footer-contact a:hover { color: var(--green-accent); }
+    .footer-contact { text-align: right; }
+    #scroll-bar { position: fixed; top: 0; left: 0; height: 2px; width: 0%; background: var(--green-accent); z-index: 200; transition: width 0.1s linear; pointer-events: none; }
+
+    @media (max-width: 900px) {
+      .story-layout { grid-template-columns: 1fr; gap: 40px; }
+      .story-aside { position: static; }
+      .services-callout-grid { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr; gap: 40px; }
+      .footer-contact { text-align: left; }
+      .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+    }
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .page-header { padding: 140px 0 60px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .fade-in { transition: none !important; opacity: 1 !important; transform: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="scroll-bar" aria-hidden="true"></div>
+
+  <nav id="navbar">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">Steady <span>Eco</span></a>
+      <ul class="nav-links">
+        <li><a href="/">Blade Sharpening</a></li>
+        <li><a href="/land-regeneration">Land Regeneration</a></li>
+        <li><a href="/about" style="color:var(--text);">About</a></li>
+        <li><a href="/land-regeneration/contact">Enquire</a></li>
+        <li><a href="tel:+61456190202" class="nav-cta">0456 190 202</a></li>
+      </ul>
+      <div class="hamburger" onclick="toggleMenu()" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="/" onclick="toggleMenu()">Blade Sharpening</a>
+      <a href="/land-regeneration" onclick="toggleMenu()">Land Regeneration</a>
+      <a href="/about" onclick="toggleMenu()">About</a>
+      <a href="/land-regeneration/contact" onclick="toggleMenu()">Enquire</a>
+    </div>
+  </nav>
+
+  <!-- PAGE HEADER -->
+  <header class="page-header">
+    <div class="page-header-bg" aria-hidden="true"></div>
+    <div class="page-header-ghost" aria-hidden="true">LEGACY</div>
+    <div class="container">
+      <div class="page-tag fade-in">Our Story</div>
+      <h1 class="fade-in fade-in-delay-1">
+        From <span>TrimsNQ</span><br>
+        to <em>Steady Eco</em>
+      </h1>
+    </div>
+  </header>
+
+  <!-- STORY -->
+  <section class="story-section">
+    <div class="container">
+      <div class="story-layout">
+
+        <aside class="story-aside fade-in">
+          <div class="story-chapter">Contents</div>
+          <ul class="story-nav-list">
+            <li><a href="#origin">The Origin</a></li>
+            <li><a href="#father">The Father</a></li>
+            <li><a href="#decision">The Decision</a></li>
+            <li><a href="#today">Steady Eco Today</a></li>
+            <li><a href="#services-section">Our Services</a></li>
+          </ul>
+        </aside>
+
+        <div class="story-body">
+
+          <div id="origin">
+            <h2 class="fade-in">The <span>Origin</span></h2>
+            <p class="fade-in fade-in-delay-1">
+              <strong>Our business began as TrimsNQ</strong> — a tree services and chipping operation serving Cairns and the Far North Queensland region. The work was physical, precise, and deeply rooted in the land: arborist services, greenery management, the hum of chippers and the smell of cut timber on a tropical morning.
+            </p>
+            <p class="fade-in fade-in-delay-1">
+              It was the kind of work that shapes a landscape. And it was built, piece by piece, by a man who understood that relationship between human work and natural place.
+            </p>
+          </div>
+
+          <div class="story-divider fade-in" aria-hidden="true"></div>
+
+          <div id="father">
+            <h2 class="fade-in">The <span>Father</span></h2>
+            <p class="fade-in fade-in-delay-1">
+              <strong>Sam's father was a professional arborist</strong> who dedicated his working life to the trees and green spaces of Far North Queensland. For decades, he climbed, pruned, felled, and shaped the landscape of a region he called home. He knew the species by leaf and bark. He understood the soil, the wet season, and the way FNQ grows — relentlessly, abundantly, and always back toward what it was.
+            </p>
+
+            <blockquote class="pull-quote fade-in fade-in-delay-1">
+              "Where he worked the land, we restore it."
+            </blockquote>
+
+            <p class="fade-in fade-in-delay-1">
+              He was the kind of tradesman whose knowledge lives in the hands as much as the mind — the sort of expertise that takes a lifetime to build and cannot be easily taught. His passing left a gap in the work and in the family.
+            </p>
+          </div>
+
+          <div class="story-divider fade-in" aria-hidden="true"></div>
+
+          <div id="decision">
+            <h2 class="fade-in">The <span>Decision</span></h2>
+            <p class="fade-in fade-in-delay-1">
+              <strong>After the loss, everything changed.</strong> Sam chose to honour his father's memory — not by continuing the work of removal, but by doing the opposite: growing, protecting, and restoring the native ecosystems of Far North Queensland.
+            </p>
+            <p class="fade-in fade-in-delay-1">
+              <strong>Steady Eco Land Regeneration was born from that decision.</strong> The machinery that once managed greenery — the trucks and chippers of TrimsNQ — now serves a different purpose: enabling the restoration of native vegetation, the control of invasive species, and the regeneration of the land he loved.
+            </p>
+            <p class="fade-in fade-in-delay-1">
+              Alongside the land regeneration work, the blade sharpening service continues — keeping the arborist industry's tools sharp, as it always has. Two services. One business. One story.
+            </p>
+          </div>
+
+          <div class="story-divider fade-in" aria-hidden="true"></div>
+
+          <div id="today">
+            <h2 class="fade-in">Steady Eco <span>Today</span></h2>
+            <p class="fade-in fade-in-delay-1">
+              <strong>Steady Eco operates from Cairns</strong> across the entire Far North Queensland region. We are the only dedicated ecological restoration contractor in FNQ — a region covering some of Australia's most significant natural ecosystems, from tropical rainforest to the wetlands that feed the Great Barrier Reef.
+            </p>
+            <p class="fade-in fade-in-delay-1">
+              We work with councils, government agencies, landholders, and developers. We are registered with FNQROC, TenderLink, and VendorPanel. We are progressing certification in Conservation and Ecosystem Management. We adhere to the SERA National Standards for Ecological Restoration.
+            </p>
+            <p class="fade-in fade-in-delay-1">
+              <strong>This is not just a business. It is a dedication.</strong>
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES CALLOUT -->
+  <section id="services-section" class="services-callout">
+    <div class="container">
+      <div class="section-tag" style="font-family:var(--font-body);font-size:var(--label-size);font-weight:400;letter-spacing:0.2em;text-transform:uppercase;color:var(--green-accent);margin-bottom:20px;display:flex;align-items:center;gap:14px;">
+        <span style="display:block;width:24px;height:1px;background:var(--green-accent);"></span>
+        Two Services. One Business.
+      </div>
+      <div class="services-callout-grid fade-in">
+        <div class="callout-card">
+          <h3>Chipper Blade <span>Sharpening</span></h3>
+          <p>FNQ's only specialist chipper blade sharpening service. $120 per set. Factory spec. Electromagnetic chuck. 1–2 day turnaround. Bandit, Vermeer, Morbark, Rayco, Timberwolf, Greenmech, Jensen.</p>
+          <a href="/" class="callout-link">View Blade Sharpening</a>
+        </div>
+        <div class="callout-card">
+          <h3>Land <span>Regeneration</span></h3>
+          <p>Ecological restoration and vegetation management across Far North Queensland. Government and council contracting. Revegetation, weed control, erosion control, carbon farming, ACCU projects.</p>
+          <a href="/land-regeneration" class="callout-link">View Land Regeneration</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <div class="logo-text">Steady <span>Eco</span></div>
+          <p>Cairns, Far North Queensland. Chipper blade sharpening and ecological land regeneration — built on a family legacy of working the FNQ landscape.</p>
+        </div>
+        <div class="footer-nav">
+          <h4>Site</h4>
+          <a href="/">Blade Sharpening</a>
+          <a href="/land-regeneration">Land Regeneration</a>
+          <a href="/about">About</a>
+          <a href="/portal">Client Portal</a>
+        </div>
+        <div class="footer-contact">
+          <h4>Contact</h4>
+          <a href="tel:+61456190202">0456 190 202</a>
+          <a href="/land-regeneration/contact">Send Enquiry</a>
+          <a href="/land-regeneration/capability-statement">Capability Statement</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Steady Eco — Cairns, Far North Queensland</p>
+        <p>ABN available on request</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { document.body.classList.add('js-ready'); }
+    if (typeof gsap !== 'undefined') { document.body.classList.add('js-ready'); } else { document.body.classList.add('js-ready'); }
+
+    window.addEventListener('load', () => {
+      document.querySelectorAll('.fade-in').forEach(el => {
+        const obs = new IntersectionObserver((entries) => {
+          entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+        obs.observe(el);
+      });
+      // Trigger header fades immediately
+      document.querySelectorAll('.page-header .fade-in').forEach(el => setTimeout(() => el.classList.add('visible'), 100));
+    });
+
+    const scrollBar = document.getElementById('scroll-bar');
+    window.addEventListener('scroll', () => { scrollBar.style.width = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight) * 100) + '%'; });
+
+    const navbar = document.getElementById('navbar');
+    let lastScroll = 0;
+    window.addEventListener('scroll', () => {
+      const cur = window.scrollY;
+      if (cur > 40) navbar.classList.add('scrolled'); else navbar.classList.remove('scrolled');
+      if (cur > 120 && cur > lastScroll) navbar.classList.add('nav-hidden'); else navbar.classList.remove('nav-hidden');
+      lastScroll = cur;
+    }, { passive: true });
+
+    function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
+  </script>
+
+</body>
+</html>

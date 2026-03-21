@@ -12,6 +12,13 @@ Thumbs.db
 *.html
 !quote-tool.html
 !quote.html
+!about.html
+!how-it-works.html
+!blog-*.html
+!land-regeneration/index.html
+!land-regeneration/*.html
+!portal/index.html
+!portal/*.html
 *.com
 *.exe
 *.asar
