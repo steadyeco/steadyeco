@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How FNQ Councils Buy Ecological Services — Procurement Guide for Contractors</title>
+  <meta name="description" content="Procurement thresholds, FNQROC panels, TenderLink, VendorPanel, and direct engagement — how local government buys land regeneration and vegetation management work in Far North Queensland." />
+  <meta property="og:title" content="How FNQ Councils Buy Ecological Services — A Contractor's Guide" />
+  <meta property="og:description" content="How FNQ councils procure vegetation management, revegetation, and ecological restoration. Thresholds, portals, panel pre-qualification, and direct engagement explained." />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://steadyeco.com/land-regeneration/insights/fnq-council-ecological-procurement" />
+  <meta property="og:locale" content="en_AU" />
+  <link rel="canonical" href="https://steadyeco.com/land-regeneration/insights/fnq-council-ecological-procurement" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"How FNQ Councils Buy Ecological Services — A Guide to Local Government Procurement in Far North Queensland","description":"How FNQ councils procure vegetation management and ecological restoration — thresholds, FNQROC, TenderLink, VendorPanel, direct engagement, and capability statements.","author":{"@type":"Organization","name":"Steady Eco Land Regeneration","url":"https://steadyeco.com"},"publisher":{"@type":"Organization","name":"Steady Eco Land Regeneration","url":"https://steadyeco.com"},"datePublished":"2026-03-01","dateModified":"2026-03-01","mainEntityOfPage":{"@type":"WebPage","@id":"https://steadyeco.com/land-regeneration/insights/fnq-council-ecological-procurement"}}</script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0f0a; --bg-alt: #0f1a0f; --card: #111e11;
+      --green-accent: #4a9e3f; --gold: #c8a84b;
+      --text: #e8ede6; --muted: #7a8f76;
+      --border: rgba(74,158,63,0.12); --border-hover: rgba(74,158,63,0.4);
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body: 'DM Sans', system-ui, sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--muted); font-family: var(--font-body); font-size: 16px; line-height: 1.75; font-weight: 300; overflow-x: hidden; }
+    h1, h2, h3 { font-family: var(--font-display); font-weight: 300; color: var(--text); }
+    a { color: inherit; text-decoration: none; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
+    #scroll-bar { position: fixed; top: 0; left: 0; height: 2px; width: 0; background: var(--green-accent); z-index: 200; pointer-events: none; }
+
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 24px 0; transition: background 0.5s ease, padding 0.4s ease, border-color 0.4s ease, transform 0.45s ease; border-bottom: 1px solid transparent; }
+    nav.scrolled { background: rgba(10,15,10,0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 16px 0; border-bottom-color: var(--border); }
+    nav.nav-hidden { transform: translateY(-100%); }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-family: var(--font-display); font-size: 1.5rem; font-weight: 300; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text); }
+    .nav-logo .g { color: var(--green-accent); }
+    .nav-links { display: flex; align-items: center; gap: 40px; list-style: none; }
+    .nav-links a { font-family: var(--font-body); font-size: 11px; font-weight: 400; color: var(--muted); text-transform: uppercase; letter-spacing: 0.15em; transition: color 0.3s ease; position: relative; padding-bottom: 4px; }
+    .nav-links a::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 1px; background: var(--green-accent); transition: width 0.3s ease; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
+    .nav-links a.active { color: var(--green-accent); }
+    .nav-phone { color: var(--green-accent) !important; border: 1px solid rgba(74,158,63,0.3) !important; padding: 8px 20px !important; }
+    .nav-phone::after { display: none !important; }
+    .nav-phone:hover { background: rgba(74,158,63,0.08) !important; }
+    .hamburger { display: none; flex-direction: column; gap: 6px; cursor: pointer; padding: 4px; background: none; border: none; }
+    .hamburger span { display: block; width: 22px; height: 1px; background: var(--text); transition: 0.3s; }
+    .mobile-menu { display: none; flex-direction: column; background: var(--bg); border-top: 1px solid var(--border); padding: 40px; gap: 32px; }
+    .mobile-menu a { font-family: var(--font-display); font-size: 2rem; font-weight: 300; color: var(--muted); letter-spacing: 0.05em; transition: color 0.3s ease; }
+    .mobile-menu a.active, .mobile-menu a:hover { color: var(--text); }
+    .mobile-menu.open { display: flex; }
+
+    .fade { opacity: 0; transform: translateY(30px); transition: opacity 0.9s ease, transform 0.9s ease; }
+    .fade.in { opacity: 1; transform: translateY(0); }
+
+    .breadcrumb { padding: 120px 0 0; background: var(--bg); }
+    .bc-inner { display: flex; align-items: center; gap: 10px; font-family: var(--font-body); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); flex-wrap: wrap; }
+    .bc-inner a { transition: color 0.3s ease; }
+    .bc-inner a:hover { color: var(--green-accent); }
+    .bc-inner .cur { color: var(--green-accent); }
+
+    .article-hero { padding: 48px 0 80px; background: var(--bg); }
+    .article-eyebrow { font-family: var(--font-body); font-size: 11px; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green-accent); margin-bottom: 28px; display: flex; align-items: center; gap: 14px; }
+    .article-eyebrow::before { content: ''; display: block; width: 24px; height: 1px; background: var(--green-accent); }
+    .article-title { font-family: var(--font-display); font-size: clamp(40px, 6vw, 64px); letter-spacing: -0.02em; line-height: 1.05; color: var(--text); font-weight: 300; margin-bottom: 28px; max-width: 900px; }
+    .article-title .w { display: inline-block; opacity: 0; transform: translateY(16px); transition: opacity 0.7s ease, transform 0.7s ease; margin-right: 0.22em; }
+    .article-meta { display: flex; gap: 32px; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(122,143,118,0.5); flex-wrap: wrap; opacity: 0; transition: opacity 0.7s ease 0.9s; }
+    .article-meta.in { opacity: 1; }
+
+    .article-section { padding: 80px 0 120px; background: var(--bg); }
+    .article-body { max-width: 740px; margin: 0 auto; padding: 0 40px; }
+    .article-body h2 { font-family: var(--font-display); font-size: clamp(1.5rem, 2.8vw, 2.2rem); font-weight: 300; color: var(--text); margin: 64px 0 20px; letter-spacing: -0.01em; line-height: 1.1; }
+    .article-body h2:first-child { margin-top: 0; }
+    .article-body p { font-size: 16px; color: var(--muted); line-height: 1.9; margin-bottom: 24px; }
+    .article-body ul, .article-body ol { padding-left: 24px; margin-bottom: 24px; }
+    .article-body li { font-size: 16px; color: var(--muted); line-height: 1.9; margin-bottom: 10px; }
+    .article-body strong { color: var(--text); font-weight: 400; }
+    .article-body .note { font-size: 13px; color: rgba(122,143,118,0.6); font-style: italic; border-left: 2px solid rgba(200,168,75,0.3); padding-left: 16px; margin: 32px 0; }
+
+    /* THRESHOLD TABLE */
+    .threshold-table { width: 100%; border-collapse: collapse; margin: 32px 0; }
+    .threshold-table th { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 0 16px 16px 0; border-bottom: 1px solid rgba(200,168,75,0.3); font-weight: 400; }
+    .threshold-table td { font-size: 14px; color: var(--muted); padding: 14px 16px 14px 0; border-bottom: 1px solid rgba(74,158,63,0.06); line-height: 1.5; }
+    .threshold-table td:first-child { color: var(--text); font-weight: 400; }
+    .threshold-table tr:last-child td { border-bottom: none; }
+    .tag-direct { color: var(--green-accent); font-size: 12px; }
+    .tag-tender { color: var(--gold); font-size: 12px; }
+
+    /* PORTAL CARDS */
+    .portal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 32px 0; }
+    .portal-card { background: var(--card); border: 1px solid rgba(74,158,63,0.15); border-radius: 2px; padding: 28px 24px; }
+    .portal-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green-accent); display: block; margin-bottom: 10px; }
+    .portal-card h3 { font-family: var(--font-display); font-size: 1.1rem; font-weight: 300; color: var(--text); margin-bottom: 8px; }
+    .portal-card p { font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+    /* PULL QUOTE */
+    .pull-quote-section { padding: 80px 0; text-align: center; background: var(--bg-alt); }
+    .pull-quote { font-family: var(--font-display); font-style: italic; font-size: 28px; color: var(--gold); line-height: 1.5; max-width: 720px; margin: 0 auto; }
+
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 16px 36px; font-family: var(--font-body); font-size: 11px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; border: 1px solid transparent; position: relative; overflow: hidden; transition: border-color 0.3s ease, color 0.3s ease; border-radius: 0; min-height: 48px; }
+    .btn-primary { background: var(--green-accent); color: #0a0f0a; border-color: var(--green-accent); }
+    .btn-primary::before { content: ''; position: absolute; left: -100%; top: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.12); transition: left 300ms ease; }
+    .btn-primary:hover::before { left: 0; }
+    .btn-gold { background: transparent; color: var(--gold); border-color: rgba(200,168,75,0.4); }
+    .btn-gold:hover { border-color: var(--gold); background: rgba(200,168,75,0.06); }
+    .btn-outline { background: transparent; color: var(--text); border-color: rgba(74,158,63,0.3); }
+    .btn-outline:hover { border-color: var(--green-accent); color: var(--green-accent); }
+
+    .band { border: 1px solid rgba(74,158,63,0.2); padding: 72px 64px; position: relative; overflow: hidden; display: grid; grid-template-columns: 1fr auto; gap: 64px; align-items: center; }
+    .band::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--green-accent), transparent); }
+    .band h2 { font-family: var(--font-display); font-size: clamp(1.8rem, 3vw, 2.8rem); font-weight: 300; margin-bottom: 12px; }
+    .band p { font-size: 15px; color: var(--muted); line-height: 1.75; max-width: 480px; }
+    .band-actions { display: flex; flex-direction: column; gap: 12px; align-items: flex-end; min-width: 220px; }
+
+    .related-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .related-card { background: var(--card); border: 1px solid rgba(74,158,63,0.15); border-radius: 2px; padding: 40px 36px; transition: border-color 300ms ease, transform 300ms ease; }
+    .related-card:hover { border-color: rgba(74,158,63,0.4); transform: translateY(-4px); }
+    .related-card h3 { font-family: var(--font-display); font-size: 1.2rem; font-weight: 300; color: var(--text); margin-bottom: 10px; }
+    .related-card p { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 20px; }
+    .card-link { font-family: var(--font-body); font-size: 11px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--green-accent); display: inline-flex; align-items: center; gap: 8px; transition: gap 0.3s ease; }
+    .card-link:hover { gap: 16px; }
+    .card-link::after { content: '→'; }
+
+    footer { border-top: 1px solid var(--border); padding: 80px 0 56px; background: var(--bg); }
+    .footer-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 56px; }
+    .footer-logo { font-family: var(--font-display); font-size: 1.5rem; font-weight: 300; letter-spacing: 0.12em; text-transform: uppercase; display: block; margin-bottom: 16px; color: var(--text); }
+    .footer-logo .g { color: var(--green-accent); }
+    .footer-tagline { font-size: 14px; line-height: 1.7; color: var(--muted); max-width: 260px; }
+    .footer-col h4 { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; font-weight: 400; }
+    .footer-col a { display: block; font-size: 14px; color: var(--muted); margin-bottom: 10px; transition: color 0.3s ease; }
+    .footer-col a:hover { color: var(--green-accent); }
+    .footer-contact { text-align: right; }
+    .footer-contact a { color: var(--text); }
+    .footer-bottom { border-top: 1px solid var(--border); padding-top: 32px; margin-top: 56px; display: flex; justify-content: space-between; align-items: center; }
+    .footer-bottom p { font-size: 12px; color: rgba(122,143,118,0.4); letter-spacing: 0.05em; }
+
+    @media (max-width: 768px) {
+      .article-body { padding: 0 24px; }
+      .container { padding: 0 24px; }
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .portal-grid { grid-template-columns: 1fr; }
+      .related-grid { grid-template-columns: 1fr; }
+      .band { grid-template-columns: 1fr; gap: 40px; padding: 48px 24px; }
+      .band-actions { align-items: flex-start; }
+      .footer-grid { grid-template-columns: 1fr; gap: 40px; }
+      .footer-contact { text-align: left; }
+      .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+      .pull-quote { font-size: 22px; }
+      .threshold-table { font-size: 13px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .fade, .article-title .w, .article-meta { transition: none !important; opacity: 1 !important; transform: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="scroll-bar" aria-hidden="true"></div>
+
+  <nav id="nav">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">Steady <span class="g">Eco</span></a>
+      <ul class="nav-links">
+        <li><a href="/">Blade Sharpening</a></li>
+        <li><a href="/land-regeneration" class="active">Land Regeneration</a></li>
+        <li><a href="/land-regeneration/government-contracts">Government</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/land-regeneration/contact">Enquire</a></li>
+        <li><a href="tel:+61456190202" class="nav-phone">0456 190 202</a></li>
+      </ul>
+      <button class="hamburger" onclick="toggleMenu()" aria-label="Open menu"><span></span><span></span><span></span></button>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="/">Blade Sharpening</a>
+      <a href="/land-regeneration" class="active">Land Regeneration</a>
+      <a href="/land-regeneration/government-contracts">Government</a>
+      <a href="/about">About</a>
+      <a href="/land-regeneration/contact">Enquire</a>
+    </div>
+  </nav>
+
+  <div class="breadcrumb">
+    <div class="container">
+      <div class="bc-inner">
+        <a href="/land-regeneration">Land Regeneration</a>
+        <span>›</span>
+        <a href="/land-regeneration/insights">Insights</a>
+        <span>›</span>
+        <span class="cur">Council Procurement</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="article-hero">
+    <div class="container">
+      <div class="article-eyebrow">Government Contracts — FNQ Guide</div>
+      <h1 class="article-title">
+        <span data-line>How FNQ Councils</span><br>
+        <span data-line data-cls="accent">Buy Ecological Services</span>
+      </h1>
+      <div class="article-meta">
+        <span>March 2026</span>
+        <span>7 min read</span>
+        <span>Steady Eco Land Regeneration</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="article-section">
+    <div class="article-body">
+
+      <h2>Why Council Procurement Works Differently</h2>
+      <p>Local government in Australia operates under a different procurement framework than the private sector. Councils have legal obligations around how they spend public money — which means the way a landholder engages a contractor and the way a council engages one are fundamentally different processes.</p>
+      <p>For contractors, understanding how councils buy is as important as knowing how to deliver the work. A capable contractor who doesn't understand procurement thresholds, panel processes, or the role of FNQROC will struggle to win government work regardless of how good their ecological expertise is. This guide explains how it works in Far North Queensland specifically.</p>
+      <p class="note">Note: Procurement thresholds and processes vary by council and are subject to change. The thresholds referenced in this guide reflect general Queensland local government procurement requirements as of early 2026. Always verify with the specific council's procurement policy before submitting a quote or tender.</p>
+
+      <h2>The Three Ways Councils Engage Contractors</h2>
+      <p>FNQ councils generally procure vegetation management and ecological restoration services through one of three pathways, determined primarily by the estimated value of the work:</p>
+
+      <table class="threshold-table">
+        <thead>
+          <tr>
+            <th>Value</th>
+            <th>Typical Process</th>
+            <th>How to Be Considered</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Under ~$15,000</td>
+            <td>Direct purchase — single quote</td>
+            <td class="tag-direct">Be known to the council officer</td>
+          </tr>
+          <tr>
+            <td>~$15,000 – $200,000</td>
+            <td>Request for quote — 3 quotes minimum</td>
+            <td class="tag-direct">Be on supplier list or FNQROC panel</td>
+          </tr>
+          <tr>
+            <td>Over ~$200,000</td>
+            <td>Public tender — open competitive</td>
+            <td class="tag-tender">Monitor TenderLink / respond to EOI</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>The most accessible segment for new ecological contractors in FNQ is the middle range — works between $15,000 and $200,000 that require three quotes but do not require a formal public tender. For a sole trader or small contractor, this is where the realistic volume of council work sits. A 10ha weed control program, a roadside revegetation contract, or a riparian restoration project are all likely to fall in this range.</p>
+      <p>For works under $15,000, the council officer often has discretion to engage a known, trusted supplier directly. This is why being known — having contacted the relevant council officer, provided a capability statement, and made yourself available before a need arises — matters more than any portal registration at this level.</p>
+
+      <h2>FNQROC — The Key to FNQ Council Procurement</h2>
+      <p>The <strong>Far North Queensland Regional Organisation of Councils (FNQROC)</strong> is the peak body representing 12 FNQ councils. One of its most important functions is coordinating regional procurement — enabling councils to collectively source suppliers, share panel arrangements, and access pre-qualified contractor lists.</p>
+      <p>For contractors, FNQROC registration is significant because a single registration can make you visible to all member councils simultaneously. If you are pre-qualified on the FNQROC ecological services panel, a procurement officer at Cassowary Coast Regional Council can engage you using the same panel that Cairns Regional Council uses — without each council needing to separately assess and verify your credentials.</p>
+      <p>FNQROC member councils include Cairns Regional Council, Cassowary Coast Regional, Douglas Shire, Tablelands Regional, Mareeba Shire, Cook Shire, Hinchinbrook Shire, and others. Together, they represent the primary local government procurement market for ecological restoration across FNQ.</p>
+      <p>Steady Eco is registered on FNQROC and actively seeks panel placement for ecological restoration, vegetation management, and revegetation works. Council procurement officers can contact us directly or find us through the FNQROC supplier database.</p>
+
+      <h2>TenderLink and VendorPanel</h2>
+      <p>For larger contracts that go to public tender, Queensland councils and government agencies use two primary platforms:</p>
+
+      <div class="portal-grid">
+        <div class="portal-card">
+          <span class="portal-label">Regional &amp; State Tenders</span>
+          <h3>TenderLink</h3>
+          <p>The primary platform for Queensland government and council public tenders. Contractors register, set up notifications for relevant categories, and receive alerts when tenders are published. All public tenders over approximately $200,000 will typically be advertised here.</p>
+        </div>
+        <div class="portal-card">
+          <span class="portal-label">Direct Quotation</span>
+          <h3>VendorPanel</h3>
+          <p>Queensland government's platform for direct-to-supplier invitation-to-quote processes. Agencies can search for and directly invite registered suppliers to quote on works below the public tender threshold. Registration here makes you searchable by procurement officers across Queensland agencies.</p>
+        </div>
+        <div class="portal-card">
+          <span class="portal-label">Regional Coordination</span>
+          <h3>FNQROC Portal</h3>
+          <p>FNQROC's own supplier database for coordinated regional procurement. Pre-qualification here enables all member councils to access your credentials without repeated assessment. Most relevant for the $15k–$200k work range where councils seek multiple quotes from pre-qualified suppliers.</p>
+        </div>
+      </div>
+
+      <p>Registration on all three is advisable for any contractor seeking sustained council and government work in FNQ. None of them guarantee work — but they ensure you are visible and eligible to be invited when relevant work arises.</p>
+
+      <h2>The Capability Statement — Your Most Important Document</h2>
+      <p>When a procurement officer is assembling a shortlist to invite for quotes, or when a council officer is considering whether to make a direct engagement, the first thing they want is a capability statement. This is a concise document (typically 2–4 pages) that covers:</p>
+      <ul>
+        <li>Business name, ABN, and contact details</li>
+        <li>Services offered — specific to their needs</li>
+        <li>Equipment and fleet</li>
+        <li>Service area and council coverage</li>
+        <li>Insurance coverage (type and coverage level)</li>
+        <li>Procurement registrations (FNQROC, TenderLink, VendorPanel)</li>
+        <li>Relevant licences (pesticide licence for weed control, etc.)</li>
+        <li>References or past project examples where available</li>
+      </ul>
+      <p>A well-prepared capability statement can be the difference between being invited to quote and being overlooked. Council procurement officers deal with many suppliers — a clear, professional capability statement signals that you understand their requirements and can be relied upon to deliver with appropriate documentation.</p>
+      <p>Steady Eco's capability statement is available online at <a href="/land-regeneration/capability-statement" style="color: var(--green-accent);">steadyeco.com/land-regeneration/capability-statement</a> and can be printed directly from the browser as a PDF. Council procurement officers are welcome to download it.</p>
+
+    </div>
+  </div>
+
+  <!-- PULL QUOTE -->
+  <div class="pull-quote-section observe">
+    <p class="pull-quote fade">"The contractor who wins council work isn't always the best in the field.<br>It's the one who is registered, ready, and already known<br>when the need arises."</p>
+  </div>
+
+  <!-- ARTICLE BODY CONTINUED -->
+  <div class="article-section" style="padding-top: 80px;">
+    <div class="article-body">
+
+      <h2>Direct Engagement — The Most Underused Pathway</h2>
+      <p>Many contractors focus entirely on formal tenders and miss the largest volume of council ecological work: direct engagement for projects under the public tender threshold.</p>
+      <p>In Queensland, councils can typically engage suppliers directly for works under approximately $200,000 — they just need to obtain a minimum number of quotes (usually three) from pre-qualified or known suppliers. For ecological restoration work in FNQ, a large proportion of council projects fall below this threshold. Roadside vegetation programs, targeted weed control contracts, small revegetation works, and riparian restoration projects are frequently in the $20,000–$150,000 range.</p>
+      <p>The way to access this work is not to wait for a tender. It is to:</p>
+      <ol>
+        <li><strong>Register on FNQROC</strong> so council officers can find you</li>
+        <li><strong>Contact the relevant council officers directly</strong> — public works, parks and gardens, environment and sustainability departments are the relevant contacts depending on the council</li>
+        <li><strong>Provide a capability statement before there is a need</strong> — not in response to one</li>
+        <li><strong>Respond promptly when invited to quote</strong> — council procurement officers have deadlines and genuinely appreciate contractors who respond quickly and clearly</li>
+      </ol>
+      <p>The contractors who win repeated council work in FNQ are usually the ones who made themselves known before the work was available — who sent a capability statement, had a professional conversation, and were already on the council officer's mental shortlist when the project budget was approved.</p>
+
+      <h2>What Council Officers Actually Look For</h2>
+      <p>Speaking plainly: council procurement officers are not primarily looking for the cheapest quote. They are looking for the lowest-risk supplier who can deliver the work correctly, document it properly, and not create administrative headaches.</p>
+      <p>The things that matter most to a council procurement officer evaluating an ecological restoration quote:</p>
+      <ul>
+        <li><strong>Insurance.</strong> Public liability (minimum $10–20M for most council contracts) and workers compensation. Certificate of currency must be current.</li>
+        <li><strong>Compliance documentation.</strong> Can you produce a SWMS before work starts? Will you provide a post-works report? Can you document chemical application sites and species?</li>
+        <li><strong>Relevant experience.</strong> Not generic "we do land management" — specific experience with the type of work being tendered.</li>
+        <li><strong>Responsiveness.</strong> Councils work to project timelines. A contractor who doesn't return calls or emails promptly creates procurement risk.</li>
+        <li><strong>Price — but not price alone.</strong> Most council procurement frameworks require evaluation against multiple criteria, not price only. Value for money is explicitly distinct from lowest cost.</li>
+      </ul>
+
+      <h2>Seasonal Timing in FNQ Council Work</h2>
+      <p>FNQ's wet season (roughly November to April) has significant implications for ecological works procurement. Many revegetation and planting projects are specified for the dry season (May to October) when ground conditions are workable and rainfall assists establishment. Weed control programs often run year-round.</p>
+      <p>Council budget cycles in Queensland typically run July to June. Capital works budgets are often approved in the first quarter of the financial year (July to September), with procurement and commencement in the October to December period for delivery through the dry season. Understanding this cycle — and making contact with council officers before the budget cycle closes — improves access to work significantly.</p>
+      <p>For ecological restoration contractors, October and November represent a prime window: budgets are approved, procurement is active, and councils need contractors ready to mobilise before Christmas or early in the new year.</p>
+
+    </div>
+  </div>
+
+  <!-- CTA BAND -->
+  <section style="background: var(--bg-alt);" class="observe">
+    <div class="container">
+      <div class="band fade">
+        <div>
+          <h2>Council or Government Project Officer?</h2>
+          <p style="margin-top:12px;">Steady Eco is registered on FNQROC, TenderLink, and VendorPanel. We respond to all council and government enquiries within 1 business day and can quote within 3 business days for most FNQ projects.</p>
+        </div>
+        <div class="band-actions">
+          <a href="/land-regeneration/contact" class="btn btn-primary">Send a Government Enquiry</a>
+          <a href="/land-regeneration/capability-statement" class="btn btn-gold">Capability Statement</a>
+          <a href="/land-regeneration/government-contracts" class="btn btn-outline">Government Contracts</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RELATED -->
+  <section style="background: var(--bg);" class="observe">
+    <div class="container">
+      <div class="related-grid" style="margin-top:0;">
+        <div class="related-card fade">
+          <h3>Government Contracts</h3>
+          <p>Our full government and council contracting service — procurement portals, council coverage, and engagement paths.</p>
+          <a href="/land-regeneration/government-contracts" class="card-link">View Service</a>
+        </div>
+        <div class="related-card fade">
+          <h3>Capability Statement</h3>
+          <p>Online capability statement for procurement officers — services, equipment, insurance, compliance, and council coverage.</p>
+          <a href="/land-regeneration/capability-statement" class="card-link">View &amp; Print</a>
+        </div>
+        <div class="related-card fade">
+          <h3>Choosing an Ecological Contractor</h3>
+          <p>What to look for when selecting a land regeneration contractor in FNQ — for landholders and council officers.</p>
+          <a href="/land-regeneration/insights/choosing-ecological-contractor-fnq" class="card-link">Read Article</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <span class="footer-logo">Steady <span class="g">Eco</span></span>
+          <p class="footer-tagline">Land Regeneration — FNQ's first dedicated ecological restoration contractor. Cairns, Queensland.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Services</h4>
+          <a href="/land-regeneration/vegetation-management">Vegetation Management</a>
+          <a href="/land-regeneration/revegetation">Revegetation</a>
+          <a href="/land-regeneration/weed-control">Weed Control</a>
+          <a href="/land-regeneration/erosion-control">Erosion Control</a>
+          <a href="/land-regeneration/carbon-farming">Carbon Farming</a>
+          <a href="/land-regeneration/government-contracts">Government Contracts</a>
+        </div>
+        <div class="footer-col footer-contact">
+          <h4>Contact</h4>
+          <a href="tel:+61456190202">0456 190 202</a>
+          <a href="/land-regeneration/contact">Send Enquiry</a>
+          <a href="/land-regeneration/insights">All Insights</a>
+          <a href="/land-regeneration">← Land Regeneration</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Steady Eco Land Regeneration — Cairns, Far North Queensland</p>
+        <p><a href="/">Also: Chipper Blade Sharpening →</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const scrollBar = document.getElementById('scroll-bar');
+    window.addEventListener('scroll', () => { scrollBar.style.width = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight) * 100) + '%'; }, { passive: true });
+
+    const nav = document.getElementById('nav');
+    let lastY = 0;
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY;
+      nav.classList.toggle('scrolled', y > 40);
+      nav.classList.toggle('nav-hidden', y > 120 && y > lastY);
+      lastY = y;
+    }, { passive: true });
+
+    function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const ch = [...entry.target.querySelectorAll('.fade')];
+        if (ch.length) { ch.forEach((c, i) => setTimeout(() => c.classList.add('in'), i * 60)); }
+        else { entry.target.classList.add('in'); }
+        io.unobserve(entry.target);
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+    document.querySelectorAll('.observe').forEach(el => io.observe(el));
+
+    function initHero() {
+      const h1 = document.querySelector('.article-title');
+      if (!h1) return;
+      h1.querySelectorAll('[data-line]').forEach(line => {
+        const cls = line.dataset.cls || '';
+        const words = line.textContent.trim().split(/\s+/);
+        line.innerHTML = words.map(w => `<span class="w ${cls}">${w}</span>`).join(' ');
+        line.removeAttribute('data-line'); line.removeAttribute('data-cls'); line.removeAttribute('class');
+      });
+      let idx = 0;
+      document.querySelectorAll('.article-title .w').forEach(w => {
+        const d = 100 + idx++ * 80;
+        setTimeout(() => { w.style.opacity = '1'; w.style.transform = 'translateY(0)'; }, d);
+      });
+      setTimeout(() => document.querySelector('.article-meta')?.classList.add('in'), 100 + idx * 80);
+    }
+    window.addEventListener('load', initHero);
+  </script>
+</body>
+</html>
