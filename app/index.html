@@ -2153,9 +2153,10 @@
   let cryptoKey = null;                    // AES-256-GCM key — in memory only, never persisted
   const CRYPTO_SALT_KEY = 'se_crypto_salt'; // salt is not secret, lives in localStorage
 
-  const CUSTOMER_PII = ['name', 'phone', 'abn', 'email', 'notes'];
-  const INVOICE_PII  = ['customerName', 'total', 'subtotal', 'gst'];
-  const JOB_PII      = ['customerName', 'notes'];
+  const CUSTOMER_PII  = ['name', 'phone', 'abn', 'email', 'notes'];
+  const INVOICE_PII   = ['customerName', 'total', 'subtotal', 'gst'];
+  const JOB_PII       = ['customerName', 'notes'];
+  const SETTINGS_PII  = ['bankBSB', 'bankAccount'];
 
   async function getOrCreateSalt() {
     let b64 = localStorage.getItem(CRYPTO_SALT_KEY);
@@ -2234,6 +2235,7 @@
     if (!cryptoKey) return;
     customers = await Promise.all(customers.map(c => decryptRecord(c, CUSTOMER_PII)));
     jobs      = await Promise.all(jobs.map(j => decryptRecord(j, JOB_PII)));
+    settings  = await decryptRecord(settings, SETTINGS_PII);
     invoices  = await Promise.all(invoices.map(async i => {
       const dec = await decryptRecord(i, INVOICE_PII);
       // Numeric fields come back as strings after decryption — restore types
@@ -2312,7 +2314,8 @@
         const qs = tx.objectStore('quotes');    qs.clear(); quotes.forEach(r    => qs.put(r));
         const js = tx.objectStore('jobs');      js.clear(); encJobs.forEach(r   => js.put(r));
         const is = tx.objectStore('invoices');  is.clear(); encInvoices.forEach(r  => is.put(r));
-        tx.objectStore('settings').put({ key: 'main', data: settings });
+        const encSettings = await encryptRecord(settings, SETTINGS_PII);
+        tx.objectStore('settings').put({ key: 'main', data: encSettings });
         tx.oncomplete = resolve;
         tx.onerror = () => { showToast('⚠️ Save failed'); reject(tx.error); };
       });
@@ -3582,13 +3585,15 @@
     localStorage.setItem(PIN_ATTEMPTS, '0');
     resetInactivityTimer();
     dbReady.then(() => decryptAllInMemory()).then(async () => {
+      // Decrypt personal budget data into memory
+      await sbDecryptAll();
+
       // Decrypt AI key into memory — never leave it in plaintext localStorage
       const encRaw    = localStorage.getItem('se_ai_key_enc');
       const legacyRaw = localStorage.getItem('se_ai_key');
       if (encRaw && cryptoKey) {
         try { _aiKey = await decryptField(JSON.parse(encRaw)); } catch(e) { _aiKey = null; }
       } else if (legacyRaw && cryptoKey) {
-        // Migrate old btoa key → AES encrypted
         try {
           const oldKey = atob(legacyRaw);
           const enc    = await encryptField(oldKey);
@@ -3597,6 +3602,15 @@
           _aiKey = oldKey;
         } catch(e) { _aiKey = null; }
       }
+
+      // Remove pending website enquiries older than 7 days
+      try {
+        const cutoff  = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        const pending = JSON.parse(localStorage.getItem('se_pending_quotes') || '[]');
+        const fresh   = pending.filter(p => !p.receivedAt || new Date(p.receivedAt).getTime() > cutoff);
+        if (fresh.length !== pending.length) localStorage.setItem('se_pending_quotes', JSON.stringify(fresh));
+      } catch(e) {}
+
       refreshDashboard(); checkMonthlyReset();
     });
   }
@@ -3610,6 +3624,7 @@
   function lockApp() {
     cryptoKey = null;  // discard AES key — re-derived from PIN on next unlock
     _aiKey    = null;  // clear API key from memory
+    sbClearMemory();   // wipe all personal budget data from memory (sets sbReady=false, clears _csvRows)
     localStorage.removeItem('se_ai_history'); // wipe AI chat (contains customer/revenue data)
     sessionStorage.removeItem('se_unlocked');
     sessionStorage.removeItem('se_unlock_time');
@@ -4731,13 +4746,74 @@ Be direct, conversational, and specific. Sam reads this on his phone between job
   const SB_MONTH_ASSIGNMENTS = 'sb_month_assignments';
   const SB_SETTINGS          = 'sb_settings';
   const SB_LAST_RESET_MONTH  = 'sb_last_reset_month';
+  const SB_IMPORT_HASHES     = 'sb_import_hashes';
 
-  // ── Helpers ───────────────────────────────────────────────────
+  const SB_ALL_KEYS = [
+    SB_INCOME_SOURCES, SB_ENVELOPES, SB_ENVELOPE_GROUPS, SB_TRANSACTIONS,
+    SB_GOALS, SB_MONTH_ASSIGNMENTS, SB_SETTINGS, SB_LAST_RESET_MONTH, SB_IMPORT_HASHES
+  ];
+
+  // ── In-memory cache — all sb_ data lives here after unlock ────
+  let sbState = {};
+  let sbReady = false;
+
+  // Synchronous read from in-memory cache
   function sbLoad(key, fallback) {
-    try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); }
-    catch(e) { return fallback; }
+    if (sbReady) return sbState[key] !== undefined ? sbState[key] : fallback;
+    // Pre-unlock: read raw localStorage but refuse encrypted blobs
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.__enc) return fallback; // encrypted — key not available yet
+      return parsed;
+    } catch(e) { return fallback; }
   }
-  function sbSave(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+  // Write to in-memory cache + async-encrypt to localStorage
+  function sbSave(key, val) {
+    sbState[key] = val;
+    if (cryptoKey) {
+      encryptField(JSON.stringify(val))
+        .then(enc => localStorage.setItem(key, JSON.stringify(enc)))
+        .catch(e  => console.error('se: sbSave encrypt failed for', key, e));
+    } else {
+      localStorage.setItem(key, JSON.stringify(val)); // pre-unlock only, should not occur in practice
+    }
+  }
+
+  // Decrypt all sb_ keys into sbState — called once on unlock
+  async function sbDecryptAll() {
+    const objDefaults = new Set([SB_MONTH_ASSIGNMENTS, SB_SETTINGS]);
+    for (const key of SB_ALL_KEYS) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) { sbState[key] = objDefaults.has(key) ? {} : (key === SB_LAST_RESET_MONTH ? '' : []); continue; }
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.__enc) {
+          const dec   = await decryptField(parsed);
+          sbState[key] = JSON.parse(dec);
+        } else {
+          // Legacy plaintext — load and migrate to encrypted
+          sbState[key] = parsed;
+          const enc = await encryptField(JSON.stringify(parsed));
+          localStorage.setItem(key, JSON.stringify(enc));
+        }
+      } catch(e) {
+        const objDefaults2 = new Set([SB_MONTH_ASSIGNMENTS, SB_SETTINGS]);
+        sbState[key] = objDefaults2.has(key) ? {} : (key === SB_LAST_RESET_MONTH ? '' : []);
+        console.warn('se: sbDecryptAll failed for', key, e);
+      }
+    }
+    sbReady = true;
+  }
+
+  // Wipe sb_ state on lock — mirrors how cryptoKey is cleared
+  function sbClearMemory() {
+    sbState = {};
+    sbReady = false;
+    _csvRows = [];
+  }
 
   function getCurrentMonthKey() {
     const d = new Date();
@@ -5369,7 +5445,6 @@ Be direct, conversational, and specific. Sam reads this on his phone between job
   }
 
   // ── Westpac CSV Import ────────────────────────────────────────
-  const SB_IMPORT_HASHES = 'sb_import_hashes';
   let _csvRows = [];
 
   const CSV_RULES = [
@@ -5401,8 +5476,10 @@ Be direct, conversational, and specific. Sam reads this on his phone between job
     return '';
   }
 
-  function csvRowHash(r) {
-    return r.date + '|' + r.amount.toFixed(2) + '|' + r.narration.slice(0, 32);
+  // Real SHA-256 digest — opaque hex string, reveals nothing about the transaction
+  async function csvRowHash(r) {
+    const raw = r.date + '|' + r.amount.toFixed(2) + '|' + r.narration.slice(0, 32);
+    return sha256(raw);
   }
 
   function openCsvImport() {
@@ -5413,11 +5490,23 @@ Be direct, conversational, and specific. Sam reads this on his phone between job
   function handleCsvFile(e) {
     const file = e.target.files[0];
     if (!file) return;
+    // Validate type — accept CSV and plain text only
+    const nameOk = file.name.toLowerCase().endsWith('.csv') || file.name.toLowerCase().endsWith('.txt');
+    const typeOk = !file.type || file.type.includes('csv') || file.type.includes('text');
+    if (!nameOk && !typeOk) {
+      showToast('Please select a CSV file exported from Westpac online banking');
+      return;
+    }
+    // Reject files over 2MB (~20,000 rows — far more than any real statement)
+    if (file.size > 2 * 1024 * 1024) {
+      showToast('File too large (max 2MB) — export a shorter date range from Westpac');
+      return;
+    }
     const reader = new FileReader();
     reader.onload = ev => {
       const rows = parseWestpacCSV(ev.target.result);
       if (!rows.length) { showToast('No transactions found — make sure it\'s a Westpac CSV export'); return; }
-      showCsvPreview(rows);
+      showCsvPreview(rows); // async — runs in background, sheet opens when hashes are ready
     };
     reader.readAsText(file);
   }
@@ -5457,15 +5546,17 @@ Be direct, conversational, and specific. Sam reads this on his phone between job
     return rows;
   }
 
-  function showCsvPreview(rows) {
-    const envelopes  = sbLoad(SB_ENVELOPES, []);
-    const hashSet    = new Set(sbLoad(SB_IMPORT_HASHES, []));
-    _csvRows = rows.map(r => ({
+  async function showCsvPreview(rows) {
+    const envelopes = sbLoad(SB_ENVELOPES, []);
+    const hashSet   = new Set(sbLoad(SB_IMPORT_HASHES, []));
+    // Compute all SHA-256 hashes in parallel before building _csvRows
+    const hashes = await Promise.all(rows.map(r => csvRowHash(r)));
+    _csvRows = rows.map((r, i) => ({
       ...r,
       envelope_id: r.type === 'expense' ? csvAutoMatch(r.narration, envelopes) : '',
-      hash:        csvRowHash(r),
-      isDupe:      hashSet.has(csvRowHash(r)),
-      selected:    !hashSet.has(csvRowHash(r))
+      hash:        hashes[i],
+      isDupe:      hashSet.has(hashes[i]),
+      selected:    !hashSet.has(hashes[i])
     }));
 
     const newCount  = _csvRows.filter(r => !r.isDupe).length;
