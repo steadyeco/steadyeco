@@ -3609,6 +3609,8 @@
     document.getElementById('pin-screen').classList.add('hidden');
     localStorage.setItem(PIN_ATTEMPTS, '0');
     resetInactivityTimer();
+    // Show dashboard immediately — don't wait for async chain
+    goHome();
     dbReady.then(() => decryptAllInMemory()).then(async () => {
       // Decrypt personal budget data into memory
       await sbDecryptAll();
@@ -3637,6 +3639,9 @@
       } catch(e) {}
 
       refreshDashboard(); checkMonthlyReset();
+    }).catch(err => {
+      console.error('se: unlock failed', err);
+      refreshDashboard();
     });
   }
 
