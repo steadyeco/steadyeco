@@ -3818,7 +3818,7 @@
         pinSetupFirst = '';
         unlockApp();
       } catch(e) {
-        document.getElementById('pinSubtitle').textContent = 'Setup failed — try again';
+        document.getElementById('pinSubtitle').textContent = 'ERR: ' + (e.message || e.name || 'unknown');
         keypad.classList.remove('disabled');
         pinBuffer = '';
         updatePinDots('pinDots');
