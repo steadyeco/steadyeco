@@ -757,6 +757,19 @@
   .se-dock-btn.active svg { stroke: var(--green-accent); }
   .se-dock-btn.active span { color: var(--green-accent); }
 
+  /* Personal Budget — gold active dock state */
+  .se-dock-btn.active-gold svg { stroke: #C8A84B !important; }
+  .se-dock-btn.active-gold span { color: #C8A84B !important; }
+
+  /* Personal Budget module */
+  .pb-filter-btn { background:var(--card);border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:6px 12px;font-size:0.72rem;font-family:'Inter',sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0; }
+  .pb-filter-btn.active-filter { background:#C8A84B;color:#0A110D;border-color:#C8A84B;font-weight:600; }
+  .pb-env-card { background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:8px; }
+  .pb-env-bar { background:var(--bg-component);border-radius:4px;height:6px;overflow:hidden;margin:8px 0 4px; }
+  .pb-env-fill { height:100%;border-radius:4px;background:#C8A84B;transition:width 0.4s ease; }
+  .pb-goal-card { background:var(--card);border-radius:12px;padding:16px;margin-bottom:10px; }
+  .pb-tx-row { display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-inner); }
+
   /* Finance module */
   .ai-chip {
     background: var(--card); border: 1px solid var(--border-light);
@@ -1638,6 +1651,249 @@
     </div>
   </div>
 
+  <!-- ═══════════════════════════════ PERSONAL BUDGET ════════════════════════════════ -->
+  <div class="screen" id="screen-personal">
+    <!-- Gold header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-family:'Fraunces',serif;font-size:1.3rem;font-weight:300;color:var(--text);">Personal Budget</div>
+      <div style="font-size:0.7rem;color:#C8A84B;font-weight:600;letter-spacing:1px;">PERSONAL</div>
+    </div>
+
+    <!-- Tab bar -->
+    <div style="display:flex;gap:4px;background:var(--card);border-radius:10px;padding:4px;margin-bottom:20px;">
+      <button id="pbTab-overview"     onclick="showPBTab('overview')"     style="flex:1;padding:8px 4px;border:none;border-radius:7px;background:#C8A84B;color:#0A110D;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">Overview</button>
+      <button id="pbTab-envelopes"    onclick="showPBTab('envelopes')"    style="flex:1;padding:8px 4px;border:none;border-radius:7px;background:transparent;color:var(--muted);font-size:0.75rem;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;">Envelopes</button>
+      <button id="pbTab-goals"        onclick="showPBTab('goals')"        style="flex:1;padding:8px 4px;border:none;border-radius:7px;background:transparent;color:var(--muted);font-size:0.75rem;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;">Goals</button>
+      <button id="pbTab-transactions" onclick="showPBTab('transactions')" style="flex:1;padding:8px 4px;border:none;border-radius:7px;background:transparent;color:var(--muted);font-size:0.75rem;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;">History</button>
+    </div>
+
+    <!-- OVERVIEW PANE -->
+    <div id="pbPane-overview">
+      <!-- First-use setup prompt -->
+      <div id="pbFirstUse" style="display:none;background:rgba(200,168,75,0.08);border:1px solid rgba(200,168,75,0.3);border-radius:12px;padding:16px;margin-bottom:16px;">
+        <div style="font-weight:600;color:#C8A84B;margin-bottom:6px;">Welcome to Personal Budget</div>
+        <div style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:12px;">How much do you pay yourself from Steady Eco each month?</div>
+        <div style="display:flex;gap:8px;">
+          <div style="position:relative;flex:1;">
+            <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);">$</span>
+            <input type="number" id="pbFirstIncomeAmt" placeholder="e.g. 3000" min="0" style="width:100%;background:var(--bg-component);border:1px solid var(--border-light);border-radius:10px;padding:10px 10px 10px 24px;font-size:0.9rem;color:var(--text);font-family:'Inter',sans-serif;">
+          </div>
+          <input type="text" id="pbFirstIncomeName" placeholder="Label (e.g. Wages)" style="flex:1;background:var(--bg-component);border:1px solid var(--border-light);border-radius:10px;padding:10px 12px;font-size:0.9rem;color:var(--text);font-family:'Inter',sans-serif;">
+        </div>
+        <button onclick="saveFirstUseIncome()" style="width:100%;background:#C8A84B;color:#0A110D;border:none;border-radius:10px;padding:12px;font-size:0.88rem;font-weight:700;cursor:pointer;margin-top:10px;">Get Started</button>
+      </div>
+
+      <!-- Ready to Assign banner -->
+      <div id="pbReadyBanner" style="border-radius:10px;padding:14px 16px;margin-bottom:16px;border-left:3px solid #C8A84B;background:rgba(200,168,75,0.06);cursor:pointer;" onclick="showPBTab('envelopes')">
+        <div id="pbReadyTitle" style="font-size:0.9rem;font-weight:600;color:#C8A84B;"></div>
+        <div id="pbReadySub" style="font-size:0.72rem;color:var(--muted);margin-top:2px;"></div>
+      </div>
+
+      <!-- 3 summary cards -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+        <div class="card" style="padding:12px 10px;text-align:center;">
+          <div style="font-size:0.58rem;font-weight:600;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">Income</div>
+          <div id="pbSumIncome" style="font-family:'Fraunces',serif;font-size:1.1rem;font-weight:300;color:var(--text);">$0</div>
+          <div id="pbSumIncomeSub" style="font-size:0.62rem;color:var(--muted);margin-top:2px;"></div>
+        </div>
+        <div class="card" style="padding:12px 10px;text-align:center;">
+          <div style="font-size:0.58rem;font-weight:600;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">Spent</div>
+          <div id="pbSumSpent" style="font-family:'Fraunces',serif;font-size:1.1rem;font-weight:300;color:var(--text);">$0</div>
+          <div id="pbSumSpentSub" style="font-size:0.62rem;color:var(--muted);margin-top:2px;"></div>
+        </div>
+        <div class="card" style="padding:12px 10px;text-align:center;">
+          <div style="font-size:0.58rem;font-weight:600;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">Left</div>
+          <div id="pbSumLeft" style="font-family:'Fraunces',serif;font-size:1.1rem;font-weight:300;color:var(--text);">$0</div>
+          <div id="pbSumLeftSub" style="font-size:0.62rem;color:var(--muted);margin-top:2px;"></div>
+        </div>
+      </div>
+
+      <!-- Spending progress bar -->
+      <div class="card" style="padding:14px 16px;margin-bottom:12px;">
+        <div style="background:var(--bg-component);border-radius:6px;height:8px;overflow:hidden;margin-bottom:8px;">
+          <div id="pbSpendBar" style="height:100%;border-radius:6px;background:#C8A84B;width:0%;transition:width 0.6s;"></div>
+        </div>
+        <div id="pbSpendBarLabel" style="font-size:0.75rem;color:var(--muted);"></div>
+      </div>
+
+      <!-- Top envelopes -->
+      <div id="pbTopEnvelopes" style="margin-bottom:12px;"></div>
+
+      <!-- Savings rate -->
+      <div id="pbSavingsRate" style="margin-bottom:12px;"></div>
+
+      <!-- Insights -->
+      <div id="pbInsights" style="margin-bottom:8px;"></div>
+
+      <div style="height:80px;"></div>
+    </div>
+
+    <!-- ENVELOPES PANE -->
+    <div id="pbPane-envelopes" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div id="pbReadyToAssignChip" style="font-size:0.78rem;color:#C8A84B;font-weight:600;"></div>
+        <button onclick="openAddTransaction(null)" style="background:#C8A84B;color:#0A110D;border:none;border-radius:8px;padding:8px 14px;font-size:0.78rem;font-weight:700;cursor:pointer;">+ Expense</button>
+      </div>
+      <div id="pbEnvelopeList"></div>
+      <button onclick="openAddEnvelope()" style="width:100%;background:none;border:1px dashed var(--border-light);color:var(--muted);border-radius:10px;padding:12px;font-size:0.8rem;cursor:pointer;margin-top:8px;">+ New Envelope</button>
+      <div style="height:80px;"></div>
+    </div>
+
+    <!-- GOALS PANE -->
+    <div id="pbPane-goals" style="display:none;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+        <div class="card" style="padding:12px;text-align:center;">
+          <div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Active Goals</div>
+          <div id="pbGoalCount" style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:300;color:#C8A84B;">0</div>
+        </div>
+        <div class="card" style="padding:12px;text-align:center;">
+          <div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Total Saved</div>
+          <div id="pbGoalSaved" style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:300;color:#C8A84B;">$0</div>
+        </div>
+      </div>
+      <div id="pbGoalList" style="margin-bottom:12px;"></div>
+      <button onclick="openAddGoal()" style="width:100%;background:#C8A84B;color:#0A110D;border:none;border-radius:10px;padding:14px;font-size:0.88rem;font-weight:700;cursor:pointer;">+ New Goal</button>
+      <div style="height:80px;"></div>
+    </div>
+
+    <!-- TRANSACTIONS PANE -->
+    <div id="pbPane-transactions" style="display:none;">
+      <input type="text" id="pbTxSearch" placeholder="Search transactions..." oninput="renderPBTransactions()"
+        style="width:100%;background:var(--bg-component);border:1px solid var(--border-light);border-radius:10px;padding:10px 14px;font-size:0.85rem;color:var(--text);font-family:'Inter',sans-serif;margin-bottom:10px;">
+      <div style="display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px;" id="pbTxFilters">
+        <button class="pb-filter-btn active-filter" onclick="setPBFilter('all',this)">All</button>
+        <button class="pb-filter-btn" onclick="setPBFilter('month',this)">This month</button>
+        <button class="pb-filter-btn" onclick="setPBFilter('lastmonth',this)">Last month</button>
+        <button class="pb-filter-btn" onclick="setPBFilter('expense',this)">Expenses</button>
+        <button class="pb-filter-btn" onclick="setPBFilter('income',this)">Income</button>
+      </div>
+      <div id="pbTxTotals" style="font-size:0.72rem;color:var(--muted);margin-bottom:8px;"></div>
+      <div id="pbTxList"></div>
+      <div style="height:80px;"></div>
+    </div>
+  </div>
+
+  <!-- ═══ PERSONAL BUDGET — Add Transaction Sheet ═══ -->
+  <div id="pb-add-tx-sheet" style="display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.7);" onclick="if(event.target===this)closePBSheet()">
+    <div style="position:absolute;bottom:0;left:0;right:0;background:var(--bg-elevated);border-radius:16px 16px 0 0;padding:20px 20px 40px;max-height:80vh;overflow-y:auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-size:0.8rem;font-weight:700;color:#C8A84B;letter-spacing:1px;">ADD TRANSACTION</div>
+        <button onclick="closePBSheet()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;">✕</button>
+      </div>
+      <!-- Type toggle -->
+      <div style="display:flex;gap:6px;margin-bottom:16px;">
+        <button id="pbTxTypeExp" onclick="setPBTxType('expense')" style="flex:1;padding:10px;border:none;border-radius:8px;background:#C8A84B;color:#0A110D;font-size:0.85rem;font-weight:700;cursor:pointer;">Expense</button>
+        <button id="pbTxTypeInc" onclick="setPBTxType('income')"  style="flex:1;padding:10px;border:none;border-radius:8px;background:var(--card);color:var(--muted);font-size:0.85rem;font-weight:600;cursor:pointer;">Income</button>
+      </div>
+      <!-- Amount -->
+      <div style="background:var(--bg-component);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+        <span style="font-family:'Fraunces',serif;font-size:1.5rem;color:var(--muted);">$</span>
+        <input type="number" id="pbTxAmount" placeholder="0.00" step="0.01" min="0"
+          style="flex:1;background:none;border:none;font-family:'Fraunces',serif;font-size:1.8rem;font-weight:300;color:var(--text);outline:none;width:100%;">
+      </div>
+      <!-- Description -->
+      <input type="text" id="pbTxDesc" placeholder="Description (optional)"
+        style="width:100%;background:var(--bg-component);border:1px solid var(--border-light);border-radius:10px;padding:12px 14px;font-size:0.88rem;color:var(--text);font-family:'Inter',sans-serif;margin-bottom:10px;">
+      <!-- Envelope selector -->
+      <select id="pbTxEnvelope" style="width:100%;background:var(--bg-component);border:1px solid var(--border-light);border-radius:10px;padding:12px 14px;font-size:0.88rem;color:var(--text);font-family:'Inter',sans-serif;margin-bottom:10px;appearance:none;">
+        <option value="">Select envelope...</option>
+      </select>
+      <!-- Date -->
+      <input type="date" id="pbTxDate" style="width:100%;background:var(--bg-component);border:1px solid var(--border-light);border-radius:10px;padding:12px 14px;font-size:0.88rem;color:var(--text);font-family:'Inter',sans-serif;margin-bottom:16px;color-scheme:dark;">
+      <button onclick="savePBTransaction()" style="width:100%;background:#C8A84B;color:#0A110D;border:none;border-radius:12px;padding:16px;font-size:0.95rem;font-weight:700;cursor:pointer;">Add Transaction</button>
+    </div>
+  </div>
+
+  <!-- ═══ PERSONAL BUDGET — Add Envelope Sheet ═══ -->
+  <div id="pb-add-env-sheet" style="display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.7);" onclick="if(event.target===this)closePBEnvSheet()">
+    <div style="position:absolute;bottom:0;left:0;right:0;background:var(--bg-elevated);border-radius:16px 16px 0 0;padding:20px 20px 40px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-size:0.8rem;font-weight:700;color:#C8A84B;letter-spacing:1px;" id="pbEnvSheetTitle">NEW ENVELOPE</div>
+        <button onclick="closePBEnvSheet()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;">✕</button>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:10px;">
+        <input type="text" id="pbEnvEmoji" placeholder="📦" maxlength="2" style="width:56px;text-align:center;background:var(--bg-component);border:1px solid var(--border-light);border-radius:10px;padding:12px;font-size:1.4rem;color:var(--text);">
+        <input type="text" id="pbEnvName" placeholder="Envelope name" style="flex:1;background:var(--bg-component);border:1px solid var(--border-light);border-radius:10px;padding:12px 14px;font-size:0.9rem;color:var(--text);font-family:'Inter',sans-serif;">
+      </div>
+      <select id="pbEnvGroup" style="width:100%;background:var(--bg-component);border:1px solid var(--border-light);border-radius:10px;padding:12px 14px;font-size:0.88rem;color:var(--text);font-family:'Inter',sans-serif;margin-bottom:10px;appearance:none;"></select>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;margin-bottom:10px;border-bottom:1px solid var(--border);">
+        <span style="font-size:0.85rem;color:var(--text-secondary);">Roll over unspent</span>
+        <input type="checkbox" id="pbEnvRollover" style="width:18px;height:18px;accent-color:#C8A84B;">
+      </div>
+      <input type="hidden" id="pbEnvEditId">
+      <button onclick="savePBEnvelope()" style="width:100%;background:#C8A84B;color:#0A110D;border:none;border-radius:12px;padding:16px;font-size:0.95rem;font-weight:700;cursor:pointer;">Save Envelope</button>
+    </div>
+  </div>
+
+  <!-- ═══ PERSONAL BUDGET — Add Goal Sheet ═══ -->
+  <div id="pb-add-goal-sheet" style="display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.7);" onclick="if(event.target===this)closePBGoalSheet()">
+    <div style="position:absolute;bottom:0;left:0;right:0;background:var(--bg-elevated);border-radius:16px 16px 0 0;padding:20px 20px 40px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-size:0.8rem;font-weight:700;color:#C8A84B;letter-spacing:1px;" id="pbGoalSheetTitle">NEW GOAL</div>
+        <button onclick="closePBGoalSheet()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;">✕</button>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:10px;">
+        <input type="text" id="pbGoalEmoji" placeholder="🎯" maxlength="2" style="width:56px;text-align:center;background:var(--bg-component);border:1px solid var(--border-light);border-radius:10px;padding:12px;font-size:1.4rem;color:var(--text);">
+        <input type="text" id="pbGoalName" placeholder="Goal name" style="flex:1;background:var(--bg-component);border:1px solid var(--border-light);border-radius:10px;padding:12px 14px;font-size:0.9rem;color:var(--text);font-family:'Inter',sans-serif;">
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <div style="flex:1;position:relative;">
+          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);">$</span>
+          <input type="number" id="pbGoalTarget" placeholder="Target" min="0" style="width:100%;background:var(--bg-component);border:1px solid var(--border-light);border-radius:10px;padding:12px 12px 12px 24px;font-size:0.88rem;color:var(--text);font-family:'Inter',sans-serif;">
+        </div>
+        <div style="flex:1;position:relative;">
+          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);">$</span>
+          <input type="number" id="pbGoalSavedInit" placeholder="Already saved" min="0" style="width:100%;background:var(--bg-component);border:1px solid var(--border-light);border-radius:10px;padding:12px 12px 12px 24px;font-size:0.88rem;color:var(--text);font-family:'Inter',sans-serif;">
+        </div>
+      </div>
+      <input type="date" id="pbGoalDate" style="width:100%;background:var(--bg-component);border:1px solid var(--border-light);border-radius:10px;padding:12px 14px;font-size:0.88rem;color:var(--text);font-family:'Inter',sans-serif;margin-bottom:16px;color-scheme:dark;">
+      <input type="hidden" id="pbGoalEditId">
+      <button onclick="savePBGoal()" style="width:100%;background:#C8A84B;color:#0A110D;border:none;border-radius:12px;padding:16px;font-size:0.95rem;font-weight:700;cursor:pointer;" id="pbGoalSaveBtn">Create Goal</button>
+    </div>
+  </div>
+
+  <!-- ═══ PERSONAL BUDGET — Add Money to Goal Sheet ═══ -->
+  <div id="pb-goal-addmoney-sheet" style="display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.7);" onclick="if(event.target===this)closePBGoalMoneySheet()">
+    <div style="position:absolute;bottom:0;left:0;right:0;background:var(--bg-elevated);border-radius:16px 16px 0 0;padding:20px 20px 40px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-size:0.8rem;font-weight:700;color:#C8A84B;letter-spacing:1px;">ADD SAVINGS</div>
+        <button onclick="closePBGoalMoneySheet()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;">✕</button>
+      </div>
+      <div id="pbGoalMoneyLabel" style="font-size:0.9rem;color:var(--text-secondary);margin-bottom:12px;"></div>
+      <div style="background:var(--bg-component);border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+        <span style="font-family:'Fraunces',serif;font-size:1.5rem;color:var(--muted);">$</span>
+        <input type="number" id="pbGoalMoneyAmt" placeholder="0.00" step="0.01" min="0"
+          style="flex:1;background:none;border:none;font-family:'Fraunces',serif;font-size:1.8rem;font-weight:300;color:var(--text);outline:none;width:100%;">
+      </div>
+      <input type="hidden" id="pbGoalMoneyId">
+      <button onclick="confirmAddMoneyToGoal()" style="width:100%;background:#C8A84B;color:#0A110D;border:none;border-radius:12px;padding:16px;font-size:0.95rem;font-weight:700;cursor:pointer;">Add to Goal</button>
+    </div>
+  </div>
+
+  <!-- ═══ PERSONAL BUDGET — Income Source Sheet ═══ -->
+  <div id="pb-income-source-sheet" style="display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.7);" onclick="if(event.target===this)closePBIncomeSourceSheet()">
+    <div style="position:absolute;bottom:0;left:0;right:0;background:var(--bg-elevated);border-radius:16px 16px 0 0;padding:20px 20px 40px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-size:0.8rem;font-weight:700;color:#C8A84B;letter-spacing:1px;">INCOME SOURCE</div>
+        <button onclick="closePBIncomeSourceSheet()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;">✕</button>
+      </div>
+      <input type="text" id="pbIncomeSourceName" placeholder="e.g. Steady Eco wages" style="width:100%;background:var(--bg-component);border:1px solid var(--border-light);border-radius:10px;padding:12px 14px;font-size:0.9rem;color:var(--text);font-family:'Inter',sans-serif;margin-bottom:10px;">
+      <div style="position:relative;margin-bottom:16px;">
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);">$</span>
+        <input type="number" id="pbIncomeSourceAmt" placeholder="Monthly amount" min="0" style="width:100%;background:var(--bg-component);border:1px solid var(--border-light);border-radius:10px;padding:12px 12px 12px 24px;font-size:0.9rem;color:var(--text);font-family:'Inter',sans-serif;">
+      </div>
+      <input type="hidden" id="pbIncomeSourceEditId">
+      <button onclick="savePBIncomeSource()" style="width:100%;background:#C8A84B;color:#0A110D;border:none;border-radius:12px;padding:16px;font-size:0.95rem;font-weight:700;cursor:pointer;">Save Income Source</button>
+    </div>
+  </div>
+
+  <!-- ═══ PERSONAL BUDGET — Envelope Detail Overlay ═══ -->
+  <div id="pb-env-detail-overlay" style="display:none;position:fixed;inset:0;z-index:7000;background:rgba(0,0,0,0.7);" onclick="if(event.target===this)closePBEnvDetail()">
+    <div style="position:absolute;bottom:0;left:0;right:0;background:var(--bg-elevated);border-radius:16px 16px 0 0;padding:20px 20px 40px;max-height:85vh;overflow-y:auto;">
+      <div id="pbEnvDetailContent"></div>
+    </div>
+  </div>
+
   <!-- ═══════════════════════════════ WEBSITE ENQUIRIES ════════════════════════════════ -->
   <div class="screen" id="screen-website-enquiries">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
@@ -1708,6 +1964,12 @@
     <div style="font-size:0.72rem;color:var(--muted);margin-bottom:12px;">Get a free key at console.anthropic.com</div>
     <button class="btn-full btn-green" onclick="saveAiKey()" style="margin-bottom:8px;">Save API Key</button>
     <button class="btn-full btn-ghost" onclick="clearAiChat()">Clear AI Chat History</button>
+
+    <!-- Personal Budget settings -->
+    <div class="section-label" style="margin-top:36px; margin-bottom:12px;">Personal Budget</div>
+    <div class="section-label" style="font-size:11px;margin-bottom:8px;">Income Sources</div>
+    <div id="pbIncomeSourcesList" style="margin-bottom:8px;"></div>
+    <button onclick="openAddIncomeSource()" style="background:none;border:1px dashed var(--border-light);color:var(--muted);border-radius:8px;padding:10px;width:100%;font-size:0.8rem;cursor:pointer;margin-bottom:12px;">+ Add income source</button>
   </div>
 
   <!-- ════════════════════════════════════════════════════════════
@@ -1729,6 +1991,10 @@
     <button class="se-dock-btn" id="dock-budget" onclick="dockNavigate('budget')" aria-label="Budget">
       <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
       <span>Budget</span>
+    </button>
+    <button class="se-dock-btn" id="dock-personal" onclick="dockNavigate('personal')" aria-label="Personal Budget">
+      <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/><path d="M12 11v4"/><path d="M10 13h4"/></svg>
+      <span>Personal</span>
     </button>
   </nav>
 
@@ -2967,7 +3233,7 @@
   // ══════════════════════════════════════════════════════════════
   //  SETTINGS & EXPORT
   // ══════════════════════════════════════════════════════════════
-  function loadSettings() { document.getElementById('settingName').value=settings.name||''; document.getElementById('settingBusiness').value=settings.business||'Steady Eco'; document.getElementById('settingBSB').value=settings.bankBSB||''; document.getElementById('settingAccount').value=settings.bankAccount||''; loadFinanceSettings(); }
+  function loadSettings() { document.getElementById('settingName').value=settings.name||''; document.getElementById('settingBusiness').value=settings.business||'Steady Eco'; document.getElementById('settingBSB').value=settings.bankBSB||''; document.getElementById('settingAccount').value=settings.bankAccount||''; loadFinanceSettings(); renderPBIncomeSourcesList(); }
   function saveSettings() { settings.name=document.getElementById('settingName').value.trim(); settings.business=document.getElementById('settingBusiness').value.trim(); settings.bankBSB=document.getElementById('settingBSB').value.trim(); settings.bankAccount=document.getElementById('settingAccount').value.trim(); save(); showToast('Settings saved'); refreshDashboard(); }
   function exportData() {
     const blob=new Blob([JSON.stringify({customers,quotes,jobs,invoices,settings,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});
@@ -3198,10 +3464,16 @@
   //  DOCK NAVIGATION
   // ══════════════════════════════════════════════════════════════
   function setDockActive(section) {
-    const map = { dashboard:'dock-home', customers:'dock-customer', finance:'dock-finance', budget:'dock-budget' };
-    document.querySelectorAll('.se-dock-btn').forEach(b => b.classList.remove('active'));
+    const map = { dashboard:'dock-home', customers:'dock-customer', finance:'dock-finance', budget:'dock-budget', personal:'dock-personal' };
+    document.querySelectorAll('.se-dock-btn').forEach(b => { b.classList.remove('active'); b.classList.remove('active-gold'); });
     const target = map[section];
-    if (target) document.getElementById(target)?.classList.add('active');
+    if (target) {
+      if (section === 'personal') {
+        document.getElementById(target)?.classList.add('active-gold');
+      } else {
+        document.getElementById(target)?.classList.add('active');
+      }
+    }
   }
 
   function dockNavigate(section) {
@@ -3210,6 +3482,7 @@
       case 'customers': showCustomersScreen(); setDockActive('customers'); break;
       case 'finance':   showFinanceScreen(); setDockActive('finance'); break;
       case 'budget':    showFinanceScreen(); showFinTab('budget'); setDockActive('budget'); break;
+      case 'personal':  showPersonalScreen(); break;
     }
   }
 
@@ -3268,7 +3541,7 @@
     localStorage.setItem(PIN_ATTEMPTS, '0');
     resetInactivityTimer();
     // Wait for IDB load, then decrypt PII, then render
-    dbReady.then(() => decryptAllInMemory()).then(() => refreshDashboard());
+    dbReady.then(() => decryptAllInMemory()).then(() => { refreshDashboard(); checkMonthlyReset(); });
   }
 
   function resetInactivityTimer() {
@@ -4367,6 +4640,946 @@ Be direct, conversational, and specific. Sam reads this on his phone between job
     const costs = getCurrentCostsFromDom().filter(c => c.name || c.amount > 0);
     localStorage.setItem('se_monthly_costs', JSON.stringify(costs));
     showToast('Finance settings saved');
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  PERSONAL BUDGET MODULE
+  // ══════════════════════════════════════════════════════════════
+
+  // ── Storage keys ─────────────────────────────────────────────
+  const SB_INCOME_SOURCES    = 'sb_income_sources';
+  const SB_ENVELOPES         = 'sb_envelopes';
+  const SB_ENVELOPE_GROUPS   = 'sb_envelope_groups';
+  const SB_TRANSACTIONS      = 'sb_transactions';
+  const SB_GOALS             = 'sb_goals';
+  const SB_MONTH_ASSIGNMENTS = 'sb_month_assignments';
+  const SB_SETTINGS          = 'sb_settings';
+  const SB_LAST_RESET_MONTH  = 'sb_last_reset_month';
+
+  // ── Helpers ───────────────────────────────────────────────────
+  function sbLoad(key, fallback) {
+    try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); }
+    catch(e) { return fallback; }
+  }
+  function sbSave(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+  function getCurrentMonthKey() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+  }
+
+  function fmtMoney(n) {
+    n = Number(n) || 0;
+    return '$' + Math.abs(n).toLocaleString('en-AU', { minimumFractionDigits:0, maximumFractionDigits:0 });
+  }
+
+  function todayISO() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  // ── Data engine ───────────────────────────────────────────────
+  function getTransactionsForMonth(monthKey) {
+    const all = sbLoad(SB_TRANSACTIONS, []);
+    return all.filter(t => t.date && t.date.startsWith(monthKey));
+  }
+
+  function getEnvelopeSpent(envelopeId, monthKey) {
+    const txs = getTransactionsForMonth(monthKey);
+    return txs.filter(t => t.envelope_id === envelopeId && t.type === 'expense')
+              .reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  }
+
+  function getEnvelopeBudgeted(envelopeId, monthKey) {
+    const assignments = sbLoad(SB_MONTH_ASSIGNMENTS, {});
+    return Number((assignments[monthKey] || {})[envelopeId] || 0);
+  }
+
+  function setEnvelopeBudget(envelopeId, monthKey, amount) {
+    const assignments = sbLoad(SB_MONTH_ASSIGNMENTS, {});
+    if (!assignments[monthKey]) assignments[monthKey] = {};
+    assignments[monthKey][envelopeId] = Number(amount) || 0;
+    sbSave(SB_MONTH_ASSIGNMENTS, assignments);
+  }
+
+  function getEnvelopeRemaining(envelopeId, monthKey) {
+    return getEnvelopeBudgeted(envelopeId, monthKey) - getEnvelopeSpent(envelopeId, monthKey);
+  }
+
+  function getMonthlyIncome(monthKey) {
+    // Sum of all income sources (monthly) + any income transactions this month
+    const sources = sbLoad(SB_INCOME_SOURCES, []);
+    const baseIncome = sources.reduce((s, src) => s + (Number(src.amount) || 0), 0);
+    const txs = getTransactionsForMonth(monthKey);
+    const extraIncome = txs.filter(t => t.type === 'income').reduce((s, t) => s + (Number(t.amount) || 0), 0);
+    return baseIncome + extraIncome;
+  }
+
+  function getTotalBudgeted(monthKey) {
+    const envelopes = sbLoad(SB_ENVELOPES, []);
+    return envelopes.reduce((s, env) => s + getEnvelopeBudgeted(env.id, monthKey), 0);
+  }
+
+  function getReadyToAssign(monthKey) {
+    return getMonthlyIncome(monthKey) - getTotalBudgeted(monthKey);
+  }
+
+  function getTotalSpent(monthKey) {
+    const txs = getTransactionsForMonth(monthKey);
+    return txs.filter(t => t.type === 'expense').reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  }
+
+  function getBudgetSummary(monthKey) {
+    const income    = getMonthlyIncome(monthKey);
+    const budgeted  = getTotalBudgeted(monthKey);
+    const spent     = getTotalSpent(monthKey);
+    const remaining = income - spent;
+    const rta       = income - budgeted;
+    return { income, budgeted, spent, remaining, rta };
+  }
+
+  // ── Monthly reset ─────────────────────────────────────────────
+  function checkMonthlyReset() {
+    const current = getCurrentMonthKey();
+    const last    = localStorage.getItem(SB_LAST_RESET_MONTH) || '';
+    if (last === current) return;
+
+    const envelopes    = sbLoad(SB_ENVELOPES, []);
+    const assignments  = sbLoad(SB_MONTH_ASSIGNMENTS, {});
+
+    // For envelopes with rollover=true, carry forward remaining from previous month
+    if (last && envelopes.length) {
+      if (!assignments[current]) assignments[current] = {};
+      envelopes.forEach(env => {
+        if (env.rollover) {
+          const prevBudgeted = Number((assignments[last] || {})[env.id] || 0);
+          const prevSpent    = getEnvelopeSpent(env.id, last);
+          const rollAmt      = Math.max(0, prevBudgeted - prevSpent);
+          const curBudget    = Number((assignments[current] || {})[env.id] || 0);
+          assignments[current][env.id] = curBudget + rollAmt;
+        }
+      });
+      sbSave(SB_MONTH_ASSIGNMENTS, assignments);
+    }
+
+    localStorage.setItem(SB_LAST_RESET_MONTH, current);
+  }
+
+  // ── Navigation ────────────────────────────────────────────────
+  let pbCurrentTab = 'overview';
+  let pbCurrentFilter = 'all';
+
+  function showPersonalScreen() {
+    document.querySelectorAll('.se-dock-btn').forEach(b => { b.classList.remove('active'); b.classList.remove('active-gold'); });
+    document.getElementById('dock-personal')?.classList.add('active-gold');
+    showScreen('personal', 'dashboard');
+    checkMonthlyReset();
+    renderPersonalScreen();
+  }
+
+  function renderPersonalScreen() {
+    const sources = sbLoad(SB_INCOME_SOURCES, []);
+    const firstUse = document.getElementById('pbFirstUse');
+    if (firstUse) firstUse.style.display = sources.length === 0 ? 'block' : 'none';
+    showPBTab(pbCurrentTab);
+  }
+
+  function showPBTab(tab) {
+    pbCurrentTab = tab;
+    const panes = ['overview','envelopes','goals','transactions'];
+    panes.forEach(p => {
+      const el = document.getElementById('pbPane-' + p);
+      if (el) el.style.display = p === tab ? 'block' : 'none';
+    });
+    // Update tab button styles
+    panes.forEach(p => {
+      const btn = document.getElementById('pbTab-' + p);
+      if (!btn) return;
+      if (p === tab) {
+        btn.style.background = '#C8A84B';
+        btn.style.color = '#0A110D';
+        btn.style.fontWeight = '700';
+      } else {
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--muted)';
+        btn.style.fontWeight = '500';
+      }
+    });
+    if (tab === 'overview')      renderPBOverview();
+    if (tab === 'envelopes')     renderPBEnvelopes();
+    if (tab === 'goals')         renderPBGoals();
+    if (tab === 'transactions')  renderPBTransactions();
+  }
+
+  // ── First-use ─────────────────────────────────────────────────
+  function saveFirstUseIncome() {
+    const amt  = parseFloat(document.getElementById('pbFirstIncomeAmt')?.value) || 0;
+    const name = (document.getElementById('pbFirstIncomeName')?.value || 'Wages').trim();
+    if (amt <= 0) { showToast('Enter a valid amount'); return; }
+    const sources = sbLoad(SB_INCOME_SOURCES, []);
+    sources.push({ id: 'inc-' + Date.now(), name, amount: amt });
+    sbSave(SB_INCOME_SOURCES, sources);
+    const fu = document.getElementById('pbFirstUse');
+    if (fu) fu.style.display = 'none';
+    initDefaultEnvelopes();
+    renderPBOverview();
+    showToast('Welcome! Budget set up.');
+  }
+
+  // ── Overview ──────────────────────────────────────────────────
+  function renderPBOverview() {
+    const monthKey = getCurrentMonthKey();
+    const summary  = getBudgetSummary(monthKey);
+    const d = new Date();
+    const monthName = d.toLocaleDateString('en-AU', { month:'long', year:'numeric' });
+
+    // Ready to assign banner
+    const rtaEl = document.getElementById('pbReadyTitle');
+    const rtaSub = document.getElementById('pbReadySub');
+    if (rtaEl) rtaEl.textContent = summary.rta >= 0
+      ? fmtMoney(summary.rta) + ' ready to assign'
+      : fmtMoney(Math.abs(summary.rta)) + ' over-assigned';
+    if (rtaSub) rtaSub.textContent = summary.rta >= 0
+      ? 'Tap to assign to envelopes'
+      : 'Reduce envelope budgets to balance';
+    const banner = document.getElementById('pbReadyBanner');
+    if (banner) banner.style.borderLeftColor = summary.rta < 0 ? 'var(--danger)' : '#C8A84B';
+
+    // Summary cards
+    const incEl = document.getElementById('pbSumIncome');
+    if (incEl) incEl.textContent = fmtMoney(summary.income);
+    const incSub = document.getElementById('pbSumIncomeSub');
+    if (incSub) incSub.textContent = monthName;
+
+    const spEl = document.getElementById('pbSumSpent');
+    if (spEl) spEl.textContent = fmtMoney(summary.spent);
+    const spSub = document.getElementById('pbSumSpentSub');
+    if (spSub) {
+      const pct = summary.income > 0 ? Math.round(summary.spent / summary.income * 100) : 0;
+      spSub.textContent = pct + '% of income';
+    }
+
+    const leftEl = document.getElementById('pbSumLeft');
+    if (leftEl) {
+      leftEl.textContent = fmtMoney(summary.remaining);
+      leftEl.style.color = summary.remaining < 0 ? 'var(--danger)' : 'var(--text)';
+    }
+    const leftSub = document.getElementById('pbSumLeftSub');
+    if (leftSub) leftSub.textContent = summary.remaining < 0 ? 'Over budget' : 'remaining';
+
+    // Progress bar
+    const pct = summary.income > 0 ? Math.min(100, Math.round(summary.spent / summary.income * 100)) : 0;
+    const bar = document.getElementById('pbSpendBar');
+    if (bar) {
+      bar.style.width = pct + '%';
+      bar.style.background = pct >= 90 ? 'var(--danger)' : pct >= 75 ? 'var(--amber)' : '#C8A84B';
+    }
+    const barLabel = document.getElementById('pbSpendBarLabel');
+    if (barLabel) barLabel.textContent = fmtMoney(summary.spent) + ' of ' + fmtMoney(summary.income) + ' spent (' + pct + '%)';
+
+    // Top envelopes
+    renderPBTopEnvelopes(monthKey);
+
+    // Savings rate
+    renderPBSavingsRate(monthKey, summary);
+
+    // Insights
+    const insEl = document.getElementById('pbInsights');
+    if (insEl) insEl.innerHTML = generatePersonalInsights(monthKey);
+  }
+
+  function renderPBTopEnvelopes(monthKey) {
+    const container = document.getElementById('pbTopEnvelopes');
+    if (!container) return;
+    const envelopes = sbLoad(SB_ENVELOPES, []);
+    if (!envelopes.length) { container.innerHTML = ''; return; }
+
+    const withData = envelopes.map(env => {
+      const budgeted = getEnvelopeBudgeted(env.id, monthKey);
+      const spent    = getEnvelopeSpent(env.id, monthKey);
+      return { env, budgeted, spent, pct: budgeted > 0 ? Math.min(100, Math.round(spent / budgeted * 100)) : 0 };
+    }).filter(x => x.budgeted > 0).sort((a,b) => b.pct - a.pct).slice(0,3);
+
+    if (!withData.length) { container.innerHTML = ''; return; }
+
+    container.innerHTML = `
+      <div style="font-size:0.7rem;font-weight:600;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">Top Envelopes</div>
+      ${withData.map(({ env, budgeted, spent, pct }) => {
+        const remaining = budgeted - spent;
+        const barColor = pct >= 100 ? 'var(--danger)' : pct >= 80 ? 'var(--amber)' : '#C8A84B';
+        return `<div class="card" style="padding:12px 14px;margin-bottom:6px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <div style="font-size:0.85rem;color:var(--text);">${esc(env.emoji || '')} ${esc(env.name)}</div>
+            <div style="font-size:0.8rem;color:${remaining < 0 ? 'var(--danger)' : 'var(--text-secondary)'};">${remaining < 0 ? '-' : ''}${fmtMoney(Math.abs(remaining))} left</div>
+          </div>
+          <div class="pb-env-bar"><div class="pb-env-fill" style="width:${pct}%;background:${barColor};"></div></div>
+          <div style="font-size:0.65rem;color:var(--muted);">${fmtMoney(spent)} of ${fmtMoney(budgeted)}</div>
+        </div>`;
+      }).join('')}`;
+  }
+
+  function renderPBSavingsRate(monthKey, summary) {
+    const el = document.getElementById('pbSavingsRate');
+    if (!el) return;
+    if (!summary.income) { el.innerHTML = ''; return; }
+    const saved = summary.income - summary.spent;
+    const rate  = Math.round(saved / summary.income * 100);
+    el.innerHTML = `<div class="card" style="padding:14px 16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Savings Rate</div>
+          <div style="font-size:0.85rem;color:var(--text-secondary);">${fmtMoney(Math.max(0, saved))} saved this month</div>
+        </div>
+        <div style="font-family:'Fraunces',serif;font-size:1.6rem;font-weight:300;color:${rate >= 20 ? '#C8A84B' : rate >= 10 ? 'var(--amber)' : 'var(--danger)'};">${Math.max(0,rate)}%</div>
+      </div>
+    </div>`;
+  }
+
+  function generatePersonalInsights(monthKey) {
+    const envelopes = sbLoad(SB_ENVELOPES, []);
+    const insights  = [];
+    const d         = new Date();
+    const daysInMonth = new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
+    const dayOfMonth  = d.getDate();
+    const daysLeft    = daysInMonth - dayOfMonth;
+
+    // Over-budget envelopes
+    envelopes.forEach(env => {
+      const remaining = getEnvelopeRemaining(env.id, monthKey);
+      const budgeted  = getEnvelopeBudgeted(env.id, monthKey);
+      if (budgeted > 0 && remaining < 0) {
+        insights.push({ icon:'⚠️', color:'var(--danger)', text: `${esc(env.emoji||'')} ${esc(env.name)} is ${fmtMoney(Math.abs(remaining))} over budget` });
+      } else if (budgeted > 0 && remaining / budgeted < 0.15 && remaining >= 0) {
+        insights.push({ icon:'🔔', color:'var(--amber)', text: `${esc(env.emoji||'')} ${esc(env.name)} almost empty — ${fmtMoney(remaining)} left` });
+      }
+    });
+
+    // Days left
+    const summary = getBudgetSummary(monthKey);
+    if (summary.income > 0 && daysLeft > 0) {
+      const dailyBudget = summary.remaining / daysLeft;
+      if (dailyBudget > 0) insights.push({ icon:'📅', color:'#C8A84B', text: `${fmtMoney(dailyBudget)}/day left to spend for ${daysLeft} days` });
+    }
+
+    // Unassigned
+    if (summary.rta > 0) {
+      insights.push({ icon:'💡', color:'#C8A84B', text: `${fmtMoney(summary.rta)} not yet assigned to envelopes` });
+    }
+
+    if (!insights.length) return '';
+    return `<div style="font-size:0.7rem;font-weight:600;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">Insights</div>
+      ${insights.slice(0,4).map(i => `<div style="background:var(--card);border-radius:10px;padding:10px 14px;margin-bottom:6px;font-size:0.8rem;color:${i.color};">${i.icon} ${i.text}</div>`).join('')}`;
+  }
+
+  // ── Envelopes ─────────────────────────────────────────────────
+  function initDefaultEnvelopes() {
+    const existing = sbLoad(SB_ENVELOPES, []);
+    if (existing.length) return;
+
+    const groups = [
+      { id: 'grp-needs', name: 'Needs' },
+      { id: 'grp-wants', name: 'Wants' },
+      { id: 'grp-saving', name: 'Saving' }
+    ];
+    sbSave(SB_ENVELOPE_GROUPS, groups);
+
+    const envelopes = [
+      { id: 'env-' + Date.now() + '1', name: 'Groceries',    emoji: '🛒', group: 'grp-needs',  rollover: false },
+      { id: 'env-' + Date.now() + '2', name: 'Fuel',         emoji: '⛽', group: 'grp-needs',  rollover: false },
+      { id: 'env-' + Date.now() + '3', name: 'Utilities',    emoji: '💡', group: 'grp-needs',  rollover: false },
+      { id: 'env-' + Date.now() + '4', name: 'Dining Out',   emoji: '🍜', group: 'grp-wants',  rollover: false },
+      { id: 'env-' + Date.now() + '5', name: 'Entertainment',emoji: '🎬', group: 'grp-wants',  rollover: false },
+      { id: 'env-' + Date.now() + '6', name: 'Emergency Fund',emoji:'🛡️', group: 'grp-saving', rollover: true  },
+    ];
+    sbSave(SB_ENVELOPES, envelopes);
+  }
+
+  function renderPBEnvelopes() {
+    const monthKey  = getCurrentMonthKey();
+    const envelopes = sbLoad(SB_ENVELOPES, []);
+    const groups    = sbLoad(SB_ENVELOPE_GROUPS, []);
+    const rta       = getReadyToAssign(monthKey);
+
+    const chip = document.getElementById('pbReadyToAssignChip');
+    if (chip) chip.textContent = rta >= 0
+      ? fmtMoney(rta) + ' to assign'
+      : fmtMoney(Math.abs(rta)) + ' over-assigned';
+
+    const container = document.getElementById('pbEnvelopeList');
+    if (!container) return;
+
+    if (!envelopes.length) {
+      container.innerHTML = `<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.85rem;">No envelopes yet.<br>Tap "+ New Envelope" to get started.</div>`;
+      return;
+    }
+
+    // Group envelopes
+    const grouped = {};
+    const noGroup = [];
+    envelopes.forEach(env => {
+      if (env.group) {
+        if (!grouped[env.group]) grouped[env.group] = [];
+        grouped[env.group].push(env);
+      } else {
+        noGroup.push(env);
+      }
+    });
+
+    let html = '';
+    const renderGroupEnvelopes = (envList) => envList.map(env => {
+      const budgeted  = getEnvelopeBudgeted(env.id, monthKey);
+      const spent     = getEnvelopeSpent(env.id, monthKey);
+      const remaining = budgeted - spent;
+      const pct       = budgeted > 0 ? Math.min(100, Math.round(spent / budgeted * 100)) : 0;
+      const barColor  = pct >= 100 ? 'var(--danger)' : pct >= 80 ? 'var(--amber)' : '#C8A84B';
+      const ovr       = remaining < 0;
+      return `<div class="pb-env-card" onclick="openEnvelopeDetail('${env.id}')">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div style="flex:1;">
+            <div style="font-size:0.9rem;font-weight:600;color:var(--text);">${esc(env.emoji||'')} ${esc(env.name)}</div>
+            <div style="font-size:0.72rem;color:var(--muted);margin-top:1px;">${budgeted > 0 ? fmtMoney(spent) + ' of ' + fmtMoney(budgeted) : 'No budget set'}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-family:'Fraunces',serif;font-size:1rem;font-weight:300;color:${ovr ? 'var(--danger)' : 'var(--text)'};">${ovr ? '-' : ''}${fmtMoney(Math.abs(remaining))}</div>
+            <div style="font-size:0.65rem;color:var(--muted);">${ovr ? 'over' : 'left'}</div>
+          </div>
+        </div>
+        <div class="pb-env-bar"><div class="pb-env-fill" style="width:${pct}%;background:${barColor};"></div></div>
+      </div>`;
+    }).join('');
+
+    groups.forEach(grp => {
+      const list = grouped[grp.id] || [];
+      if (!list.length) return;
+      html += `<div style="font-size:0.68rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:14px 0 6px;">${esc(grp.name)}</div>`;
+      html += renderGroupEnvelopes(list);
+    });
+    if (noGroup.length) {
+      html += `<div style="font-size:0.68rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:14px 0 6px;">Other</div>`;
+      html += renderGroupEnvelopes(noGroup);
+    }
+
+    container.innerHTML = html;
+  }
+
+  function openEnvelopeDetail(id) {
+    const envelopes = sbLoad(SB_ENVELOPES, []);
+    const env = envelopes.find(e => e.id === id);
+    if (!env) return;
+    const monthKey  = getCurrentMonthKey();
+    const budgeted  = getEnvelopeBudgeted(env.id, monthKey);
+    const spent     = getEnvelopeSpent(env.id, monthKey);
+    const remaining = budgeted - spent;
+    const txs = getTransactionsForMonth(monthKey).filter(t => t.envelope_id === id && t.type === 'expense');
+
+    const overlay = document.getElementById('pb-env-detail-overlay');
+    const content = document.getElementById('pbEnvDetailContent');
+    if (!overlay || !content) return;
+
+    content.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <div>
+          <div style="font-size:1.1rem;font-weight:600;color:var(--text);">${esc(env.emoji||'')} ${esc(env.name)}</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:2px;">${env.rollover ? 'Rolls over' : 'Resets monthly'}</div>
+        </div>
+        <button onclick="closePBEnvDetail()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;">✕</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px;">
+        <div class="card" style="padding:10px;text-align:center;">
+          <div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Budgeted</div>
+          <div style="font-family:'Fraunces',serif;font-size:1.1rem;color:var(--text);">${fmtMoney(budgeted)}</div>
+        </div>
+        <div class="card" style="padding:10px;text-align:center;">
+          <div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Spent</div>
+          <div style="font-family:'Fraunces',serif;font-size:1.1rem;color:var(--text);">${fmtMoney(spent)}</div>
+        </div>
+        <div class="card" style="padding:10px;text-align:center;">
+          <div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Left</div>
+          <div style="font-family:'Fraunces',serif;font-size:1.1rem;color:${remaining < 0 ? 'var(--danger)' : '#C8A84B'};">${remaining < 0 ? '-' : ''}${fmtMoney(Math.abs(remaining))}</div>
+        </div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px;">Monthly Budget</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div style="position:relative;flex:1;">
+            <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);">$</span>
+            <input type="number" id="pbEnvDetailBudget" value="${budgeted || ''}" placeholder="0" min="0"
+              style="width:100%;background:var(--bg-component);border:1px solid var(--border-light);border-radius:10px;padding:10px 10px 10px 24px;font-size:0.9rem;color:var(--text);font-family:'Inter',sans-serif;">
+          </div>
+          <button onclick="saveEnvDetailBudget('${id}')" style="background:#C8A84B;color:#0A110D;border:none;border-radius:10px;padding:10px 16px;font-size:0.85rem;font-weight:700;cursor:pointer;">Set</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <button onclick="closePBEnvDetail();openAddTransaction('${id}')" style="flex:1;background:#C8A84B;color:#0A110D;border:none;border-radius:10px;padding:10px;font-size:0.82rem;font-weight:700;cursor:pointer;">+ Expense</button>
+        <button onclick="openEditEnvelope('${id}')" style="flex:1;background:var(--card);color:var(--text-secondary);border:1px solid var(--border-light);border-radius:10px;padding:10px;font-size:0.82rem;cursor:pointer;">Edit Envelope</button>
+        <button onclick="deleteEnvelope('${id}')" style="background:none;border:1px solid var(--border-light);border-radius:10px;padding:10px 14px;font-size:0.82rem;color:var(--danger);cursor:pointer;">Delete</button>
+      </div>
+      <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">This Month's Transactions</div>
+      ${txs.length === 0
+        ? `<div style="color:var(--muted);font-size:0.82rem;text-align:center;padding:16px;">No transactions yet</div>`
+        : txs.sort((a,b) => b.date.localeCompare(a.date)).map(t => `
+          <div class="pb-tx-row">
+            <div style="flex:1;">
+              <div style="font-size:0.85rem;color:var(--text);">${esc(t.desc || 'Expense')}</div>
+              <div style="font-size:0.68rem;color:var(--muted);">${t.date}</div>
+            </div>
+            <div style="font-size:0.9rem;color:var(--danger);font-family:'Fraunces',serif;">-${fmtMoney(t.amount)}</div>
+            <button onclick="deletePBTransaction('${t.id}')" style="background:none;border:none;color:var(--muted);font-size:0.9rem;cursor:pointer;padding:4px;">✕</button>
+          </div>`).join('')
+      }
+      <div style="height:20px;"></div>`;
+
+    overlay.style.display = 'block';
+  }
+
+  function saveEnvDetailBudget(envId) {
+    const val = parseFloat(document.getElementById('pbEnvDetailBudget')?.value) || 0;
+    setEnvelopeBudget(envId, getCurrentMonthKey(), val);
+    closePBEnvDetail();
+    renderPBEnvelopes();
+    showToast('Budget updated');
+  }
+
+  function closePBEnvDetail() {
+    const overlay = document.getElementById('pb-env-detail-overlay');
+    if (overlay) overlay.style.display = 'none';
+  }
+
+  function openAddEnvelope() {
+    const groups = sbLoad(SB_ENVELOPE_GROUPS, []);
+    const sel = document.getElementById('pbEnvGroup');
+    if (sel) {
+      sel.innerHTML = `<option value="">No group</option>` + groups.map(g => `<option value="${esc(g.id)}">${esc(g.name)}</option>`).join('');
+    }
+    document.getElementById('pbEnvSheetTitle').textContent = 'NEW ENVELOPE';
+    document.getElementById('pbEnvEmoji').value = '';
+    document.getElementById('pbEnvName').value = '';
+    document.getElementById('pbEnvRollover').checked = false;
+    document.getElementById('pbEnvEditId').value = '';
+    document.getElementById('pb-add-env-sheet').style.display = 'block';
+  }
+
+  function openEditEnvelope(id) {
+    const envelopes = sbLoad(SB_ENVELOPES, []);
+    const env = envelopes.find(e => e.id === id);
+    if (!env) return;
+    const groups = sbLoad(SB_ENVELOPE_GROUPS, []);
+    const sel = document.getElementById('pbEnvGroup');
+    if (sel) {
+      sel.innerHTML = `<option value="">No group</option>` + groups.map(g => `<option value="${esc(g.id)}"${g.id===env.group?' selected':''}>${esc(g.name)}</option>`).join('');
+    }
+    document.getElementById('pbEnvSheetTitle').textContent = 'EDIT ENVELOPE';
+    document.getElementById('pbEnvEmoji').value = env.emoji || '';
+    document.getElementById('pbEnvName').value = env.name || '';
+    document.getElementById('pbEnvRollover').checked = !!env.rollover;
+    document.getElementById('pbEnvEditId').value = id;
+    document.getElementById('pb-add-env-sheet').style.display = 'block';
+  }
+
+  function savePBEnvelope() {
+    const name = (document.getElementById('pbEnvName')?.value || '').trim();
+    if (!name) { showToast('Enter envelope name'); return; }
+    const emoji    = (document.getElementById('pbEnvEmoji')?.value || '').trim();
+    const group    = document.getElementById('pbEnvGroup')?.value || '';
+    const rollover = document.getElementById('pbEnvRollover')?.checked || false;
+    const editId   = document.getElementById('pbEnvEditId')?.value || '';
+
+    const envelopes = sbLoad(SB_ENVELOPES, []);
+    if (editId) {
+      const idx = envelopes.findIndex(e => e.id === editId);
+      if (idx >= 0) { envelopes[idx] = { ...envelopes[idx], name, emoji, group, rollover }; }
+    } else {
+      envelopes.push({ id: 'env-' + Date.now(), name, emoji, group, rollover, createdAt: new Date().toISOString() });
+    }
+    sbSave(SB_ENVELOPES, envelopes);
+    closePBEnvSheet();
+    renderPBEnvelopes();
+    showToast(editId ? 'Envelope updated' : 'Envelope created');
+  }
+
+  function closePBEnvSheet() {
+    document.getElementById('pb-add-env-sheet').style.display = 'none';
+  }
+
+  function deleteEnvelope(id) {
+    if (!confirm('Delete this envelope? Transactions will be kept but unlinked.')) return;
+    const envelopes = sbLoad(SB_ENVELOPES, []).filter(e => e.id !== id);
+    sbSave(SB_ENVELOPES, envelopes);
+    closePBEnvDetail();
+    renderPBEnvelopes();
+    showToast('Envelope deleted');
+  }
+
+  // ── Transactions ──────────────────────────────────────────────
+  let pbTxType = 'expense';
+
+  function openAddTransaction(envelopeId) {
+    pbTxType = 'expense';
+    document.getElementById('pbTxTypeExp').style.background = '#C8A84B';
+    document.getElementById('pbTxTypeExp').style.color = '#0A110D';
+    document.getElementById('pbTxTypeInc').style.background = 'var(--card)';
+    document.getElementById('pbTxTypeInc').style.color = 'var(--muted)';
+
+    document.getElementById('pbTxAmount').value = '';
+    document.getElementById('pbTxDesc').value = '';
+    document.getElementById('pbTxDate').value = todayISO();
+
+    // Populate envelope select
+    const envelopes = sbLoad(SB_ENVELOPES, []);
+    const sel = document.getElementById('pbTxEnvelope');
+    if (sel) {
+      sel.innerHTML = `<option value="">No envelope</option>` + envelopes.map(e =>
+        `<option value="${esc(e.id)}"${e.id===envelopeId?' selected':''}>${esc(e.emoji||'')} ${esc(e.name)}</option>`
+      ).join('');
+      if (envelopeId) sel.value = envelopeId;
+    }
+
+    document.getElementById('pb-add-tx-sheet').style.display = 'block';
+    setTimeout(() => document.getElementById('pbTxAmount').focus(), 100);
+  }
+
+  function setPBTxType(type) {
+    pbTxType = type;
+    const expBtn = document.getElementById('pbTxTypeExp');
+    const incBtn = document.getElementById('pbTxTypeInc');
+    if (type === 'expense') {
+      expBtn.style.background = '#C8A84B'; expBtn.style.color = '#0A110D'; expBtn.style.fontWeight = '700';
+      incBtn.style.background = 'var(--card)'; incBtn.style.color = 'var(--muted)'; incBtn.style.fontWeight = '600';
+    } else {
+      incBtn.style.background = '#C8A84B'; incBtn.style.color = '#0A110D'; incBtn.style.fontWeight = '700';
+      expBtn.style.background = 'var(--card)'; expBtn.style.color = 'var(--muted)'; expBtn.style.fontWeight = '600';
+    }
+    // Hide envelope selector for income
+    const envSel = document.getElementById('pbTxEnvelope');
+    if (envSel) envSel.style.display = type === 'income' ? 'none' : 'block';
+  }
+
+  function savePBTransaction() {
+    const amount = parseFloat(document.getElementById('pbTxAmount')?.value);
+    if (!amount || amount <= 0) { showToast('Enter a valid amount'); return; }
+    const desc       = (document.getElementById('pbTxDesc')?.value || '').trim();
+    const envelopeId = pbTxType === 'expense' ? (document.getElementById('pbTxEnvelope')?.value || '') : '';
+    const date       = document.getElementById('pbTxDate')?.value || todayISO();
+
+    const txs = sbLoad(SB_TRANSACTIONS, []);
+    txs.push({
+      id:          'tx-' + Date.now(),
+      type:        pbTxType,
+      amount:      amount,
+      desc:        desc,
+      envelope_id: envelopeId,
+      date:        date,
+      createdAt:   new Date().toISOString()
+    });
+    sbSave(SB_TRANSACTIONS, txs);
+    closePBSheet();
+    if (pbCurrentTab === 'envelopes')     renderPBEnvelopes();
+    if (pbCurrentTab === 'transactions')  renderPBTransactions();
+    if (pbCurrentTab === 'overview')      renderPBOverview();
+    showToast(pbTxType === 'income' ? 'Income recorded' : 'Expense added');
+  }
+
+  function deletePBTransaction(id) {
+    if (!confirm('Delete this transaction?')) return;
+    const txs = sbLoad(SB_TRANSACTIONS, []).filter(t => t.id !== id);
+    sbSave(SB_TRANSACTIONS, txs);
+    closePBEnvDetail();
+    renderPBEnvelopes();
+    showToast('Transaction deleted');
+  }
+
+  function closePBSheet() {
+    document.getElementById('pb-add-tx-sheet').style.display = 'none';
+  }
+
+  function setPBFilter(filter, btn) {
+    pbCurrentFilter = filter;
+    document.querySelectorAll('#pbTxFilters .pb-filter-btn').forEach(b => b.classList.remove('active-filter'));
+    if (btn) btn.classList.add('active-filter');
+    renderPBTransactions();
+  }
+
+  function renderPBTransactions() {
+    const container = document.getElementById('pbTxList');
+    if (!container) return;
+    const search = (document.getElementById('pbTxSearch')?.value || '').toLowerCase();
+    const all    = sbLoad(SB_TRANSACTIONS, []);
+    const now    = new Date();
+    const curKey = getCurrentMonthKey();
+    const d      = now;
+    const prevD  = new Date(d.getFullYear(), d.getMonth()-1, 1);
+    const prevKey = prevD.getFullYear() + '-' + String(prevD.getMonth()+1).padStart(2,'0');
+
+    let filtered = all.filter(t => {
+      if (search && !((t.desc||'').toLowerCase().includes(search))) return false;
+      if (pbCurrentFilter === 'month')     return t.date && t.date.startsWith(curKey);
+      if (pbCurrentFilter === 'lastmonth') return t.date && t.date.startsWith(prevKey);
+      if (pbCurrentFilter === 'expense')   return t.type === 'expense';
+      if (pbCurrentFilter === 'income')    return t.type === 'income';
+      return true;
+    }).sort((a,b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
+
+    // Totals
+    const totIncome  = filtered.filter(t => t.type==='income').reduce((s,t) => s+t.amount, 0);
+    const totExpense = filtered.filter(t => t.type==='expense').reduce((s,t) => s+t.amount, 0);
+    const totEl = document.getElementById('pbTxTotals');
+    if (totEl) totEl.textContent = `${filtered.length} transaction${filtered.length!==1?'s':''} · Income ${fmtMoney(totIncome)} · Expenses ${fmtMoney(totExpense)}`;
+
+    if (!filtered.length) {
+      container.innerHTML = `<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:0.85rem;">No transactions found</div>`;
+      return;
+    }
+
+    const envelopes = sbLoad(SB_ENVELOPES, []);
+    const envMap = {};
+    envelopes.forEach(e => { envMap[e.id] = e; });
+
+    // Group by date
+    const byDate = {};
+    filtered.forEach(t => {
+      if (!byDate[t.date]) byDate[t.date] = [];
+      byDate[t.date].push(t);
+    });
+
+    container.innerHTML = Object.keys(byDate).sort((a,b) => b.localeCompare(a)).map(date => {
+      const dayTxs = byDate[date];
+      const dateLabel = new Date(date + 'T12:00:00').toLocaleDateString('en-AU', { weekday:'short', day:'numeric', month:'short' });
+      return `<div style="font-size:0.68rem;font-weight:600;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin:10px 0 4px;">${dateLabel}</div>
+        ${dayTxs.map(t => {
+          const env = envMap[t.envelope_id];
+          const isIncome = t.type === 'income';
+          return `<div class="pb-tx-row">
+            <div style="width:32px;height:32px;border-radius:8px;background:${isIncome ? 'rgba(82,196,131,0.15)' : 'rgba(200,168,75,0.12)'};display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;">
+              ${isIncome ? '↑' : (env ? esc(env.emoji||'') : '→')}
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:0.85rem;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(t.desc || (isIncome ? 'Income' : 'Expense'))}</div>
+              ${env ? `<div style="font-size:0.68rem;color:var(--muted);">${esc(env.emoji||'')} ${esc(env.name)}</div>` : ''}
+            </div>
+            <div style="font-size:0.9rem;font-family:'Fraunces',serif;font-weight:300;color:${isIncome ? 'var(--green-accent)' : 'var(--text)'};">${isIncome ? '+' : '-'}${fmtMoney(t.amount)}</div>
+            <button onclick="deletePBTransaction('${t.id}')" style="background:none;border:none;color:var(--muted);font-size:0.85rem;cursor:pointer;padding:4px 6px;flex-shrink:0;">✕</button>
+          </div>`;
+        }).join('')}`;
+    }).join('');
+  }
+
+  // ── Goals ─────────────────────────────────────────────────────
+  function renderPBGoals() {
+    const goals  = sbLoad(SB_GOALS, []);
+    const countEl = document.getElementById('pbGoalCount');
+    const savedEl = document.getElementById('pbGoalSaved');
+    if (countEl) countEl.textContent = goals.length;
+    const totalSaved = goals.reduce((s, g) => s + (Number(g.saved_amount) || 0), 0);
+    if (savedEl) savedEl.textContent = fmtMoney(totalSaved);
+
+    const container = document.getElementById('pbGoalList');
+    if (!container) return;
+
+    if (!goals.length) {
+      container.innerHTML = `<div style="text-align:center;padding:30px 0;color:var(--muted);font-size:0.85rem;">No goals yet. Tap "+ New Goal" to start saving towards something.</div>`;
+      return;
+    }
+
+    container.innerHTML = goals.map(g => {
+      const target = Number(g.target_amount) || 0;
+      const saved  = Number(g.saved_amount) || 0;
+      const pct    = target > 0 ? Math.min(100, Math.round(saved / target * 100)) : 0;
+      const done   = pct >= 100;
+      let etaText  = '';
+      if (g.target_date) {
+        const daysLeft = Math.ceil((new Date(g.target_date) - new Date()) / 86400000);
+        etaText = daysLeft > 0 ? `${daysLeft} days left` : 'Past target date';
+      }
+      return `<div class="pb-goal-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div>
+            <div style="font-size:0.95rem;font-weight:600;color:var(--text);">${esc(g.emoji||'🎯')} ${esc(g.name)}</div>
+            ${etaText ? `<div style="font-size:0.7rem;color:var(--muted);margin-top:2px;">${etaText}</div>` : ''}
+          </div>
+          <div style="text-align:right;">
+            <div style="font-family:'Fraunces',serif;font-size:1rem;color:${done ? '#C8A84B' : 'var(--text)'};">${fmtMoney(saved)}</div>
+            <div style="font-size:0.68rem;color:var(--muted);">of ${fmtMoney(target)}</div>
+          </div>
+        </div>
+        <div style="background:var(--bg-component);border-radius:4px;height:8px;overflow:hidden;margin-bottom:8px;">
+          <div style="height:100%;border-radius:4px;background:${done ? '#C8A84B' : 'var(--green-accent)'};width:${pct}%;transition:width 0.4s;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:0.72rem;color:var(--muted);">${pct}% ${done ? '— Complete! 🎉' : 'there'}</div>
+          <div style="display:flex;gap:6px;">
+            <button onclick="addMoneyToGoal('${g.id}')" style="background:#C8A84B;color:#0A110D;border:none;border-radius:8px;padding:6px 12px;font-size:0.75rem;font-weight:700;cursor:pointer;">+ Add</button>
+            <button onclick="openEditGoal('${g.id}')" style="background:var(--card);color:var(--muted);border:1px solid var(--border-light);border-radius:8px;padding:6px 10px;font-size:0.75rem;cursor:pointer;">Edit</button>
+            <button onclick="deleteGoal('${g.id}')" style="background:none;border:1px solid var(--border-light);border-radius:8px;padding:6px 10px;font-size:0.75rem;color:var(--danger);cursor:pointer;">✕</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function openAddGoal() {
+    document.getElementById('pbGoalSheetTitle').textContent = 'NEW GOAL';
+    document.getElementById('pbGoalEmoji').value = '';
+    document.getElementById('pbGoalName').value = '';
+    document.getElementById('pbGoalTarget').value = '';
+    document.getElementById('pbGoalSavedInit').value = '';
+    document.getElementById('pbGoalDate').value = '';
+    document.getElementById('pbGoalEditId').value = '';
+    document.getElementById('pbGoalSaveBtn').textContent = 'Create Goal';
+    document.getElementById('pb-add-goal-sheet').style.display = 'block';
+  }
+
+  function openEditGoal(id) {
+    const goals = sbLoad(SB_GOALS, []);
+    const g = goals.find(x => x.id === id);
+    if (!g) return;
+    document.getElementById('pbGoalSheetTitle').textContent = 'EDIT GOAL';
+    document.getElementById('pbGoalEmoji').value = g.emoji || '';
+    document.getElementById('pbGoalName').value = g.name || '';
+    document.getElementById('pbGoalTarget').value = g.target_amount || '';
+    document.getElementById('pbGoalSavedInit').value = g.saved_amount || '';
+    document.getElementById('pbGoalDate').value = g.target_date || '';
+    document.getElementById('pbGoalEditId').value = id;
+    document.getElementById('pbGoalSaveBtn').textContent = 'Save Goal';
+    document.getElementById('pb-add-goal-sheet').style.display = 'block';
+  }
+
+  function savePBGoal() {
+    const name   = (document.getElementById('pbGoalName')?.value || '').trim();
+    if (!name) { showToast('Enter goal name'); return; }
+    const emoji  = (document.getElementById('pbGoalEmoji')?.value || '').trim();
+    const target = parseFloat(document.getElementById('pbGoalTarget')?.value) || 0;
+    const saved  = parseFloat(document.getElementById('pbGoalSavedInit')?.value) || 0;
+    const date   = document.getElementById('pbGoalDate')?.value || '';
+    const editId = document.getElementById('pbGoalEditId')?.value || '';
+
+    const goals = sbLoad(SB_GOALS, []);
+    if (editId) {
+      const idx = goals.findIndex(g => g.id === editId);
+      if (idx >= 0) { goals[idx] = { ...goals[idx], name, emoji, target_amount: target, saved_amount: saved, target_date: date }; }
+    } else {
+      goals.push({ id: 'goal-' + Date.now(), name, emoji, target_amount: target, saved_amount: saved, target_date: date, createdAt: new Date().toISOString() });
+    }
+    sbSave(SB_GOALS, goals);
+    closePBGoalSheet();
+    renderPBGoals();
+    showToast(editId ? 'Goal updated' : 'Goal created');
+  }
+
+  function closePBGoalSheet() {
+    document.getElementById('pb-add-goal-sheet').style.display = 'none';
+  }
+
+  function addMoneyToGoal(id) {
+    const goals = sbLoad(SB_GOALS, []);
+    const g = goals.find(x => x.id === id);
+    if (!g) return;
+    document.getElementById('pbGoalMoneyLabel').textContent = `Adding to: ${g.emoji||''} ${g.name}`;
+    document.getElementById('pbGoalMoneyAmt').value = '';
+    document.getElementById('pbGoalMoneyId').value = id;
+    document.getElementById('pb-goal-addmoney-sheet').style.display = 'block';
+    setTimeout(() => document.getElementById('pbGoalMoneyAmt').focus(), 100);
+  }
+
+  function confirmAddMoneyToGoal() {
+    const id  = document.getElementById('pbGoalMoneyId').value;
+    const amt = parseFloat(document.getElementById('pbGoalMoneyAmt').value) || 0;
+    if (amt <= 0) { showToast('Enter a valid amount'); return; }
+    const goals = sbLoad(SB_GOALS, []);
+    const idx   = goals.findIndex(g => g.id === id);
+    if (idx < 0) return;
+    goals[idx].saved_amount = (Number(goals[idx].saved_amount) || 0) + amt;
+    sbSave(SB_GOALS, goals);
+    closePBGoalMoneySheet();
+    renderPBGoals();
+    showToast(fmtMoney(amt) + ' added to goal');
+  }
+
+  function closePBGoalMoneySheet() {
+    document.getElementById('pb-goal-addmoney-sheet').style.display = 'none';
+  }
+
+  function deleteGoal(id) {
+    if (!confirm('Delete this goal?')) return;
+    const goals = sbLoad(SB_GOALS, []).filter(g => g.id !== id);
+    sbSave(SB_GOALS, goals);
+    renderPBGoals();
+    showToast('Goal deleted');
+  }
+
+  // ── Income Sources (for settings) ─────────────────────────────
+  function openAddIncomeSource() {
+    document.getElementById('pbIncomeSourceName').value = '';
+    document.getElementById('pbIncomeSourceAmt').value = '';
+    document.getElementById('pbIncomeSourceEditId').value = '';
+    document.getElementById('pb-income-source-sheet').style.display = 'block';
+  }
+
+  function closePBIncomeSourceSheet() {
+    document.getElementById('pb-income-source-sheet').style.display = 'none';
+  }
+
+  function savePBIncomeSource() {
+    const name   = (document.getElementById('pbIncomeSourceName')?.value || '').trim();
+    const amount = parseFloat(document.getElementById('pbIncomeSourceAmt')?.value) || 0;
+    const editId = document.getElementById('pbIncomeSourceEditId')?.value || '';
+    if (!name) { showToast('Enter a name'); return; }
+    if (amount <= 0) { showToast('Enter a valid amount'); return; }
+
+    const sources = sbLoad(SB_INCOME_SOURCES, []);
+    if (editId) {
+      const idx = sources.findIndex(s => s.id === editId);
+      if (idx >= 0) { sources[idx] = { ...sources[idx], name, amount }; }
+    } else {
+      sources.push({ id: 'inc-' + Date.now(), name, amount });
+    }
+    sbSave(SB_INCOME_SOURCES, sources);
+    closePBIncomeSourceSheet();
+    renderPBIncomeSourcesList();
+    showToast('Income source saved');
+  }
+
+  function deletePBIncomeSource(id) {
+    if (!confirm('Delete this income source?')) return;
+    const sources = sbLoad(SB_INCOME_SOURCES, []).filter(s => s.id !== id);
+    sbSave(SB_INCOME_SOURCES, sources);
+    renderPBIncomeSourcesList();
+    showToast('Income source removed');
+  }
+
+  function renderPBIncomeSourcesList() {
+    const el = document.getElementById('pbIncomeSourcesList');
+    if (!el) return;
+    const sources = sbLoad(SB_INCOME_SOURCES, []);
+    if (!sources.length) {
+      el.innerHTML = `<div style="font-size:0.8rem;color:var(--muted);padding:8px 0;">No income sources yet.</div>`;
+      return;
+    }
+    el.innerHTML = sources.map(s => `
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--card);border-radius:10px;padding:10px 14px;margin-bottom:6px;">
+        <div>
+          <div style="font-size:0.85rem;color:var(--text);">${esc(s.name)}</div>
+          <div style="font-size:0.72rem;color:var(--muted);">${fmtMoney(s.amount)}/month</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button onclick="openEditIncomeSource('${s.id}')" style="background:none;border:1px solid var(--border-light);border-radius:8px;padding:5px 10px;font-size:0.75rem;color:var(--text-secondary);cursor:pointer;">Edit</button>
+          <button onclick="deletePBIncomeSource('${s.id}')" style="background:none;border:none;color:var(--danger);font-size:1rem;cursor:pointer;padding:4px;">✕</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function openEditIncomeSource(id) {
+    const sources = sbLoad(SB_INCOME_SOURCES, []);
+    const s = sources.find(x => x.id === id);
+    if (!s) return;
+    document.getElementById('pbIncomeSourceName').value = s.name || '';
+    document.getElementById('pbIncomeSourceAmt').value = s.amount || '';
+    document.getElementById('pbIncomeSourceEditId').value = id;
+    document.getElementById('pb-income-source-sheet').style.display = 'block';
+  }
+
+  // ── loadPBSettings (hooked into loadSettings) ─────────────────
+  function loadPBSettings() {
+    renderPBIncomeSourcesList();
   }
 
   function showWebsiteEnquiries() {
