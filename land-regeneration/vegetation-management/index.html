@@ -76,7 +76,11 @@
 
     /* PAGE HERO */
     .page-hero { position: relative; padding: 48px 0 120px; overflow: hidden; background: var(--bg); }
-    .hero-ghost { position: absolute; bottom: -0.1em; left: -0.04em; font-family: var(--font-display); font-size: 14vw; font-weight: 300; text-transform: uppercase; color: var(--text); opacity: 0.028; letter-spacing: -0.02em; line-height: 1; pointer-events: none; user-select: none; white-space: nowrap; }
+    .hero-ghost { position: absolute; bottom: -0.1em; left: -0.04em; font-family: var(--font-display); font-size: 14vw; font-weight: 300; text-transform: uppercase; color: var(--text); opacity: 0.028; letter-spacing: -0.02em; line-height: 1; pointer-events: none; user-select: none; white-space: nowrap; z-index: 2; }
+    .page-hero > .container { position: relative; z-index: 2; }
+    .hero-photo-wrap { position: absolute; inset: 0; overflow: hidden; z-index: 0; }
+    .hero-photo-wrap::after { content: ''; position: absolute; inset: 0; background: linear-gradient(160deg, rgba(10,15,10,0.82) 0%, rgba(10,15,10,0.62) 50%, rgba(10,15,10,0.82) 100%); z-index: 1; }
+    .hero-photo-img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .page-eyebrow { font-family: var(--font-body); font-size: 11px; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green-accent); margin-bottom: 28px; display: flex; align-items: center; gap: 14px; }
     .page-eyebrow::before { content: ''; display: block; width: 24px; height: 1px; background: var(--green-accent); }
     .page-title { font-family: var(--font-display); font-size: clamp(48px, 7vw, 72px); letter-spacing: -0.02em; line-height: 1.05; color: var(--text); font-weight: 300; margin-bottom: 32px; }
@@ -224,6 +228,9 @@
   </div>
 
   <div class="page-hero">
+    <div class="hero-photo-wrap" aria-hidden="true">
+      <img src="/images/coconut-palms.png" class="hero-photo-img" style="object-position: center bottom;" alt="">
+    </div>
     <div class="hero-ghost" aria-hidden="true">MANAGE</div>
     <div class="container">
       <div class="page-eyebrow">Service — 01</div>
