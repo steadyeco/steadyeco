@@ -694,6 +694,132 @@
   .cal-close-btn:active { color:var(--danger); }
   .cal-day-empty { text-align:center; padding:20px 0; font-size:0.78rem; color:var(--muted); }
 
+  /* ══════════════════════════════ STAGE 6 — DASHBOARD & HISTORY ══════════════════════════════ */
+  .dash-action-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--border);
+    margin-bottom: 28px;
+  }
+  .dash-action-box {
+    background: var(--card);
+    border: 1px solid var(--border-inner);
+    padding: 18px 16px 14px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background var(--anim-quick) var(--ease-out);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .dash-action-box:active { background: var(--card-hover); }
+  .dash-action-box-icon { font-size: 1.3rem; margin-bottom: 2px; }
+  .dash-action-box-label { font-size: 0.6rem; color: var(--text-secondary); letter-spacing: 2px; text-transform: uppercase; font-weight: 500; }
+  .dash-action-box-sub { font-size: 0.72rem; color: var(--green-accent); font-weight: 600; }
+
+  .gst-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    margin-bottom: 28px;
+  }
+  .gst-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .gst-card-title { font-size: 0.6rem; letter-spacing: 3px; text-transform: uppercase; color: var(--muted-light); font-weight: 500; }
+  .gst-period-select {
+    background: var(--bg-component);
+    border: 1px solid var(--border-light);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 5px 8px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+  .gst-period-select option { background: var(--bg-alt); }
+  .gst-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-inner);
+  }
+  .gst-row:last-of-type { border-bottom: none; }
+  .gst-row-label { font-size: 0.72rem; color: var(--text-secondary); }
+  .gst-row-value { font-family: 'Fraunces', Georgia, serif; font-size: 1rem; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+  .gst-row-value.highlight { color: var(--green-accent); }
+  .gst-row-value.amber { color: var(--amber); }
+  .gst-note { padding: 8px 16px 12px; font-size: 0.65rem; color: var(--muted); line-height: 1.5; }
+  .gst-copy-btn {
+    width: 100%;
+    padding: 13px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    border-top: 1px solid var(--border);
+    background: var(--bg-elevated);
+    color: var(--green-accent);
+    transition: background var(--anim-quick) var(--ease-out);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .gst-copy-btn:active { background: var(--green-deep); }
+
+  .hist-filter-row {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+    margin-bottom: 16px;
+  }
+  .hist-filter-row::-webkit-scrollbar { display: none; }
+  .hist-chip {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 0.68rem;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+    transition: background var(--anim-quick), color var(--anim-quick), border-color var(--anim-quick);
+  }
+  .hist-chip.active { background: var(--green-deep); color: var(--green-accent); border-color: var(--green-muted); }
+
+  .hist-job-card {
+    background: var(--card);
+    padding: 14px 16px;
+    cursor: pointer;
+    contain: content;
+    transition: background var(--anim-quick) var(--ease-out);
+    -webkit-tap-highlight-color: transparent;
+    border-left: 3px solid transparent;
+    margin-bottom: 2px;
+  }
+  .hist-job-card:active { background: var(--card-hover); }
+  .hist-job-card.complete { border-left-color: var(--green-accent); }
+  .hist-job-card.paid     { border-left-color: var(--muted); opacity: 0.75; }
+  .hist-job-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+  .hist-job-name { font-size: 0.92rem; font-weight: 600; }
+  .hist-job-ref  { font-size: 0.62rem; color: var(--muted-light); letter-spacing: 0.5px; margin-top: 2px; }
+  .hist-job-amount { font-family: 'Fraunces', Georgia, serif; font-size: 1.05rem; font-weight: 600; color: var(--green-accent); font-variant-numeric: tabular-nums; }
+  .hist-job-amount.paid { color: var(--muted-light); }
+  .hist-job-meta { font-size: 0.7rem; color: var(--text-secondary); }
+
   /* ── Print / PDF ── */
   @media print {
     body { background:#fff !important; color:#000 !important; }
@@ -976,6 +1102,45 @@
         <div class="stat-box-num" style="color:var(--text-secondary);" id="statOpenQuotes">0</div>
         <div class="stat-box-label">Open Quotes</div>
       </div>
+    </div>
+
+    <div class="dash-action-row" style="margin-top:8px;">
+      <div class="dash-action-box" onclick="showHistoryScreen()">
+        <div class="dash-action-box-icon">📋</div>
+        <div class="dash-action-box-label">Job History</div>
+        <div class="dash-action-box-sub" id="dashHistoryCount">View all →</div>
+      </div>
+      <div class="dash-action-box" onclick="dockNavigate('finance');showFinTab('history')">
+        <div class="dash-action-box-icon">📊</div>
+        <div class="dash-action-box-label">Revenue Chart</div>
+        <div class="dash-action-box-sub">12 months →</div>
+      </div>
+    </div>
+
+    <div class="gst-card">
+      <div class="gst-card-header">
+        <span class="gst-card-title">GST Summary</span>
+        <select class="gst-period-select" id="gstPeriodSelect" onchange="renderGSTCard()">
+          <option value="this_quarter">This Quarter</option>
+          <option value="last_quarter">Last Quarter</option>
+          <option value="this_fy">This Financial Year</option>
+          <option value="last_fy">Last Financial Year</option>
+        </select>
+      </div>
+      <div class="gst-row">
+        <span class="gst-row-label">Total Sales (incl. GST)</span>
+        <span class="gst-row-value highlight" id="gstTotalSales">$0.00</span>
+      </div>
+      <div class="gst-row">
+        <span class="gst-row-label">GST Collected (÷11)</span>
+        <span class="gst-row-value amber" id="gstCollected">$0.00</span>
+      </div>
+      <div class="gst-row">
+        <span class="gst-row-label">Net Sales (excl. GST)</span>
+        <span class="gst-row-value" id="gstNetSales">$0.00</span>
+      </div>
+      <div class="gst-note">For BAS lodgement — report GST Collected at G1/1A</div>
+      <button class="gst-copy-btn" onclick="copyGSTSummary()">Copy for BAS</button>
     </div>
 
     <div class="dash-section-header" onclick="showJobsScreen()">
@@ -1960,6 +2125,28 @@
     </div>
   </div>
 
+  <!-- ═══════════════════════════════ JOB HISTORY ══════════════════════════════════════ -->
+  <div class="screen" id="screen-history">
+    <button class="back-btn" onclick="goHome()">← Home</button>
+    <div class="section-label" style="margin-bottom:16px;">Job History</div>
+
+    <div class="hist-filter-row" id="histDateFilters">
+      <button class="hist-chip active" onclick="setHistFilter('date','month',this)">This Month</button>
+      <button class="hist-chip" onclick="setHistFilter('date','3months',this)">Last 3 Months</button>
+      <button class="hist-chip" onclick="setHistFilter('date','12months',this)">Last 12 Months</button>
+      <button class="hist-chip" onclick="setHistFilter('date','all',this)">All Time</button>
+    </div>
+    <div class="hist-filter-row" id="histStatusFilters">
+      <button class="hist-chip active" onclick="setHistFilter('status','all',this)">All</button>
+      <button class="hist-chip" onclick="setHistFilter('status','complete',this)">Complete</button>
+      <button class="hist-chip" onclick="setHistFilter('status','paid',this)">Paid</button>
+    </div>
+
+    <div id="histJobList">
+      <div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">No jobs found</div><div class="empty-sub">Try a different filter period</div></div>
+    </div>
+  </div>
+
   <!-- ═══════════════════════════════ SETTINGS ═════════════════════════════════════════ -->
   <div class="screen" id="screen-settings">
     <button class="back-btn" onclick="goHome()">← Home</button>
@@ -2395,6 +2582,7 @@
       case 'job-detail':      showJobDetail(currentJobId, 'jobs'); break;
       case 'invoices':        showInvoicesScreen(); break;
       case 'invoice-detail':  showInvoiceDetail(currentInvoiceId, 'invoices'); break;
+      case 'history':         showHistoryScreen(); break;
       default:                goHome();
     }
   }
@@ -2403,6 +2591,196 @@
   function showJobsScreen()      { renderJobs(); showScreen('jobs', 'dashboard'); setJobsView(currentJobsView); setDockActive(''); }
   function showInvoicesScreen()  { renderInvoices();  showScreen('invoices',  'dashboard'); setDockActive('invoices'); }
   function showSettingsScreen()  { loadSettings();    showScreen('settings',  'dashboard'); setDockActive(''); }
+
+  // ══════════════════════════════════════════════════════════════
+  //  STAGE 6 — DASHBOARD & HISTORY
+  // ══════════════════════════════════════════════════════════════
+
+  // ── History Screen ─────────────────────────────────────────────
+  let _histDateFilter   = 'month';
+  let _histStatusFilter = 'all';
+
+  function showHistoryScreen() {
+    _histDateFilter   = 'month';
+    _histStatusFilter = 'all';
+    document.querySelectorAll('#histDateFilters .hist-chip').forEach((b, i) => b.classList.toggle('active', i === 0));
+    document.querySelectorAll('#histStatusFilters .hist-chip').forEach((b, i) => b.classList.toggle('active', i === 0));
+    renderHistoryScreen();
+    showScreen('history', 'dashboard');
+    setDockActive('');
+  }
+
+  function setHistFilter(type, value, btn) {
+    if (type === 'date') {
+      _histDateFilter = value;
+      btn.closest('.hist-filter-row').querySelectorAll('.hist-chip').forEach(b => b.classList.remove('active'));
+    } else {
+      _histStatusFilter = value;
+      btn.closest('.hist-filter-row').querySelectorAll('.hist-chip').forEach(b => b.classList.remove('active'));
+    }
+    btn.classList.add('active');
+    renderHistoryScreen();
+  }
+
+  function renderHistoryScreen() {
+    const now = new Date();
+    let cutoff = null;
+    if (_histDateFilter === 'month') {
+      cutoff = new Date(now.getFullYear(), now.getMonth(), 1);
+    } else if (_histDateFilter === '3months') {
+      cutoff = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+    } else if (_histDateFilter === '12months') {
+      cutoff = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+    }
+
+    const filtered = jobs
+      .filter(j => j.status === 'complete' || j.status === 'paid')
+      .filter(j => {
+        if (_histStatusFilter !== 'all' && j.status !== _histStatusFilter) return false;
+        if (!cutoff) return true;
+        const ref = j.completedAt || j.paidAt || j.createdAt;
+        return ref && new Date(ref) >= cutoff;
+      })
+      .sort((a, b) => {
+        const ta = new Date(a.completedAt || a.paidAt || a.createdAt || 0);
+        const tb = new Date(b.completedAt || b.paidAt || b.createdAt || 0);
+        return tb - ta;
+      });
+
+    const el = document.getElementById('histJobList');
+    if (!filtered.length) {
+      el.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">No jobs found</div><div class="empty-sub">Try a different filter period</div></div>`;
+      return;
+    }
+
+    el.innerHTML = filtered.map(j => {
+      const dateRef = j.completedAt || j.paidAt || j.scheduledDate;
+      const dateStr = dateRef
+        ? new Date(dateRef + (dateRef.length === 10 ? 'T12:00:00' : '')).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
+        : 'Date unknown';
+      const inv = invoices.find(i => i.jobId === j.id);
+      const amtStr = inv ? `$${inv.total}` : `$${j.total}`;
+      const paidCls = j.status === 'paid' ? ' paid' : '';
+      return `<div class="hist-job-card ${j.status}" onclick="showJobDetail('${j.id}','history')">
+        <div class="hist-job-top">
+          <div>
+            <div class="hist-job-name">${esc(j.customerName || 'One-off')}</div>
+            ${j.ref ? `<div class="hist-job-ref">${esc(j.ref)}</div>` : ''}
+          </div>
+          <span class="hist-job-amount${paidCls}">${amtStr}</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span class="hist-job-meta">${dateStr} · ${j.sets} set${j.sets > 1 ? 's' : ''} · ${j.delivery === 'collection' ? 'Collection' : 'Drop-off'}</span>
+          <span class="status-badge status-${j.status}">${STATUS_LABEL[j.status]}</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── GST Summary Card ──────────────────────────────────────────
+  function _getGSTPeriodBounds(period) {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth();
+
+    // Australian quarters: Q1=Jul-Sep, Q2=Oct-Dec, Q3=Jan-Mar, Q4=Apr-Jun
+    function qBounds(qIdx, fy) {
+      const qm = [[6,7,8],[9,10,11],[0,1,2],[3,4,5]];
+      const months = qm[qIdx];
+      const startYear = months[0] >= 6 ? fy - 1 : fy;
+      const endYear   = months[2] >= 6 ? fy - 1 : fy;
+      return {
+        start: new Date(startYear, months[0], 1),
+        end:   new Date(endYear, months[2] + 1, 0, 23, 59, 59)
+      };
+    }
+    function currentQIdx(month) {
+      if (month >= 6 && month <= 8)  return 0;
+      if (month >= 9 && month <= 11) return 1;
+      if (month >= 0 && month <= 2)  return 2;
+      return 3;
+    }
+    function fyOf(month, year) { return month >= 6 ? year + 1 : year; }
+
+    if (period === 'this_quarter') {
+      const qi = currentQIdx(m);
+      const fy = fyOf(m, y);
+      return qBounds(qi, fy);
+    }
+    if (period === 'last_quarter') {
+      let qi = currentQIdx(m);
+      let fy = fyOf(m, y);
+      qi--; if (qi < 0) { qi = 3; fy--; }
+      return qBounds(qi, fy);
+    }
+    if (period === 'this_fy') {
+      const fy = fyOf(m, y);
+      return {
+        start: new Date(fy - 1, 6, 1),
+        end:   new Date(fy, 5, 30, 23, 59, 59)
+      };
+    }
+    if (period === 'last_fy') {
+      const fy = fyOf(m, y) - 1;
+      return {
+        start: new Date(fy - 1, 6, 1),
+        end:   new Date(fy, 5, 30, 23, 59, 59)
+      };
+    }
+    return { start: new Date(0), end: new Date() };
+  }
+
+  function _gstPeriodLabel(period) {
+    const labels = {
+      this_quarter: 'This Quarter',
+      last_quarter: 'Last Quarter',
+      this_fy:      'This Financial Year',
+      last_fy:      'Last Financial Year'
+    };
+    return labels[period] || period;
+  }
+
+  function renderGSTCard() {
+    const period = document.getElementById('gstPeriodSelect').value;
+    const { start, end } = _getGSTPeriodBounds(period);
+
+    const paidInvs = invoices.filter(inv => {
+      if (invStatus(inv) !== 'paid' || !inv.paidAt) return false;
+      const d = new Date(inv.paidAt);
+      return d >= start && d <= end;
+    });
+
+    const totalSales = paidInvs.reduce((s, i) => s + (i.total || 0), 0);
+    const gstCollected = Math.round(totalSales / 11 * 100) / 100;
+    const netSales = Math.round((totalSales - gstCollected) * 100) / 100;
+
+    const fmt = v => '$' + v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    document.getElementById('gstTotalSales').textContent = fmt(totalSales);
+    document.getElementById('gstCollected').textContent  = fmt(gstCollected);
+    document.getElementById('gstNetSales').textContent   = fmt(netSales);
+  }
+
+  function copyGSTSummary() {
+    const period = document.getElementById('gstPeriodSelect').value;
+    const label  = _gstPeriodLabel(period);
+    const sales  = document.getElementById('gstTotalSales').textContent;
+    const gst    = document.getElementById('gstCollected').textContent;
+    const net    = document.getElementById('gstNetSales').textContent;
+    const text = `STEADY ECO — GST SUMMARY\nPeriod: ${label}\n\nTotal Sales (incl. GST): ${sales}\nGST Collected (÷11):     ${gst}\nNet Sales (excl. GST):   ${net}\n\nReport GST Collected at G1/1A on your BAS.`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => showToast('Copied for BAS')).catch(() => showToast('Copy failed'));
+    } else {
+      showToast('Copy not supported on this device');
+    }
+  }
+
+  // ── Dashboard history count + GST card refresh ─────────────────
+  function refreshStage6Dashboard() {
+    const completedCount = jobs.filter(j => j.status === 'complete' || j.status === 'paid').length;
+    const el = document.getElementById('dashHistoryCount');
+    if (el) el.textContent = completedCount ? `${completedCount} job${completedCount !== 1 ? 's' : ''} →` : 'View all →';
+    renderGSTCard();
+  }
 
   // ══════════════════════════════════════════════════════════════
   //  DASHBOARD
@@ -2511,6 +2889,8 @@
     invEl.innerHTML = recentI.length === 0
       ? `<div class="empty-state"><div class="empty-icon">📄</div><div class="empty-title">No invoices yet</div><div class="empty-sub">Create an invoice from a completed job</div></div>`
       : recentI.map(i => invoiceCardHTML(i, 'dashboard')).join('');
+
+    refreshStage6Dashboard();
   }
 
   // ══════════════════════════════════════════════════════════════
