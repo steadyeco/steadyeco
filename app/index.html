@@ -2153,8 +2153,9 @@
   let cryptoKey = null;                    // AES-256-GCM key — in memory only, never persisted
   const CRYPTO_SALT_KEY = 'se_crypto_salt'; // salt is not secret, lives in localStorage
 
-  const CUSTOMER_PII = ['name', 'phone', 'abn'];
+  const CUSTOMER_PII = ['name', 'phone', 'abn', 'email', 'notes'];
   const INVOICE_PII  = ['customerName', 'total', 'subtotal', 'gst'];
+  const JOB_PII      = ['customerName', 'notes'];
 
   async function getOrCreateSalt() {
     let b64 = localStorage.getItem(CRYPTO_SALT_KEY);
@@ -2232,6 +2233,7 @@
   async function decryptAllInMemory() {
     if (!cryptoKey) return;
     customers = await Promise.all(customers.map(c => decryptRecord(c, CUSTOMER_PII)));
+    jobs      = await Promise.all(jobs.map(j => decryptRecord(j, JOB_PII)));
     invoices  = await Promise.all(invoices.map(async i => {
       const dec = await decryptRecord(i, INVOICE_PII);
       // Numeric fields come back as strings after decryption — restore types
@@ -2302,26 +2304,22 @@
       if (!cryptoKey) { showToast('⚠️ Save failed — app locked'); return; }
       // Encrypt PII in copies BEFORE opening IDB transaction (avoids transaction expiry)
       const encCustomers = await Promise.all(customers.map(c => encryptRecord(c, CUSTOMER_PII)));
+      const encJobs      = await Promise.all(jobs.map(j      => encryptRecord(j, JOB_PII)));
       const encInvoices  = await Promise.all(invoices.map(i  => encryptRecord(i, INVOICE_PII)));
       return new Promise((resolve, reject) => {
         const tx = db.transaction(['customers','quotes','jobs','invoices','settings'], 'readwrite');
         const cs = tx.objectStore('customers'); cs.clear(); encCustomers.forEach(r => cs.put(r));
         const qs = tx.objectStore('quotes');    qs.clear(); quotes.forEach(r    => qs.put(r));
-        const js = tx.objectStore('jobs');      js.clear(); jobs.forEach(r      => js.put(r));
+        const js = tx.objectStore('jobs');      js.clear(); encJobs.forEach(r   => js.put(r));
         const is = tx.objectStore('invoices');  is.clear(); encInvoices.forEach(r  => is.put(r));
         tx.objectStore('settings').put({ key: 'main', data: settings });
         tx.oncomplete = resolve;
         tx.onerror = () => { showToast('⚠️ Save failed'); reject(tx.error); };
       });
     } else {
-      // Fallback: localStorage (IDB unavailable — no encryption in fallback)
-      try {
-        localStorage.setItem('se_customers', JSON.stringify(customers));
-        localStorage.setItem('se_quotes',    JSON.stringify(quotes));
-        localStorage.setItem('se_jobs',      JSON.stringify(jobs));
-        localStorage.setItem('se_invoices',  JSON.stringify(invoices));
-        localStorage.setItem('se_settings',  JSON.stringify(settings));
-      } catch(e) { showToast('⚠️ Save failed — storage may be full'); }
+      // IDB unavailable — refuse to write PII to unencrypted localStorage
+      console.error('se: IDB unavailable — refusing to write customer/job/invoice data to unencrypted storage');
+      showToast('⚠️ Storage error — please close and reopen the app');
     }
   }
 
@@ -2744,8 +2742,8 @@
 
       let indicator = '';
       if (dayJobs.length === 1) {
-        const fn = dayJobs[0].customerName.split(' ')[0];
-        indicator = `<span class="cal-job-pill ${dayJobs[0].status}">${fn}</span>`;
+        const fn = (dayJobs[0].customerName || '').split(' ')[0];
+        indicator = `<span class="cal-job-pill ${dayJobs[0].status}">${esc(fn)}</span>`;
       } else if (dayJobs.length === 2) {
         indicator = `<div class="cal-job-dots">${dayJobs.map(j => `<span class="cal-job-dot ${j.status}"></span>`).join('')}</div>`;
       } else if (dayJobs.length >= 3) {
@@ -3319,7 +3317,7 @@
   function renderJobPhotos(j) {
     const grid = document.getElementById('jdPhotoGrid'); if (!grid) return;
     const photos = j.photos||[];
-    let html = photos.map(p=>`<img class="job-photo-thumb" src="${p.dataUrl}" onclick="viewPhoto('${p.id}')" />`).join('');
+    let html = photos.map(p=>`<img class="job-photo-thumb" src="${esc(p.dataUrl)}" onclick="viewPhoto('${esc(p.id)}')" />`).join('');
     html += `<button class="photo-add-btn" onclick="document.getElementById('jdPhotoInput').click()" title="Add photo">＋</button>
              <input type="file" id="jdPhotoInput" accept="image/*" capture="environment" style="display:none;" onchange="handleJobPhoto(event)">`;
     grid.innerHTML = html;
@@ -3329,9 +3327,9 @@
     const p=j.photos.find(ph=>ph.id===photoId); if (!p) return;
     const overlay=document.createElement('div');
     overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.96);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;';
-    overlay.innerHTML=`<img src="${p.dataUrl}" style="max-width:100%;max-height:80vh;object-fit:contain;border-radius:8px;">
+    overlay.innerHTML=`<img src="${esc(p.dataUrl)}" style="max-width:100%;max-height:80vh;object-fit:contain;border-radius:8px;">
       <div style="display:flex;gap:12px;margin-top:20px;">
-        <button onclick="deleteJobPhoto('${photoId}')" style="background:var(--danger);color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:0.9rem;cursor:pointer;">Delete</button>
+        <button onclick="deleteJobPhoto('${esc(photoId)}')" style="background:var(--danger);color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:0.9rem;cursor:pointer;">Delete</button>
         <button onclick="document.getElementById('_photoOverlay').remove()" style="background:var(--card);color:var(--text);border:1px solid var(--border-light);border-radius:8px;padding:10px 22px;font-size:0.9rem;cursor:pointer;">Close</button>
       </div>`;
     overlay.id='_photoOverlay';
@@ -3528,10 +3526,25 @@
   let inactivityTimer = null;
   let pinSetupMode    = false;
   let pinSetupFirst   = '';
+  let _aiKey          = null;   // API key held in memory only — cleared on lock
 
   async function sha256(str) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  // PBKDF2-based PIN hash — 100k iterations with the app's crypto salt.
+  // Replaces bare SHA-256 (which is rainbow-table crackable for a 4-digit PIN).
+  async function hashPin(pin) {
+    const salt        = await getOrCreateSalt();
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw', new TextEncoder().encode('steadyeco-pin:' + pin), 'PBKDF2', false, ['deriveBits']
+    );
+    const bits = await crypto.subtle.deriveBits(
+      { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+      keyMaterial, 256
+    );
+    return btoa(String.fromCharCode(...new Uint8Array(bits)));
   }
 
   async function initPin() {
@@ -3568,8 +3581,24 @@
     document.getElementById('pin-screen').classList.add('hidden');
     localStorage.setItem(PIN_ATTEMPTS, '0');
     resetInactivityTimer();
-    // Wait for IDB load, then decrypt PII, then render
-    dbReady.then(() => decryptAllInMemory()).then(() => { refreshDashboard(); checkMonthlyReset(); });
+    dbReady.then(() => decryptAllInMemory()).then(async () => {
+      // Decrypt AI key into memory — never leave it in plaintext localStorage
+      const encRaw    = localStorage.getItem('se_ai_key_enc');
+      const legacyRaw = localStorage.getItem('se_ai_key');
+      if (encRaw && cryptoKey) {
+        try { _aiKey = await decryptField(JSON.parse(encRaw)); } catch(e) { _aiKey = null; }
+      } else if (legacyRaw && cryptoKey) {
+        // Migrate old btoa key → AES encrypted
+        try {
+          const oldKey = atob(legacyRaw);
+          const enc    = await encryptField(oldKey);
+          localStorage.setItem('se_ai_key_enc', JSON.stringify(enc));
+          localStorage.removeItem('se_ai_key');
+          _aiKey = oldKey;
+        } catch(e) { _aiKey = null; }
+      }
+      refreshDashboard(); checkMonthlyReset();
+    });
   }
 
   function resetInactivityTimer() {
@@ -3579,7 +3608,9 @@
   }
 
   function lockApp() {
-    cryptoKey = null; // discard key — must re-derive from PIN on next unlock
+    cryptoKey = null;  // discard AES key — re-derived from PIN on next unlock
+    _aiKey    = null;  // clear API key from memory
+    localStorage.removeItem('se_ai_history'); // wipe AI chat (contains customer/revenue data)
     sessionStorage.removeItem('se_unlocked');
     sessionStorage.removeItem('se_unlock_time');
     pinBuffer = '';
@@ -3644,10 +3675,21 @@
 
   async function verifyPin() {
     if (pinSetupMode) { await handlePinSetup(); return; }
-    const entered = await sha256(pinBuffer);
-    const stored  = localStorage.getItem(PIN_KEY);
-    if (entered === stored) {
-      cryptoKey = await deriveKey(pinBuffer); // derive AES key from raw PIN
+    const stored = localStorage.getItem(PIN_KEY);
+    const isV2   = localStorage.getItem('se_pin_v') === '2';
+    let match    = false;
+    if (isV2) {
+      match = (await hashPin(pinBuffer)) === stored;
+    } else {
+      // Legacy: bare SHA-256 — verify then silently migrate to PBKDF2
+      if ((await sha256(pinBuffer)) === stored) {
+        localStorage.setItem(PIN_KEY, await hashPin(pinBuffer));
+        localStorage.setItem('se_pin_v', '2');
+        match = true;
+      }
+    }
+    if (match) {
+      cryptoKey = await deriveKey(pinBuffer);
       unlockApp();
     } else {
       pinWrongAttempt();
@@ -3664,8 +3706,9 @@
       updatePinDots('pinDots');
       document.getElementById('pinSubtitle').textContent = 'Confirm your PIN';
     } else if (pinBuffer === pinSetupFirst) {
-      // Step 2 match — save and unlock
-      localStorage.setItem(PIN_KEY, await sha256(pinBuffer));
+      // Step 2 match — save with PBKDF2 hash and unlock
+      localStorage.setItem(PIN_KEY, await hashPin(pinBuffer));
+      localStorage.setItem('se_pin_v', '2');
       cryptoKey = await deriveKey(pinBuffer);
       pinSetupMode  = false;
       pinSetupFirst = '';
@@ -3770,8 +3813,9 @@
 
   async function handleCpStep() {
     if (cpStage === 'verify') {
-      const entered = await sha256(cpBuffer);
-      const stored  = localStorage.getItem(PIN_KEY);
+      const isV2   = localStorage.getItem('se_pin_v') === '2';
+      const stored = localStorage.getItem(PIN_KEY);
+      const entered = isV2 ? (await hashPin(cpBuffer)) : (await sha256(cpBuffer));
       if (entered === stored) {
         cpAttempts = 0;
         cpStage = 'new'; cpBuffer = '';
@@ -3788,16 +3832,17 @@
       }
     } else if (cpStage === 'new') {
       cpNewPin  = cpBuffer;
-      cpNewHash = await sha256(cpBuffer);
+      cpNewHash = await hashPin(cpBuffer);
       cpStage = 'confirm'; cpBuffer = '';
       updatePinDots('cpDots');
       document.getElementById('cpSubtitle').textContent = 'Confirm New PIN';
     } else if (cpStage === 'confirm') {
-      const confirmHash = await sha256(cpBuffer);
+      const confirmHash = await hashPin(cpBuffer);
       if (confirmHash === cpNewHash) {
         cryptoKey = await deriveKey(cpNewPin);
         await save();
         localStorage.setItem(PIN_KEY, cpNewHash);
+        localStorage.setItem('se_pin_v', '2');
         cpNewPin = '';
         closeChangePinModal();
         showToast('Access code updated');
@@ -3976,7 +4021,7 @@
             <div style="font-size:1rem;color:#52C483;font-weight:700;">${total}</div>
           </div>
         </div>
-        <button onclick="importPendingQuote('${p.ref}')" style="width:100%;background:#52C483;color:#0A110D;border:none;border-radius:12px;padding:16px;font-size:0.95rem;font-weight:700;cursor:pointer;margin-bottom:10px;">Import as Customer &amp; Quote</button>
+        <button onclick="importPendingQuote('${esc(p.ref)}')" style="width:100%;background:#52C483;color:#0A110D;border:none;border-radius:12px;padding:16px;font-size:0.95rem;font-weight:700;cursor:pointer;margin-bottom:10px;">Import as Customer &amp; Quote</button>
         <button onclick="dismissPendingQuote('${esc(p.ref || '')}');document.getElementById('_pendingModal').remove();" style="width:100%;background:transparent;border:1px solid var(--border-light);color:var(--muted);border-radius:12px;padding:14px;font-size:0.9rem;cursor:pointer;">Dismiss</button>
       </div>`;
     document.body.appendChild(overlay);
@@ -4050,8 +4095,7 @@
   function renderFinance() {
     showFinTab(currentFinTab);
     // Show AI dot if key is saved
-    const hasKey = !!localStorage.getItem('se_ai_key');
-    document.getElementById('finAiDot').style.display = hasKey ? 'block' : 'none';
+    document.getElementById('finAiDot').style.display = _aiKey ? 'block' : 'none';
   }
 
   function showFinTab(tab) {
@@ -4469,10 +4513,9 @@
   // ── AI Chat ─────────────────────────────────────────────────────
 
   function renderAiPane() {
-    const key = localStorage.getItem('se_ai_key');
-    document.getElementById('aiSetupPane').style.display = key ? 'none' : 'block';
-    document.getElementById('aiChatPane').style.display  = key ? 'flex' : 'none';
-    if (key) renderAiHistory();
+    document.getElementById('aiSetupPane').style.display = _aiKey ? 'none' : 'block';
+    document.getElementById('aiChatPane').style.display  = _aiKey ? 'flex'  : 'none';
+    if (_aiKey) renderAiHistory();
   }
 
   function renderAiHistory() {
@@ -4517,9 +4560,8 @@
   }
 
   async function sendAiMessage(userMsg) {
-    const raw = localStorage.getItem('se_ai_key');
-    if (!raw) { renderAiPane(); return; }
-    const apiKey = atob(raw);
+    if (!_aiKey) { renderAiPane(); return; }
+    const apiKey = _aiKey;
 
     document.getElementById('aiSuggestions').style.display = 'none';
     appendAiMessage('user', userMsg);
@@ -4592,8 +4634,15 @@ Be direct, conversational, and specific. Sam reads this on his phone between job
     if (!inp) return;
     const key = inp.value.trim();
     if (!key) return;
-    localStorage.setItem('se_ai_key', btoa(key));
     inp.value = '';
+    _aiKey = key; // cache in memory immediately
+    if (cryptoKey) {
+      // Encrypt with PIN-derived AES key — no plaintext in storage
+      encryptField(key).then(enc => {
+        localStorage.setItem('se_ai_key_enc', JSON.stringify(enc));
+        localStorage.removeItem('se_ai_key'); // remove legacy btoa key if present
+      }).catch(() => showToast('⚠️ Could not save AI key — re-enter after next unlock'));
+    }
     showToast('AI Accountant activated');
     document.getElementById('finAiDot').style.display = 'block';
     renderAiPane();
@@ -4621,9 +4670,8 @@ Be direct, conversational, and specific. Sam reads this on his phone between job
     ];
     renderMonthlyCostsList(defaults);
 
-    const aiKey = localStorage.getItem('se_ai_key');
     const aiInp = document.getElementById('settingAiKey');
-    if (aiInp && aiKey) aiInp.placeholder = '●●●● (key saved)';
+    if (aiInp && _aiKey) aiInp.placeholder = '●●●● (key saved)';
   }
 
   function renderMonthlyCostsList(costs) {
