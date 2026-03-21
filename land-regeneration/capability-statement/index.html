@@ -215,50 +215,244 @@
 
     /* PRINT */
     @media print {
-      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      body { background: #fff !important; color: #1a1a1a !important; font-size: 12pt; line-height: 1.6; }
-      h1, h2, h3 { color: #0d1a0d !important; font-family: Georgia, serif; }
-      #scroll-bar, nav, .breadcrumb, .hero-ctas, .pull-quote-section, .band-section, .related-section, footer { display: none !important; }
-      .page-hero { padding: 24pt 0 32pt; }
-      .hero-ghost { display: none; }
-      .page-eyebrow { color: #2a6e24 !important; font-size: 9pt; }
-      .page-title { font-size: 32pt !important; color: #0d1a0d !important; }
-      .page-title .accent { color: #2a6e24 !important; }
-      .page-title .dim { color: #555 !important; }
-      .page-intro { color: #333 !important; opacity: 1 !important; transform: none !important; }
-      section { padding: 24pt 0 !important; background: #fff !important; }
-      .container { padding: 0 24pt; }
-      .label { color: #2a6e24 !important; font-size: 8pt; }
-      .label::before { background: #2a6e24 !important; }
-      .sh { color: #0d1a0d !important; font-size: 20pt !important; margin-bottom: 20pt !important; }
-      .sh .accent { color: #2a6e24 !important; }
-      .overview-grid { grid-template-columns: 1fr 1fr; gap: 32pt; }
-      .overview-description p { color: #333 !important; font-size: 11pt; }
-      .detail-card { background: #fff !important; border: 1.5pt solid #b8960a !important; padding: 20pt 24pt !important; page-break-inside: avoid; }
-      .detail-key { color: #7a6010 !important; font-size: 8pt; }
-      .detail-val { color: #0d1a0d !important; font-size: 11pt; }
-      .detail-row { border-bottom-color: rgba(0,0,0,0.1) !important; }
-      .services-grid { grid-template-columns: repeat(3, 1fr); gap: 12pt; }
-      .service-card { background: #f8f8f4 !important; border: 0.5pt solid #c8c8b8 !important; padding: 16pt !important; page-break-inside: avoid; }
-      .service-num { color: #2a6e24 !important; }
-      .service-card h3 { color: #0d1a0d !important; font-size: 13pt; }
-      .service-card p { color: #444 !important; font-size: 10pt; }
-      .equip-row { border-bottom-color: rgba(0,0,0,0.1) !important; }
-      .equip-name { color: #0d1a0d !important; font-size: 12pt; }
-      .equip-desc { color: #444 !important; font-size: 10pt; }
-      .compliance-grid { grid-template-columns: repeat(3, 1fr); gap: 12pt; }
-      .compliance-card { background: #f8f8f4 !important; border: 0.5pt solid #c8c8b8 !important; padding: 16pt !important; page-break-inside: avoid; }
-      .compliance-icon { color: #2a6e24 !important; }
-      .compliance-card h3 { color: #0d1a0d !important; font-size: 13pt; }
-      .compliance-card p { color: #444 !important; font-size: 10pt; }
-      .council-table th { color: #555 !important; border-bottom-color: rgba(0,0,0,0.2) !important; font-size: 9pt; }
-      .council-table td { color: #333 !important; border-bottom-color: rgba(0,0,0,0.06) !important; font-size: 10pt; }
-      .council-table td:first-child { color: #0d1a0d !important; font-weight: 500; }
-      .avail { color: #2a6e24 !important; }
-      .table-note { color: #666 !important; }
-      .muted { color: #555 !important; }
-      a { color: inherit !important; }
-    }
+  /* ── Page setup ───────────────────────────────────── */
+  @page {
+    size: A4 portrait;
+    margin: 25mm 18mm 22mm 22mm;
+  }
+
+  /* ── Global resets ────────────────────────────────── */
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    box-sizing: border-box;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #1a1a18 !important;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 10.5pt;
+    font-weight: 300;
+    line-height: 1.45;
+  }
+
+  /* ── Hide screen-only elements ────────────────────── */
+  #scroll-bar,
+  nav,
+  .hamburger,
+  .mobile-menu,
+  .breadcrumb,
+  .hero-ctas,
+  .btn,
+  .hero-ghost,
+  .card-link,
+  .band-section,
+  .related-section,
+  footer {
+    display: none !important;
+  }
+
+  /* ── Kill animations/transforms ───────────────────── */
+  .fade, .page-title .w, .page-intro {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* ── Links ────────────────────────────────────────── */
+  a { color: inherit !important; text-decoration: none !important; }
+
+  /* ── Container ────────────────────────────────────── */
+  .container { max-width: 100%; padding: 0; }
+
+  /* ── Sections ─────────────────────────────────────── */
+  section {
+    padding: 20pt 0 !important;
+    background: #ffffff !important;
+    border: none !important;
+  }
+
+  /* ── Typography ───────────────────────────────────── */
+  h1, h2, h3, h4, h5 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 300;
+    color: #0d1a0d !important;
+    page-break-after: avoid;
+    break-after: avoid;
+    orphans: 3;
+    widows: 3;
+  }
+  h1 { font-size: 32pt; line-height: 1.05; letter-spacing: -0.01em; margin-bottom: 14pt; }
+  h2 { font-size: 22pt; line-height: 1.08; letter-spacing: -0.01em; margin-bottom: 12pt; }
+  h3 { font-size: 13pt; font-weight: 400; font-style: italic; line-height: 1.25; margin-bottom: 6pt; }
+  p  { font-size: 10.5pt; line-height: 15pt; color: #4a4a47 !important; margin-bottom: 8pt; orphans: 3; widows: 3; }
+
+  /* ── Hero / page title ────────────────────────────── */
+  .page-hero { padding: 16pt 0 24pt; background: #ffffff !important; overflow: visible; }
+  .page-eyebrow { font-size: 7.5pt; letter-spacing: 0.18em; color: #2a6e24 !important; margin-bottom: 12pt; }
+  .page-eyebrow::before { background: #2a6e24 !important; width: 16pt; }
+  .page-title { font-size: 32pt !important; line-height: 1.05; color: #0d1a0d !important; margin-bottom: 14pt; }
+  .page-title .accent { color: #2a6e24 !important; }
+  .page-title .dim    { color: #4a4a47 !important; }
+  .page-intro { font-size: 10.5pt; line-height: 15pt; color: #4a4a47 !important; opacity: 1 !important; transform: none !important; max-width: 100%; }
+
+  /* ── Section labels ───────────────────────────────── */
+  .label {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 7.5pt;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #2a6e24 !important;
+    margin-bottom: 8pt;
+    display: flex;
+    align-items: center;
+    gap: 8pt;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+  .label::before { content: ''; display: block; width: 16pt; height: 0.25pt; background: #2a6e24 !important; flex-shrink: 0; }
+
+  /* ── Section headings ─────────────────────────────── */
+  .sh { font-size: 22pt !important; color: #0d1a0d !important; margin-bottom: 16pt !important; line-height: 1.08; page-break-after: avoid; }
+  .sh .accent { color: #2a6e24 !important; }
+
+  /* ── Overview grid + detail card ─────────────────── */
+  .overview-grid { display: grid; grid-template-columns: 1fr 60mm; gap: 20pt; align-items: start; page-break-inside: avoid; break-inside: avoid; }
+  .overview-description p { font-size: 10.5pt; color: #4a4a47 !important; line-height: 15pt; }
+
+  .detail-card {
+    background: #ffffff !important;
+    border: 0.5pt solid #b8960a !important;
+    border-radius: 0 !important;
+    padding: 14pt 16pt !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .detail-row {
+    padding: 8pt 0 !important;
+    border-bottom: 0.25pt solid #e8e8e0 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 2pt;
+  }
+  .detail-row:last-child { border-bottom: none !important; padding-bottom: 0 !important; }
+  .detail-key { font-size: 7.5pt !important; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: #7a6010 !important; }
+  .detail-val { font-size: 10pt !important; color: #0d1a0d !important; line-height: 1.4; }
+
+  /* ── Services grid ────────────────────────────────── */
+  .services-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10pt 16pt; }
+
+  .service-card {
+    background: #ffffff !important;
+    border: none !important;
+    border-left: 2pt solid #2a6e24 !important;
+    border-radius: 0 !important;
+    padding: 8pt 0 8pt 12pt !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    transform: none !important;
+  }
+  .service-num { font-size: 7.5pt; letter-spacing: 0.2em; color: #b8960a !important; margin-bottom: 4pt; font-family: 'Cormorant Garamond', Georgia, serif; }
+  .service-card h3 { font-size: 13pt !important; font-style: italic; color: #0d1a0d !important; margin-bottom: 4pt; }
+  .service-card p { font-size: 9.5pt !important; color: #4a4a47 !important; line-height: 13pt; }
+
+  /* ── Equipment list ───────────────────────────────── */
+  .equip-list { display: block; }
+  .equip-row {
+    display: grid;
+    grid-template-columns: 60mm 1fr;
+    gap: 16pt;
+    align-items: baseline;
+    padding: 8pt 0 !important;
+    border-bottom: 0.25pt solid #d8d8cc !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .equip-row:first-child { border-top: 0.25pt solid #d8d8cc !important; }
+  .equip-name { font-size: 11pt; font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 400; color: #0d1a0d !important; line-height: 1.3; }
+  .equip-desc { font-size: 9.5pt !important; color: #4a4a47 !important; line-height: 13pt; }
+
+  /* ── Compliance cards ─────────────────────────────── */
+  .compliance-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10pt 12pt; }
+  .compliance-card {
+    background: #f7f7f3 !important;
+    border: 0.25pt solid #c8c8b8 !important;
+    border-top: 1.5pt solid #2a6e24 !important;
+    border-radius: 0 !important;
+    padding: 12pt !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    transform: none !important;
+  }
+  .compliance-icon { font-size: 7.5pt !important; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: #2a6e24 !important; margin-bottom: 8pt; display: block; }
+  .compliance-card h3 { font-size: 12pt !important; font-style: italic; color: #0d1a0d !important; margin-bottom: 6pt; }
+  .compliance-card p { font-size: 9.5pt !important; color: #4a4a47 !important; line-height: 13pt; }
+
+  /* ── Council table ────────────────────────────────── */
+  .table-wrap { overflow: visible !important; }
+  .council-table { width: 100%; border-collapse: collapse; page-break-inside: auto; font-family: 'DM Sans', system-ui, sans-serif; }
+  .council-table thead { display: table-header-group; }
+  .council-table th {
+    font-size: 7.5pt !important;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #4a4a47 !important;
+    text-align: left;
+    padding: 0 8pt 8pt 0 !important;
+    border-bottom: 0.5pt solid #b8960a !important;
+    background: #ffffff !important;
+  }
+  .council-table td {
+    font-size: 9.5pt !important;
+    color: #4a4a47 !important;
+    padding: 7pt 8pt 7pt 0 !important;
+    border-bottom: 0.25pt solid #d8d8cc !important;
+    line-height: 1.4;
+    page-break-inside: avoid;
+  }
+  .council-table td:first-child { color: #0d1a0d !important; font-weight: 500; font-size: 10pt !important; }
+  .council-table tr:last-child td { border-bottom: none !important; }
+  .avail { color: #2a6e24 !important; font-weight: 500; }
+  .table-note { font-size: 8pt !important; color: #888 !important; margin-top: 8pt; font-style: italic; }
+  .muted { color: #555 !important; }
+
+  /* ── Pull quote ───────────────────────────────────── */
+  .pull-quote-section {
+    display: block !important;
+    padding: 20pt 0 20pt 16pt !important;
+    background: #ffffff !important;
+    border-left: 2pt solid #b8960a;
+    margin: 0;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .pull-quote-rule { display: none !important; }
+  .pull-quote {
+    font-family: 'Cormorant Garamond', Georgia, serif !important;
+    font-size: 16pt !important;
+    font-style: italic;
+    color: #2a6e24 !important;
+    line-height: 1.5;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  /* ── Page break control ───────────────────────────── */
+  .service-card, .compliance-card, .detail-card, .equip-row, .overview-grid {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .label, .sh, h1, h2, h3 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+}
   </style>
 </head>
 <body>

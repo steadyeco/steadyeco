@@ -272,6 +272,35 @@
     @media (prefers-reduced-motion: reduce) {
       .fade, .hero-title .w, .hero-sub, .hero-ctas { transition: none !important; opacity: 1 !important; transform: none !important; }
     }
+  @media print {
+    @page { size: A4 portrait; margin: 25mm 18mm 22mm 22mm; }
+    *, *::before, *::after { -webkit-print-color-adjust: exact; print-color-adjust: exact; box-shadow: none !important; transition: none !important; }
+    html, body { background: #ffffff !important; color: #1a1a18 !important; font-size: 10.5pt; line-height: 1.45; }
+    #scroll-bar, nav, .hamburger, .mobile-menu, .breadcrumb, .hero-ctas, .btn, .hero-ghost, .band-section, .related-section, footer, .sticky-cta { display: none !important; }
+    .fade, .page-title .w, .page-intro { opacity: 1 !important; transform: none !important; }
+    a { color: inherit !important; text-decoration: none !important; }
+    .container { max-width: 100%; padding: 0; }
+    section { padding: 20pt 0 !important; background: #ffffff !important; border: none !important; }
+    h1, h2, h3 { font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 300; color: #0d1a0d !important; page-break-after: avoid; }
+    h1 { font-size: 28pt; }
+    h2 { font-size: 18pt; margin-bottom: 10pt; }
+    h3 { font-size: 13pt; font-weight: 400; font-style: italic; }
+    p { font-size: 10.5pt; line-height: 15pt; color: #4a4a47 !important; margin-bottom: 8pt; }
+    .label { font-size: 7.5pt; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: #2a6e24 !important; margin-bottom: 8pt; display: flex; align-items: center; gap: 8pt; page-break-after: avoid; }
+    .label::before { background: #2a6e24 !important; }
+    .sh, .sh .accent { color: #0d1a0d !important; }
+    .sh .accent { color: #2a6e24 !important; }
+    .page-title { font-size: 28pt !important; color: #0d1a0d !important; }
+    .page-title .accent { color: #2a6e24 !important; }
+    .page-intro { color: #4a4a47 !important; opacity: 1 !important; transform: none !important; }
+    [class*="card"], .card { background: #f7f7f3 !important; border: 0.25pt solid #c8c8b8 !important; border-top: 1.5pt solid #2a6e24 !important; border-radius: 0 !important; padding: 12pt !important; page-break-inside: avoid; break-inside: avoid; }
+    [class*="card"] h3, .card h3 { color: #0d1a0d !important; font-size: 12pt !important; }
+    [class*="card"] p, .card p { color: #4a4a47 !important; font-size: 9.5pt !important; }
+    table { width: 100%; border-collapse: collapse; }
+    th { font-size: 7.5pt; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: #4a4a47 !important; padding: 0 8pt 8pt 0 !important; border-bottom: 0.5pt solid #b8960a !important; background: #ffffff !important; }
+    td { font-size: 9.5pt; color: #4a4a47 !important; padding: 7pt 8pt 7pt 0 !important; border-bottom: 0.25pt solid #d8d8cc !important; }
+    tr:last-child td { border-bottom: none !important; }
+  }
   </style>
 </head>
 <body>
