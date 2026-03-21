@@ -11,6 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     button, a, [role="button"] { -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
@@ -756,6 +757,26 @@
   .se-dock-btn.active svg { stroke: var(--green-accent); }
   .se-dock-btn.active span { color: var(--green-accent); }
 
+  /* Finance module */
+  .ai-chip {
+    background: var(--card); border: 1px solid var(--border-light);
+    color: var(--text-secondary); border-radius: 20px; padding: 7px 12px;
+    font-size: 0.72rem; font-family: 'Inter', sans-serif; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .ai-chip:active { background: var(--bg-elevated); }
+  .ai-msg-user { align-self:flex-end; background:#1E4D35; color:var(--text); border-radius:14px 14px 4px 14px; padding:10px 14px; max-width:80%; font-size:0.85rem; line-height:1.45; }
+  .ai-msg-ai   { align-self:flex-start; background:var(--card); border:0.5px solid rgba(82,196,131,0.2); color:var(--text); border-radius:14px 14px 14px 4px; padding:10px 14px; max-width:88%; font-size:0.85rem; line-height:1.5; }
+  .ai-msg-ai strong { color: var(--green-accent); }
+  .ai-msg-ai ul { padding-left: 16px; margin-top: 4px; }
+  .ai-dot { width:6px; height:6px; border-radius:50%; background:var(--muted); animation: aiDotPulse 1.2s ease-in-out infinite; }
+  @keyframes aiDotPulse { 0%,100%{opacity:0.3;transform:scale(0.8)} 50%{opacity:1;transform:scale(1)} }
+  .fin-insight-chip { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:7px 12px; font-size:0.72rem; color:var(--text-secondary); white-space:nowrap; flex-shrink:0; }
+  .fin-proactive { border-radius:10px; padding:12px 14px; margin-bottom:8px; display:flex; align-items:flex-start; gap:10px; }
+  .fin-proactive-warn { background:rgba(232,168,56,0.08); border-left:3px solid var(--amber); }
+  .fin-proactive-ok   { background:rgba(82,196,131,0.06); border-left:3px solid var(--green-accent); }
+  .fin-proactive-info { background:rgba(74,143,170,0.08); border-left:3px solid var(--teal); }
+
   /* ══════════════════════════════════════════════════════════════
      PIN LOCK
      ══════════════════════════════════════════════════════════════ */
@@ -1394,6 +1415,232 @@
   </div>
 
   <!-- ═══════════════════════════════ SETTINGS ═════════════════════════════════ -->
+  <!-- ═══════════════════════════════ FINANCE MODULE ══════════════════════════════════ -->
+  <div class="screen" id="screen-finance">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-family:'Fraunces',serif;font-size:1.3rem;font-weight:300;color:var(--text);">Finance</div>
+      <div id="finAiDot" style="display:none;width:8px;height:8px;border-radius:50%;background:var(--green-accent);box-shadow:0 0 6px rgba(82,196,131,0.6);"></div>
+    </div>
+
+    <!-- Tab bar -->
+    <div style="display:flex;gap:4px;background:var(--card);border-radius:10px;padding:4px;margin-bottom:20px;">
+      <button id="finTab-overview"  onclick="showFinTab('overview')"  style="flex:1;padding:8px 4px;border:none;border-radius:7px;font-size:0.72rem;font-weight:600;letter-spacing:0.5px;cursor:pointer;transition:all 0.15s;background:var(--green-accent);color:#0A110D;">Overview</button>
+      <button id="finTab-forecast"  onclick="showFinTab('forecast')"  style="flex:1;padding:8px 4px;border:none;border-radius:7px;font-size:0.72rem;font-weight:600;letter-spacing:0.5px;cursor:pointer;transition:all 0.15s;background:transparent;color:var(--muted);">Forecast</button>
+      <button id="finTab-budget"    onclick="showFinTab('budget')"    style="flex:1;padding:8px 4px;border:none;border-radius:7px;font-size:0.72rem;font-weight:600;letter-spacing:0.5px;cursor:pointer;transition:all 0.15s;background:transparent;color:var(--muted);">Budget</button>
+      <button id="finTab-ai"        onclick="showFinTab('ai')"        style="flex:1;padding:8px 4px;border:none;border-radius:7px;font-size:0.72rem;font-weight:600;letter-spacing:0.5px;cursor:pointer;transition:all 0.15s;background:transparent;color:var(--muted);">Ask AI</button>
+    </div>
+
+    <!-- ── OVERVIEW ── -->
+    <div id="finPane-overview">
+      <div id="finProactiveInsights" style="margin-bottom:12px;"></div>
+
+      <!-- Hero cards -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+        <div class="card" style="grid-column:1/-1;padding:18px 16px;cursor:pointer;" onclick="showInvoicesScreen()">
+          <div style="font-size:0.68rem;font-weight:600;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">This Month</div>
+          <div id="finRevThisMonth" style="font-family:'Fraunces',serif;font-size:clamp(2rem,10vw,3.2rem);font-weight:300;color:var(--text);line-height:1;">$0</div>
+          <div id="finRevMoM" style="font-size:0.75rem;color:var(--muted);margin-top:4px;"></div>
+        </div>
+        <div class="card" style="padding:14px 12px;cursor:pointer;" onclick="showInvoicesScreen()">
+          <div style="font-size:0.62rem;font-weight:600;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">Outstanding</div>
+          <div id="finOutstanding" style="font-family:'Fraunces',serif;font-size:1.5rem;font-weight:300;color:var(--green-accent);">$0</div>
+          <div id="finOutstandingSub" style="font-size:0.7rem;color:var(--muted);margin-top:3px;">0 invoices</div>
+        </div>
+        <div class="card" style="padding:14px 12px;cursor:pointer;" onclick="showJobsScreen()">
+          <div style="font-size:0.62rem;font-weight:600;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">Pipeline</div>
+          <div id="finPipeline" style="font-family:'Fraunces',serif;font-size:1.5rem;font-weight:300;color:var(--teal);">$0</div>
+          <div id="finPipelineSub" style="font-size:0.7rem;color:var(--muted);margin-top:3px;">0 pending</div>
+        </div>
+      </div>
+
+      <!-- Run rate bar -->
+      <div class="card" style="padding:14px 16px;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="font-size:0.68rem;font-weight:600;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;">Month Progress</div>
+          <div id="finRunRateTarget" style="font-size:0.72rem;color:var(--muted);cursor:pointer;" onclick="showFinTab('budget')"></div>
+        </div>
+        <div style="background:var(--bg-component);border-radius:6px;height:8px;overflow:hidden;margin-bottom:8px;">
+          <div id="finProgressBar" style="height:100%;border-radius:6px;background:var(--green-accent);width:0%;transition:width 0.6s ease;"></div>
+        </div>
+        <div id="finRunRateMsg" style="font-size:0.75rem;color:var(--muted);"></div>
+      </div>
+
+      <!-- Revenue chart -->
+      <div class="card" style="padding:14px 16px;margin-bottom:12px;">
+        <div style="font-size:0.68rem;font-weight:600;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;">Revenue — Last 8 Weeks</div>
+        <div style="position:relative;height:120px;">
+          <canvas id="finRevenueChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Insight chips -->
+      <div id="finInsightChips" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none;"></div>
+    </div>
+
+    <!-- ── FORECAST ── -->
+    <div id="finPane-forecast" style="display:none;">
+      <!-- Day selector -->
+      <div style="display:flex;gap:6px;margin-bottom:16px;">
+        <button id="fcBtn-30" onclick="renderForecast(30)" style="flex:1;padding:10px;border:1px solid var(--green-accent);border-radius:8px;background:var(--green-accent);color:#0A110D;font-size:0.82rem;font-weight:600;cursor:pointer;">30 days</button>
+        <button id="fcBtn-60" onclick="renderForecast(60)" style="flex:1;padding:10px;border:1px solid var(--border-light);border-radius:8px;background:transparent;color:var(--muted);font-size:0.82rem;font-weight:600;cursor:pointer;">60 days</button>
+        <button id="fcBtn-90" onclick="renderForecast(90)" style="flex:1;padding:10px;border:1px solid var(--border-light);border-radius:8px;background:transparent;color:var(--muted);font-size:0.82rem;font-weight:600;cursor:pointer;">90 days</button>
+      </div>
+
+      <div class="card" style="padding:18px 16px;margin-bottom:12px;text-align:center;">
+        <div style="font-size:0.68rem;font-weight:600;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">Est. Net in <span id="fcDaysLabel">30</span> Days</div>
+        <div id="fcNetTotal" style="font-family:'Fraunces',serif;font-size:clamp(2rem,10vw,3rem);font-weight:300;color:var(--green-accent);">$0</div>
+      </div>
+
+      <!-- Breakdown bars -->
+      <div class="card" style="padding:14px 16px;margin-bottom:12px;">
+        <div style="font-size:0.68rem;font-weight:600;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;">Breakdown</div>
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:4px;">
+            <span style="color:var(--green-accent);">Confirmed (invoices)</span><span id="fcConfirmed" style="color:var(--text);">$0</span>
+          </div>
+          <div style="background:var(--bg-component);border-radius:4px;height:6px;"><div id="fcConfirmedBar" style="height:100%;border-radius:4px;background:var(--green-accent);width:0%;"></div></div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:4px;">
+            <span style="color:var(--green-bright);">Projected (run rate)</span><span id="fcProjected" style="color:var(--text);">$0</span>
+          </div>
+          <div style="background:var(--bg-component);border-radius:4px;height:6px;"><div id="fcProjectedBar" style="height:100%;border-radius:4px;background:var(--green-bright);width:0%;"></div></div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:4px;">
+            <span style="color:var(--teal);">Pipeline (70% probability)</span><span id="fcPipeline" style="color:var(--text);">$0</span>
+          </div>
+          <div style="background:var(--bg-component);border-radius:4px;height:6px;"><div id="fcPipelineBar" style="height:100%;border-radius:4px;background:var(--teal);width:0%;"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:4px;">
+            <span style="color:var(--danger);">Est. costs</span><span id="fcCosts" style="color:var(--text);">$0</span>
+          </div>
+          <div style="background:var(--bg-component);border-radius:4px;height:6px;"><div id="fcCostsBar" style="height:100%;border-radius:4px;background:var(--danger);width:0%;"></div></div>
+        </div>
+      </div>
+
+      <!-- What-if slider -->
+      <div class="card" style="padding:14px 16px;margin-bottom:12px;">
+        <div style="font-size:0.68rem;font-weight:600;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;">What If I Add More Jobs?</div>
+        <input type="range" id="fcExtraJobs" min="0" max="20" value="0" oninput="updateWhatIf()" style="width:100%;accent-color:var(--green-accent);margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--muted);">
+          <span>0 extra jobs</span><span id="fcExtraLabel">+$0</span><span>20 jobs</span>
+        </div>
+        <div id="fcWhatIfResult" style="margin-top:10px;font-size:0.82rem;color:var(--green-accent);text-align:center;font-weight:600;"></div>
+      </div>
+
+      <!-- Monthly costs note -->
+      <div id="fcCostsNote" style="font-size:0.72rem;color:var(--muted);text-align:center;padding:8px 0;">
+        <span onclick="showFinTab('budget')" style="cursor:pointer;color:var(--green-accent);">Set up monthly costs →</span> to improve forecast accuracy
+      </div>
+    </div>
+
+    <!-- ── BUDGET ── -->
+    <div id="finPane-budget" style="display:none;">
+      <!-- Month selector -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <button onclick="budgetChangeMonth(-1)" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:8px;">‹</button>
+        <div id="budgetMonthLabel" style="font-size:0.9rem;font-weight:600;color:var(--text);"></div>
+        <button onclick="budgetChangeMonth(1)" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:8px;">›</button>
+      </div>
+
+      <!-- Target setter -->
+      <div class="card" style="padding:14px 16px;margin-bottom:12px;">
+        <div style="font-size:0.68rem;font-weight:600;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">Monthly Target</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:1.1rem;color:var(--muted);">$</span>
+          <input type="number" id="budgetTargetInput" placeholder="e.g. 3000" min="0" step="100"
+            style="background:var(--bg-component);border:1px solid var(--border-light);border-radius:8px;padding:10px 12px;font-size:1rem;color:var(--text);flex:1;font-family:'Inter',sans-serif;"
+            oninput="saveBudgetTarget()" />
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="card" style="padding:16px;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px;">
+          <div id="budgetRevActual" style="font-family:'Fraunces',serif;font-size:1.6rem;font-weight:300;color:var(--text);">$0</div>
+          <div id="budgetRevTarget" style="font-size:0.8rem;color:var(--muted);"></div>
+        </div>
+        <div style="background:var(--bg-component);border-radius:6px;height:14px;overflow:hidden;margin-bottom:8px;position:relative;">
+          <div id="budgetProgressBar" style="height:100%;border-radius:6px;background:var(--green-accent);width:0%;transition:width 0.6s ease;"></div>
+          <div id="budgetProgressPct" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:600;color:#0A110D;"></div>
+        </div>
+        <div id="budgetStatusLine" style="font-size:0.78rem;"></div>
+      </div>
+
+      <!-- Weekly breakdown -->
+      <div class="card" style="padding:14px 16px;margin-bottom:12px;">
+        <div style="font-size:0.68rem;font-weight:600;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;">Week by Week</div>
+        <div id="budgetWeeklyTable"></div>
+      </div>
+
+      <!-- YTD summary -->
+      <div class="card" style="padding:14px 16px;margin-bottom:12px;">
+        <div style="font-size:0.68rem;font-weight:600;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;">Year to Date</div>
+        <div id="budgetYTD" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+      </div>
+
+      <!-- Past 6 months chart -->
+      <div class="card" style="padding:14px 16px;margin-bottom:12px;">
+        <div style="font-size:0.68rem;font-weight:600;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;">Last 6 Months</div>
+        <div style="position:relative;height:100px;"><canvas id="finBudgetChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ── ASK AI ── -->
+    <div id="finPane-ai" style="display:none;display:flex;flex-direction:column;height:calc(100vh - 280px);min-height:400px;">
+      <!-- API key setup screen -->
+      <div id="aiSetupPane" style="display:none;text-align:center;padding:24px 0;">
+        <div style="font-size:2rem;margin-bottom:12px;">🤖</div>
+        <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:300;color:var(--text);margin-bottom:6px;">Set Up Your AI Accountant</div>
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:20px;line-height:1.5;">Add your Anthropic API key to chat with an accountant who knows every job, every dollar.</div>
+        <input type="password" id="aiKeyInput" placeholder="sk-ant-..." style="width:100%;background:var(--bg-component);border:1px solid var(--border-light);border-radius:10px;padding:14px;font-size:0.9rem;color:var(--text);font-family:'Inter',sans-serif;margin-bottom:12px;">
+        <button onclick="saveAiKey()" style="width:100%;background:var(--green-accent);color:#0A110D;border:none;border-radius:10px;padding:14px;font-size:0.9rem;font-weight:700;cursor:pointer;margin-bottom:12px;">Save & Activate</button>
+        <div style="font-size:0.72rem;color:var(--muted);">Get a free key at <span style="color:var(--green-accent);">console.anthropic.com</span></div>
+      </div>
+
+      <!-- Chat interface -->
+      <div id="aiChatPane" style="display:none;display:flex;flex-direction:column;flex:1;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <div>
+            <div style="font-family:'Fraunces',serif;font-size:1rem;font-weight:300;color:var(--text);">Sam's AI Accountant</div>
+            <div style="font-size:0.65rem;color:var(--muted);">Powered by Claude — your Steady Eco data only</div>
+          </div>
+          <button onclick="clearAiChat()" style="background:none;border:1px solid var(--border-light);color:var(--muted);border-radius:6px;padding:5px 10px;font-size:0.7rem;cursor:pointer;">Clear</button>
+        </div>
+
+        <!-- Suggestion chips -->
+        <div id="aiSuggestions" style="display:flex;flex-wrap:wrap;gap:6px;margin:12px 0;">
+          <button onclick="sendAiMessage('How much have I made this month?')" class="ai-chip">How much have I made this month?</button>
+          <button onclick="sendAiMessage('Who owes me money right now?')" class="ai-chip">Who owes me money?</button>
+          <button onclick="sendAiMessage('Am I on track for my monthly target?')" class="ai-chip">Am I on track?</button>
+          <button onclick="sendAiMessage('What was my best month this year?')" class="ai-chip">Best month this year?</button>
+        </div>
+
+        <!-- Message thread -->
+        <div id="aiMessages" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:10px;padding:4px 0 80px;min-height:200px;"></div>
+
+        <!-- Typing indicator -->
+        <div id="aiTyping" style="display:none;padding:8px 0;">
+          <div style="background:var(--card);border-radius:12px;padding:10px 14px;display:inline-flex;gap:4px;align-items:center;">
+            <div class="ai-dot"></div><div class="ai-dot" style="animation-delay:0.2s"></div><div class="ai-dot" style="animation-delay:0.4s"></div>
+          </div>
+        </div>
+
+        <!-- Input bar -->
+        <div style="position:sticky;bottom:0;background:var(--bg);padding:10px 0 4px;display:flex;gap:8px;align-items:center;">
+          <input type="text" id="aiInput" placeholder="Ask anything about your finances..."
+            style="flex:1;background:var(--bg-component);border:1px solid var(--border-light);border-radius:12px;padding:12px 16px;font-size:0.88rem;color:var(--text);font-family:'Inter',sans-serif;"
+            onkeydown="if(event.key==='Enter')sendAiFromInput()">
+          <button onclick="sendAiFromInput()" style="background:var(--green-accent);border:none;border-radius:12px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#0A110D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ═══════════════════════════════ WEBSITE ENQUIRIES ════════════════════════════════ -->
   <div class="screen" id="screen-website-enquiries">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
@@ -1444,6 +1691,26 @@
       <div style="display:flex;justify-content:space-between;padding:10px 16px;"><span style="font-size:14px;color:var(--text);">Jensen</span><span style="font-size:14px;color:var(--green-accent);">30°</span></div>
     </div>
     <div style="font-size:11px;color:var(--muted);margin-top:8px;">Timberwolf varies by model — confirm on enquiry.</div>
+
+    <!-- Finance settings -->
+    <div class="section-label" style="margin-top:36px; margin-bottom:12px;">Finance</div>
+    <div class="field" style="margin-bottom:12px;">
+      <label>Monthly Revenue Target ($)</label>
+      <input type="number" id="settingMonthlyTarget" placeholder="e.g. 3000" min="0" step="100" />
+    </div>
+    <div class="section-label" style="font-size:11px;margin-bottom:8px;">Monthly Costs (for forecast)</div>
+    <div id="monthlyCostsList" style="margin-bottom:8px;"></div>
+    <button onclick="addMonthlyCostRow()" style="background:none;border:1px dashed var(--border-light);color:var(--muted);border-radius:8px;padding:10px;width:100%;font-size:0.8rem;cursor:pointer;margin-bottom:12px;">+ Add cost item</button>
+    <button class="btn-full btn-green" onclick="saveFinanceSettings()">Save Finance Settings</button>
+
+    <div class="section-label" style="margin-top:24px; margin-bottom:12px;">AI Accountant</div>
+    <div class="field" style="margin-bottom:8px;">
+      <label>Anthropic API Key</label>
+      <input type="password" id="settingAiKey" placeholder="sk-ant-..." style="font-family:monospace;" />
+    </div>
+    <div style="font-size:0.72rem;color:var(--muted);margin-bottom:12px;">Get a free key at console.anthropic.com</div>
+    <button class="btn-full btn-green" onclick="saveAiKey()" style="margin-bottom:8px;">Save API Key</button>
+    <button class="btn-full btn-ghost" onclick="clearAiChat()">Clear AI Chat History</button>
   </div>
 
   <!-- ════════════════════════════════════════════════════════════
@@ -1469,6 +1736,10 @@
     <button class="se-dock-btn" id="dock-invoice" onclick="dockNavigate('invoices')" aria-label="Invoices">
       <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
       <span>Invoice</span>
+    </button>
+    <button class="se-dock-btn" id="dock-finance" onclick="dockNavigate('finance')" aria-label="Finance">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span>Finance</span>
     </button>
   </nav>
 
@@ -2707,7 +2978,7 @@
   // ══════════════════════════════════════════════════════════════
   //  SETTINGS & EXPORT
   // ══════════════════════════════════════════════════════════════
-  function loadSettings() { document.getElementById('settingName').value=settings.name||''; document.getElementById('settingBusiness').value=settings.business||'Steady Eco'; document.getElementById('settingBSB').value=settings.bankBSB||''; document.getElementById('settingAccount').value=settings.bankAccount||''; }
+  function loadSettings() { document.getElementById('settingName').value=settings.name||''; document.getElementById('settingBusiness').value=settings.business||'Steady Eco'; document.getElementById('settingBSB').value=settings.bankBSB||''; document.getElementById('settingAccount').value=settings.bankAccount||''; loadFinanceSettings(); }
   function saveSettings() { settings.name=document.getElementById('settingName').value.trim(); settings.business=document.getElementById('settingBusiness').value.trim(); settings.bankBSB=document.getElementById('settingBSB').value.trim(); settings.bankAccount=document.getElementById('settingAccount').value.trim(); save(); showToast('Settings saved'); refreshDashboard(); }
   function exportData() {
     const blob=new Blob([JSON.stringify({customers,quotes,jobs,invoices,settings,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});
@@ -2938,7 +3209,7 @@
   //  DOCK NAVIGATION
   // ══════════════════════════════════════════════════════════════
   function setDockActive(section) {
-    const map = { dashboard:'dock-home', 'new-customer':'dock-customer', 'new-job':'dock-job', 'new-quote':'dock-quote', invoices:'dock-invoice' };
+    const map = { dashboard:'dock-home', 'new-customer':'dock-customer', 'new-job':'dock-job', 'new-quote':'dock-quote', invoices:'dock-invoice', finance:'dock-finance' };
     document.querySelectorAll('.se-dock-btn').forEach(b => b.classList.remove('active'));
     const target = map[section];
     if (target) document.getElementById(target)?.classList.add('active');
@@ -2951,6 +3222,7 @@
       case 'new-job':      openNewJob(null, 'dashboard'); setDockActive('new-job'); break;
       case 'new-quote':    openNewQuote(null, 'dashboard'); setDockActive('new-quote'); break;
       case 'invoices':     showInvoicesScreen(); setDockActive('invoices'); break;
+      case 'finance':      showFinanceScreen(); break;
     }
   }
 
@@ -3468,6 +3740,646 @@
     const updated = pending.filter(p => p.ref !== ref);
     localStorage.setItem('se_pending_quotes', JSON.stringify(updated));
     refreshDashboard();
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  FINANCE MODULE
+  // ══════════════════════════════════════════════════════════════
+
+  let currentFinTab    = 'overview';
+  let currentFcDays    = 30;
+  let budgetViewYear   = new Date().getFullYear();
+  let budgetViewMonth  = new Date().getMonth();
+  let finRevenueChart  = null;
+  let finBudgetChart   = null;
+
+  function showFinanceScreen() {
+    showScreen('finance', 'dashboard');
+    setDockActive('finance');
+    renderFinance();
+  }
+
+  function renderFinance() {
+    showFinTab(currentFinTab);
+    // Show AI dot if key is saved
+    const hasKey = !!localStorage.getItem('se_ai_key');
+    document.getElementById('finAiDot').style.display = hasKey ? 'block' : 'none';
+  }
+
+  function showFinTab(tab) {
+    currentFinTab = tab;
+    ['overview','forecast','budget','ai'].forEach(t => {
+      document.getElementById('finPane-' + t).style.display = t === tab ? 'flex' : 'none';
+      if (t !== 'ai') document.getElementById('finPane-' + t).style.flexDirection = '';
+      const btn = document.getElementById('finTab-' + t);
+      btn.style.background = t === tab ? 'var(--green-accent)' : 'transparent';
+      btn.style.color      = t === tab ? '#0A110D' : 'var(--muted)';
+    });
+    // Force overview to block display
+    if (tab === 'overview')  document.getElementById('finPane-overview').style.display  = 'block';
+    if (tab === 'forecast')  document.getElementById('finPane-forecast').style.display  = 'block';
+    if (tab === 'budget')    document.getElementById('finPane-budget').style.display    = 'block';
+
+    if (tab === 'overview') renderOverview();
+    if (tab === 'forecast') renderForecast(currentFcDays);
+    if (tab === 'budget')   renderBudget();
+    if (tab === 'ai')       renderAiPane();
+  }
+
+  // ── Financial Data Engine ───────────────────────────────────────
+
+  function buildFinancialSummary() {
+    const now            = new Date();
+    const startOfMonth   = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLast    = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLast      = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+    const daysInMonth    = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const daysPassed     = now.getDate();
+    const daysLeft       = daysInMonth - daysPassed;
+
+    // Paid invoices
+    const paidInvs       = invoices.filter(i => i.status === 'paid');
+    const thisMonthPaid  = paidInvs.filter(i => new Date(i.paidAt || i.createdAt) >= startOfMonth);
+    const lastMonthPaid  = paidInvs.filter(i => { const d = new Date(i.paidAt || i.createdAt); return d >= startOfLast && d <= endOfLast; });
+
+    const revThisMonth   = thisMonthPaid.reduce((s, i) => s + (i.total || 0), 0);
+    const revLastMonth   = lastMonthPaid.reduce((s, i) => s + (i.total || 0), 0);
+    const revMoM         = revLastMonth > 0 ? ((revThisMonth - revLastMonth) / revLastMonth * 100).toFixed(1) : null;
+
+    // Outstanding (sent, not paid)
+    const sentInvs       = invoices.filter(i => i.status === 'sent');
+    const overdueInvs    = sentInvs.filter(i => invStatus(i) === 'overdue');
+    const outstandingTot = sentInvs.reduce((s, i) => s + (i.total || 0), 0);
+    const overdueTot     = overdueInvs.reduce((s, i) => s + (i.total || 0), 0);
+
+    // Jobs
+    const pendingJobs    = jobs.filter(j => !['paid','complete'].includes(j.status) === false ? false : j.status !== 'paid');
+    const activJobs      = jobs.filter(j => !['paid'].includes(j.status));
+    const jobsThisMo     = jobs.filter(j => new Date(j.createdAt) >= startOfMonth);
+    const completedThisMo= jobs.filter(j => j.status === 'paid' && new Date(j.paidAt || j.createdAt) >= startOfMonth);
+
+    // Avg job value
+    const avgJobValue    = paidInvs.length > 0 ? paidInvs.reduce((s,i) => s+(i.total||0), 0) / paidInvs.length : 120;
+
+    // Pipeline: active quotes (not yet converted) + booked/in_progress jobs not yet invoiced
+    const activeQuotes   = quotes.filter(q => !jobs.some(j => j.quoteId === q.id));
+    const uninvoicedJobs = jobs.filter(j => (j.status==='booked'||j.status==='in_progress') && !invoices.some(i=>i.jobId===j.id));
+    const pipelineVal    = activeQuotes.reduce((s,q) => s+(q.total||0), 0) + uninvoicedJobs.reduce((s,j) => s+(j.total||0), 0);
+
+    // Top customer
+    const custRev = {};
+    paidInvs.forEach(i => { if (i.customerId) custRev[i.customerId] = (custRev[i.customerId]||0) + (i.total||0); });
+    const topId  = Object.keys(custRev).sort((a,b) => custRev[b]-custRev[a])[0];
+    const topCust= customers.find(c => c.id === topId);
+
+    // Run rate
+    const runRate = daysPassed > 0 ? (revThisMonth / daysPassed) * daysInMonth : 0;
+
+    // All time
+    const allTimeRev = paidInvs.reduce((s,i) => s+(i.total||0), 0);
+
+    return {
+      revThisMonth: Math.round(revThisMonth*100)/100,
+      revLastMonth: Math.round(revLastMonth*100)/100,
+      revMoM,
+      outstandingTot: Math.round(outstandingTot*100)/100,
+      outstandingCount: sentInvs.length,
+      overdueCount: overdueInvs.length,
+      overdueTot: Math.round(overdueTot*100)/100,
+      activJobsCount: activJobs.length,
+      jobsThisMoCount: jobsThisMo.length,
+      completedThisMoCount: completedThisMo.length,
+      pipelineVal: Math.round(pipelineVal*100)/100,
+      avgJobValue: Math.round(avgJobValue*100)/100,
+      runRate: Math.round(runRate*100)/100,
+      daysLeft,
+      daysPassed,
+      daysInMonth,
+      topCustomer: topCust ? { name: topCust.name, revenue: Math.round((custRev[topId]||0)*100)/100 } : null,
+      totalCustomers: customers.length,
+      totalJobs: jobs.length,
+      totalInvoices: invoices.length,
+      allTimeRev: Math.round(allTimeRev*100)/100
+    };
+  }
+
+  function buildForecast(days) {
+    const s              = buildFinancialSummary();
+    const dailyRate      = s.runRate / 30;
+    const confirmed      = s.outstandingTot;
+    const fromPipeline   = s.pipelineVal * 0.7;
+    const fromRunRate    = dailyRate * days;
+    const totalIn        = confirmed + fromPipeline + fromRunRate;
+    const costs          = JSON.parse(localStorage.getItem('se_monthly_costs') || '[]');
+    const monthlyCostTot = costs.reduce((s,c) => s+(parseFloat(c.amount)||0), 0);
+    const projCosts      = (monthlyCostTot / 30) * days;
+    return {
+      confirmed:  Math.round(confirmed*100)/100,
+      projected:  Math.round(fromRunRate*100)/100,
+      pipeline:   Math.round(fromPipeline*100)/100,
+      costs:      Math.round(projCosts*100)/100,
+      net:        Math.round((totalIn - projCosts)*100)/100,
+      total:      Math.round(totalIn*100)/100,
+      avgJobValue: s.avgJobValue,
+      days
+    };
+  }
+
+  function getLast8WeeksRevenue() {
+    const weeks = [];
+    const now   = new Date();
+    for (let w = 7; w >= 0; w--) {
+      const end   = new Date(now); end.setDate(now.getDate() - w * 7); end.setHours(23,59,59);
+      const start = new Date(end); start.setDate(end.getDate() - 6); start.setHours(0,0,0);
+      const rev   = invoices.filter(i => i.status==='paid' && new Date(i.paidAt||i.createdAt) >= start && new Date(i.paidAt||i.createdAt) <= end).reduce((s,i) => s+(i.total||0), 0);
+      const label = start.toLocaleDateString('en-AU',{day:'numeric',month:'short'});
+      weeks.push({ label, revenue: rev });
+    }
+    return weeks;
+  }
+
+  // ── Overview ────────────────────────────────────────────────────
+
+  function renderOverview() {
+    const s      = buildFinancialSummary();
+    const target = parseFloat(localStorage.getItem('se_monthly_target') || '0');
+    const fmt    = v => '$' + Math.round(v).toLocaleString('en-AU');
+
+    // Hero cards
+    document.getElementById('finRevThisMonth').textContent = fmt(s.revThisMonth);
+    document.getElementById('finRevThisMonth').style.color = (!target || s.revThisMonth >= target * (s.daysPassed / s.daysInMonth)) ? 'var(--text)' : 'var(--amber)';
+
+    let momTxt = '';
+    if (s.revMoM !== null) {
+      const v = parseFloat(s.revMoM);
+      momTxt = (v >= 0 ? '+' : '') + v + '% vs last month';
+      document.getElementById('finRevMoM').style.color = v > 0 ? 'var(--green-accent)' : v < 0 ? 'var(--amber)' : 'var(--muted)';
+    } else { momTxt = 'First month of data'; }
+    document.getElementById('finRevMoM').textContent = momTxt;
+
+    document.getElementById('finOutstanding').textContent   = fmt(s.outstandingTot);
+    document.getElementById('finOutstanding').style.color   = s.overdueCount > 0 ? 'var(--amber)' : 'var(--green-accent)';
+    document.getElementById('finOutstandingSub').textContent = s.overdueCount > 0 ? `${s.overdueCount} overdue` : `${s.outstandingCount} invoice${s.outstandingCount!==1?'s':''}`;
+
+    document.getElementById('finPipeline').textContent    = fmt(s.pipelineVal);
+    document.getElementById('finPipelineSub').textContent = `${s.activJobsCount} job${s.activJobsCount!==1?'s':''} active`;
+
+    // Run rate bar
+    const pct = s.daysInMonth > 0 ? Math.round(s.daysPassed / s.daysInMonth * 100) : 0;
+    document.getElementById('finProgressBar').style.width = pct + '%';
+    if (target > 0) {
+      document.getElementById('finRunRateTarget').textContent = `Target: ${fmt(target)}`;
+      const jobsNeeded = s.avgJobValue > 0 ? Math.ceil((target - s.revThisMonth) / s.avgJobValue) : '?';
+      const msg = s.revThisMonth >= target
+        ? '✓ Target hit — great month'
+        : s.daysLeft > 0
+          ? `${s.daysLeft} days left — need ~${jobsNeeded} more job${jobsNeeded!==1?'s':''} to hit target`
+          : 'Month ended';
+      document.getElementById('finRunRateMsg').textContent    = msg;
+      document.getElementById('finRunRateMsg').style.color    = s.revThisMonth >= target ? 'var(--green-accent)' : 'var(--muted)';
+    } else {
+      document.getElementById('finRunRateTarget').innerHTML   = '<span style="color:var(--green-accent)">Set target →</span>';
+      document.getElementById('finRunRateMsg').textContent    = `${s.daysPassed} of ${s.daysInMonth} days elapsed`;
+      document.getElementById('finRunRateMsg').style.color    = 'var(--muted)';
+    }
+
+    // Revenue chart
+    renderRevenueChart();
+
+    // Insight chips
+    const chips = [];
+    if (s.topCustomer)       chips.push(`Top customer: ${s.topCustomer.name} — ${fmt(s.topCustomer.revenue)}`);
+    if (s.avgJobValue > 0)   chips.push(`Avg job value: ${fmt(s.avgJobValue)}`);
+    if (s.runRate > 0)       chips.push(`Run rate: ${fmt(s.runRate)} / month`);
+    if (s.allTimeRev > 0)    chips.push(`All-time revenue: ${fmt(s.allTimeRev)}`);
+    chips.push(`${s.totalCustomers} customer${s.totalCustomers!==1?'s':''} total`);
+    document.getElementById('finInsightChips').innerHTML = chips.map(c => `<div class="fin-insight-chip">${esc(c)}</div>`).join('');
+
+    // Proactive insights
+    renderProactiveInsights(s);
+  }
+
+  function renderRevenueChart() {
+    const weeks = getLast8WeeksRevenue();
+    const ctx   = document.getElementById('finRevenueChart');
+    if (!ctx) return;
+    if (finRevenueChart) { finRevenueChart.destroy(); finRevenueChart = null; }
+    finRevenueChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: weeks.map(w => w.label),
+        datasets: [{ data: weeks.map(w => w.revenue), borderColor:'#52C483', backgroundColor:'rgba(82,196,131,0.07)', borderWidth:2, pointBackgroundColor:'#52C483', pointRadius:3, tension:0.4, fill:true }]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#152019', borderColor:'rgba(82,196,131,0.3)', borderWidth:1, titleColor:'rgba(237,245,240,0.38)', bodyColor:'rgba(237,245,240,0.92)', callbacks:{ label: c => '$' + Math.round(c.parsed.y).toLocaleString('en-AU') } } },
+        scales:{
+          x:{ grid:{color:'rgba(82,196,131,0.05)'}, ticks:{color:'rgba(237,245,240,0.38)',font:{size:9}} },
+          y:{ grid:{color:'rgba(82,196,131,0.05)'}, ticks:{color:'rgba(237,245,240,0.38)',font:{size:9},callback:v=>'$'+v} }
+        }
+      }
+    });
+  }
+
+  function renderProactiveInsights(s) {
+    const el = document.getElementById('finProactiveInsights');
+    if (!el) return;
+    const target = parseFloat(localStorage.getItem('se_monthly_target') || '0');
+    const insights = [];
+
+    if (s.overdueCount > 0) insights.push({ cls:'fin-proactive-warn', icon:'⚠', msg:`${s.overdueCount} invoice${s.overdueCount>1?'s':''} overdue — $${Math.round(s.overdueTot).toLocaleString('en-AU')} outstanding over 14 days` });
+
+    if (target > 0) {
+      const expected = target * (s.daysPassed / s.daysInMonth);
+      const gap = expected - s.revThisMonth;
+      if (gap > s.avgJobValue && s.daysLeft > 0) {
+        const need = Math.ceil(gap / s.avgJobValue);
+        insights.push({ cls:'fin-proactive-info', icon:'→', msg:`${need} more job${need>1?'s':''} needed to stay on track for your $${Math.round(target).toLocaleString('en-AU')} target` });
+      }
+    }
+
+    if (s.revMoM !== null && parseFloat(s.revMoM) > 20) insights.push({ cls:'fin-proactive-ok', icon:'↑', msg:`Revenue up ${s.revMoM}% vs last month — strong month` });
+
+    const stale = jobs.filter(j => !['paid'].includes(j.status) && ((Date.now()-new Date(j.createdAt))/86400000) > 5).length;
+    if (stale > 0) insights.push({ cls:'fin-proactive-warn', icon:'⏱', msg:`${stale} job${stale>1?'s':''} in progress for over 5 days` });
+
+    el.innerHTML = insights.slice(0,3).map(i => `<div class="fin-proactive ${i.cls}"><span style="font-size:0.9rem;flex-shrink:0;">${i.icon}</span><span style="font-size:0.78rem;color:var(--text-secondary);line-height:1.4;">${i.msg}</span></div>`).join('');
+  }
+
+  // ── Forecast ────────────────────────────────────────────────────
+
+  function renderForecast(days) {
+    currentFcDays = days;
+    [30,60,90].forEach(d => {
+      const btn = document.getElementById('fcBtn-'+d);
+      btn.style.background = d===days ? 'var(--green-accent)' : 'transparent';
+      btn.style.color      = d===days ? '#0A110D' : 'var(--muted)';
+      btn.style.border     = d===days ? '1px solid var(--green-accent)' : '1px solid var(--border-light)';
+    });
+    document.getElementById('fcDaysLabel').textContent = days;
+
+    const fc  = buildForecast(days);
+    const fmt = v => '$' + Math.round(v).toLocaleString('en-AU');
+    document.getElementById('fcNetTotal').textContent  = fmt(fc.net);
+    document.getElementById('fcNetTotal').style.color  = fc.net >= 0 ? 'var(--green-accent)' : 'var(--danger)';
+    document.getElementById('fcConfirmed').textContent = fmt(fc.confirmed);
+    document.getElementById('fcProjected').textContent = fmt(fc.projected);
+    document.getElementById('fcPipeline').textContent  = fmt(fc.pipeline);
+    document.getElementById('fcCosts').textContent     = fmt(fc.costs);
+
+    // Bars (proportional to total)
+    const maxBar = Math.max(fc.total, fc.costs, 1);
+    document.getElementById('fcConfirmedBar').style.width = Math.min(fc.confirmed/maxBar*100, 100)+'%';
+    document.getElementById('fcProjectedBar').style.width = Math.min(fc.projected/maxBar*100, 100)+'%';
+    document.getElementById('fcPipelineBar').style.width  = Math.min(fc.pipeline/maxBar*100, 100)+'%';
+    document.getElementById('fcCostsBar').style.width     = Math.min(fc.costs/maxBar*100, 100)+'%';
+
+    document.getElementById('fcExtraJobs').value = 0;
+    document.getElementById('fcExtraLabel').textContent = '+$0';
+    document.getElementById('fcWhatIfResult').textContent = '';
+  }
+
+  function updateWhatIf() {
+    const fc     = buildForecast(currentFcDays);
+    const extra  = parseInt(document.getElementById('fcExtraJobs').value);
+    const added  = extra * fc.avgJobValue;
+    const newNet = fc.net + added;
+    document.getElementById('fcExtraLabel').textContent    = extra > 0 ? '+$' + Math.round(added).toLocaleString('en-AU') : '+$0';
+    document.getElementById('fcWhatIfResult').textContent  = extra > 0 ? `With ${extra} extra job${extra!==1?'s':''}: est. net = $${Math.round(newNet).toLocaleString('en-AU')}` : '';
+  }
+
+  // ── Budget ──────────────────────────────────────────────────────
+
+  function renderBudget() {
+    const y    = budgetViewYear;
+    const m    = budgetViewMonth;
+    const now  = new Date();
+    const isCurrentMonth = y === now.getFullYear() && m === now.getMonth();
+
+    document.getElementById('budgetMonthLabel').textContent = new Date(y, m, 1).toLocaleDateString('en-AU', { month: 'long', year: 'numeric' });
+
+    // Load target
+    const target = parseFloat(localStorage.getItem('se_monthly_target') || '0');
+    const inp = document.getElementById('budgetTargetInput');
+    if (inp && !inp.value) inp.value = target || '';
+
+    // Revenue for selected month
+    const start = new Date(y, m, 1);
+    const end   = new Date(y, m + 1, 0, 23, 59, 59);
+    const monthPaid = invoices.filter(i => i.status==='paid' && new Date(i.paidAt||i.createdAt) >= start && new Date(i.paidAt||i.createdAt) <= end);
+    const monthRev  = monthPaid.reduce((s,i) => s+(i.total||0), 0);
+
+    // Hero
+    const fmt = v => '$' + Math.round(v).toLocaleString('en-AU');
+    document.getElementById('budgetRevActual').textContent = fmt(monthRev);
+    document.getElementById('budgetRevTarget').textContent = target > 0 ? `of ${fmt(target)} target` : 'No target set';
+
+    const pct = target > 0 ? Math.min(Math.round(monthRev / target * 100), 100) : 0;
+    document.getElementById('budgetProgressBar').style.width = pct + '%';
+    document.getElementById('budgetProgressPct').textContent  = pct > 15 ? pct + '%' : '';
+
+    let statusTxt = '', statusCol = 'var(--muted)';
+    if (target > 0) {
+      const daysInM = new Date(y, m+1, 0).getDate();
+      const daysPsd = isCurrentMonth ? now.getDate() : daysInM;
+      const dLeft   = isCurrentMonth ? daysInM - daysPsd : 0;
+      const gap     = target - monthRev;
+      const avgJ    = parseFloat(buildFinancialSummary().avgJobValue) || 120;
+      const need    = Math.ceil(gap / avgJ);
+      if (monthRev >= target)       { statusTxt = '✓ Target hit'; statusCol = 'var(--green-accent)'; }
+      else if (dLeft > 0)           { statusTxt = `Need ~${need} more job${need!==1?'s':''} in ${dLeft} days`; statusCol = monthRev/target > 0.8 ? 'var(--amber)' : 'var(--danger)'; }
+      else if (!isCurrentMonth)     { const miss = target - monthRev; statusTxt = `Missed target by ${fmt(miss)}`; statusCol = 'var(--danger)'; }
+    }
+    document.getElementById('budgetStatusLine').textContent = statusTxt;
+    document.getElementById('budgetStatusLine').style.color = statusCol;
+
+    // Weekly breakdown
+    let weekHtml = '';
+    for (let w = 0; w < 5; w++) {
+      const wStart = new Date(y, m, 1 + w * 7);
+      const wEnd   = new Date(y, m, Math.min(7 + w * 7, new Date(y,m+1,0).getDate()), 23, 59, 59);
+      if (wStart > end) break;
+      const wRev   = monthPaid.filter(i => { const d = new Date(i.paidAt||i.createdAt); return d >= wStart && d <= wEnd; }).reduce((s,i) => s+(i.total||0), 0);
+      const wJobs  = jobs.filter(j => j.status==='paid' && new Date(j.paidAt||j.createdAt) >= wStart && new Date(j.paidAt||j.createdAt) <= wEnd).length;
+      weekHtml += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border-inner);font-size:0.8rem;">
+        <span style="color:var(--muted);">Wk ${w+1}</span>
+        <span style="color:var(--text);">${fmt(wRev)}</span>
+        <span style="color:var(--text-secondary);">${wJobs} job${wJobs!==1?'s':''}</span>
+      </div>`;
+    }
+    document.getElementById('budgetWeeklyTable').innerHTML = weekHtml || '<div style="color:var(--muted);font-size:0.8rem;">No data for this month</div>';
+
+    // YTD
+    const ytdStart = new Date(y, 0, 1);
+    const ytdPaid  = invoices.filter(i => i.status==='paid' && new Date(i.paidAt||i.createdAt) >= ytdStart && new Date(i.paidAt||i.createdAt).getFullYear() === y);
+    const ytdRev   = ytdPaid.reduce((s,i) => s+(i.total||0), 0);
+    const ytdMos   = now.getMonth() + (isCurrentMonth ? 1 : 0);
+    const avgMo    = ytdMos > 0 ? ytdRev / ytdMos : 0;
+
+    // Best month
+    let bestMo = 0, bestMoIdx = -1;
+    for (let mi = 0; mi < 12; mi++) {
+      const ms = new Date(y,mi,1), me = new Date(y,mi+1,0,23,59,59);
+      const mr = invoices.filter(i => i.status==='paid' && new Date(i.paidAt||i.createdAt) >= ms && new Date(i.paidAt||i.createdAt) <= me).reduce((s,i)=>s+(i.total||0),0);
+      if (mr > bestMo) { bestMo = mr; bestMoIdx = mi; }
+    }
+    const bestMoLabel = bestMoIdx >= 0 ? new Date(y, bestMoIdx, 1).toLocaleDateString('en-AU',{month:'short'}) : '—';
+
+    document.getElementById('budgetYTD').innerHTML = [
+      ['YTD Revenue', fmt(ytdRev)],
+      ['Avg / Month', fmt(avgMo)],
+      ['Best Month', bestMoLabel + (bestMo > 0 ? ' ' + fmt(bestMo) : '')],
+      ['Jobs Done', jobs.filter(j=>j.status==='paid'&&new Date(j.paidAt||j.createdAt)>=ytdStart&&new Date(j.paidAt||j.createdAt).getFullYear()===y).length]
+    ].map(([label, val]) => `<div style="background:var(--bg-component);border-radius:8px;padding:10px 12px;"><div style="font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">${label}</div><div style="font-size:0.9rem;font-weight:600;color:var(--text);">${val}</div></div>`).join('');
+
+    // Last 6 months chart
+    renderBudgetChart(y);
+  }
+
+  function renderBudgetChart(y) {
+    const target = parseFloat(localStorage.getItem('se_monthly_target') || '0');
+    const now    = new Date();
+    const labels = [], data = [], colors = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const s = new Date(d.getFullYear(), d.getMonth(), 1);
+      const e = new Date(d.getFullYear(), d.getMonth()+1, 0, 23, 59, 59);
+      const r = invoices.filter(inv => inv.status==='paid' && new Date(inv.paidAt||inv.createdAt) >= s && new Date(inv.paidAt||inv.createdAt) <= e).reduce((sum,inv)=>sum+(inv.total||0),0);
+      labels.push(d.toLocaleDateString('en-AU',{month:'short'}));
+      data.push(r);
+      colors.push(target > 0 ? (r >= target ? '#52C483' : r >= target*0.9 ? '#E8A838' : '#D94F4F') : '#52C483');
+    }
+    const ctx = document.getElementById('finBudgetChart');
+    if (!ctx) return;
+    if (finBudgetChart) { finBudgetChart.destroy(); finBudgetChart = null; }
+    finBudgetChart = new Chart(ctx, {
+      type: 'bar',
+      data: { labels, datasets: [{ data, backgroundColor: colors, borderRadius: 4, borderSkipped: false }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend:{display:false}, tooltip:{ backgroundColor:'#152019', bodyColor:'rgba(237,245,240,0.92)', callbacks:{ label: c => '$'+Math.round(c.parsed.y).toLocaleString('en-AU') } } },
+        scales: {
+          x: { grid:{display:false}, ticks:{color:'rgba(237,245,240,0.38)',font:{size:9}} },
+          y: { grid:{color:'rgba(82,196,131,0.05)'}, ticks:{color:'rgba(237,245,240,0.38)',font:{size:9},callback:v=>'$'+v} }
+        }
+      }
+    });
+  }
+
+  function budgetChangeMonth(dir) {
+    budgetViewMonth += dir;
+    if (budgetViewMonth > 11) { budgetViewMonth = 0; budgetViewYear++; }
+    if (budgetViewMonth < 0)  { budgetViewMonth = 11; budgetViewYear--; }
+    renderBudget();
+  }
+
+  function saveBudgetTarget() {
+    const val = document.getElementById('budgetTargetInput').value;
+    if (val) localStorage.setItem('se_monthly_target', val);
+  }
+
+  // ── AI Chat ─────────────────────────────────────────────────────
+
+  function renderAiPane() {
+    const key = localStorage.getItem('se_ai_key');
+    document.getElementById('aiSetupPane').style.display = key ? 'none' : 'block';
+    document.getElementById('aiChatPane').style.display  = key ? 'flex' : 'none';
+    if (key) renderAiHistory();
+  }
+
+  function renderAiHistory() {
+    const history = JSON.parse(localStorage.getItem('se_ai_history') || '[]');
+    const el = document.getElementById('aiMessages');
+    if (!el) return;
+    if (history.length === 0) {
+      document.getElementById('aiSuggestions').style.display = 'flex';
+      el.innerHTML = '';
+      return;
+    }
+    document.getElementById('aiSuggestions').style.display = 'none';
+    el.innerHTML = history.map(m => `<div class="${m.role==='user'?'ai-msg-user':'ai-msg-ai'}">${m.role==='assistant' ? renderMarkdown(m.content) : esc(m.content)}</div>`).join('');
+    setTimeout(() => { el.scrollTop = el.scrollHeight; }, 50);
+  }
+
+  function renderMarkdown(text) {
+    return text
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g,'<em>$1</em>')
+      .replace(/^- (.+)$/gm,'<li>$1</li>')
+      .replace(/(<li>.*<\/li>)/s,'<ul>$1</ul>')
+      .replace(/\n/g,'<br>');
+  }
+
+  function sendAiFromInput() {
+    const inp = document.getElementById('aiInput');
+    const msg = inp.value.trim();
+    if (!msg) return;
+    inp.value = '';
+    sendAiMessage(msg);
+  }
+
+  function appendAiMessage(role, content) {
+    const el  = document.getElementById('aiMessages');
+    const div = document.createElement('div');
+    div.className = role === 'user' ? 'ai-msg-user' : 'ai-msg-ai';
+    div.innerHTML = role === 'assistant' ? renderMarkdown(content) : esc(content);
+    el.appendChild(div);
+    el.scrollTop = el.scrollHeight;
+  }
+
+  async function sendAiMessage(userMsg) {
+    const raw = localStorage.getItem('se_ai_key');
+    if (!raw) { renderAiPane(); return; }
+    const apiKey = atob(raw);
+
+    document.getElementById('aiSuggestions').style.display = 'none';
+    appendAiMessage('user', userMsg);
+
+    const typing = document.getElementById('aiTyping');
+    typing.style.display = 'block';
+
+    const s        = buildFinancialSummary();
+    const fc       = buildForecast(30);
+    const fmt      = v => '$' + Math.round(v).toLocaleString('en-AU');
+    const target   = localStorage.getItem('se_monthly_target') || 'not set';
+    const recentJobLines = [...jobs].sort((a,b) => new Date(b.createdAt)-new Date(a.createdAt)).slice(0,10).map(j => `${j.customerName||'Unknown'} — ${j.bladeType||'blades'} — ${STATUS_LABEL[j.status]||j.status}`).join('\n');
+    const overdueLines   = invoices.filter(i=>invStatus(i)==='overdue').map(i=>`${i.ref} — ${i.customerName} — ${fmt(i.total)} — sent ${Math.floor((Date.now()-new Date(i.createdAt))/86400000)} days ago`).join('\n');
+
+    const systemPrompt = `You are Sam's personal AI accountant for Steady Eco, a professional chipper blade sharpening business in Cairns, Far North Queensland, Australia. Sam is a sole trader who sharpens blades for arborists and tree loppers using an MF2515B industrial knife grinder.
+
+LIVE FINANCIAL DATA:
+- Revenue this month: ${fmt(s.revThisMonth)}
+- Revenue last month: ${fmt(s.revLastMonth)}
+- Month on month: ${s.revMoM !== null ? s.revMoM+'%' : 'N/A'}
+- Outstanding invoices: ${fmt(s.outstandingTot)} (${s.outstandingCount} invoices)
+- Overdue (>14 days): ${fmt(s.overdueTot)} (${s.overdueCount} invoices)
+- Jobs this month: ${s.jobsThisMoCount}
+- Active jobs: ${s.activJobsCount}
+- Avg job value: ${fmt(s.avgJobValue)}
+- Pipeline value: ${fmt(s.pipelineVal)}
+- Run rate (proj monthly): ${fmt(s.runRate)}
+- Days left this month: ${s.daysLeft}
+- Top customer: ${s.topCustomer ? s.topCustomer.name+' ('+fmt(s.topCustomer.revenue)+')' : 'N/A'}
+- Monthly target: ${target}
+- All-time revenue: ${fmt(s.allTimeRev)}
+
+30-DAY FORECAST:
+- Confirmed inflow: ${fmt(fc.confirmed)}
+- Projected inflow: ${fmt(fc.projected)}
+- Est. costs: ${fmt(fc.costs)}
+- Net forecast: ${fmt(fc.net)}
+
+RECENT JOBS:
+${recentJobLines || 'None'}
+
+OVERDUE INVOICES:
+${overdueLines || 'None'}
+
+Be direct, conversational, and specific. Sam reads this on his phone between jobs. 2-4 sentences for simple questions, bullet points for lists. Use Australian dollars. Address Sam by name occasionally. For tax advice, defer to his accountant. Never invent numbers.`;
+
+    const history = JSON.parse(localStorage.getItem('se_ai_history') || '[]').slice(-18);
+    const messages = [...history, { role:'user', content: userMsg }];
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'x-api-key':apiKey, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-ipc':'true' },
+        body: JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens:500, system:systemPrompt, messages })
+      });
+      const data = await res.json();
+      typing.style.display = 'none';
+      const reply = data.content?.[0]?.text || 'Sorry, I could not process that.';
+      appendAiMessage('assistant', reply);
+      const newHistory = [...history, { role:'user', content:userMsg }, { role:'assistant', content:reply }];
+      localStorage.setItem('se_ai_history', JSON.stringify(newHistory.slice(-20)));
+    } catch(e) {
+      typing.style.display = 'none';
+      appendAiMessage('assistant', 'Connection error — check your API key in settings.');
+    }
+  }
+
+  function saveAiKey() {
+    const inp = document.getElementById('aiKeyInput') || document.getElementById('settingAiKey');
+    if (!inp) return;
+    const key = inp.value.trim();
+    if (!key) return;
+    localStorage.setItem('se_ai_key', btoa(key));
+    inp.value = '';
+    showToast('AI Accountant activated');
+    document.getElementById('finAiDot').style.display = 'block';
+    renderAiPane();
+  }
+
+  function clearAiChat() {
+    localStorage.removeItem('se_ai_history');
+    showToast('Chat cleared');
+    if (currentFinTab === 'ai') renderAiPane();
+  }
+
+  // ── Finance settings ────────────────────────────────────────────
+
+  function loadFinanceSettings() {
+    const target = localStorage.getItem('se_monthly_target') || '';
+    const inp = document.getElementById('settingMonthlyTarget');
+    if (inp) inp.value = target;
+
+    const costs = JSON.parse(localStorage.getItem('se_monthly_costs') || '[]');
+    const defaults = costs.length > 0 ? costs : [
+      { name:'Grinding wheels', amount:'' },
+      { name:'Coolant / consumables', amount:'' },
+      { name:'Machine maintenance', amount:'' },
+      { name:'Transport', amount:'' }
+    ];
+    renderMonthlyCostsList(defaults);
+
+    const aiKey = localStorage.getItem('se_ai_key');
+    const aiInp = document.getElementById('settingAiKey');
+    if (aiInp && aiKey) aiInp.placeholder = '●●●● (key saved)';
+  }
+
+  function renderMonthlyCostsList(costs) {
+    const el = document.getElementById('monthlyCostsList');
+    if (!el) return;
+    el.innerHTML = costs.map((c,i) => `
+      <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;">
+        <input type="text" value="${esc(c.name)}" placeholder="Cost name" style="flex:2;background:var(--bg-component);border:1px solid var(--border-light);border-radius:8px;padding:8px 10px;font-size:0.82rem;color:var(--text);font-family:'Inter',sans-serif;" id="cost-name-${i}">
+        <div style="position:relative;flex:1;">
+          <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.8rem;">$</span>
+          <input type="number" value="${c.amount||''}" placeholder="0" min="0" style="width:100%;background:var(--bg-component);border:1px solid var(--border-light);border-radius:8px;padding:8px 8px 8px 20px;font-size:0.82rem;color:var(--text);font-family:'Inter',sans-serif;" id="cost-amt-${i}">
+        </div>
+        <button onclick="removeCostRow(${i})" style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:4px;">✕</button>
+      </div>`).join('');
+  }
+
+  function addMonthlyCostRow() {
+    const costs = getCurrentCostsFromDom();
+    costs.push({ name:'', amount:'' });
+    renderMonthlyCostsList(costs);
+  }
+
+  function removeCostRow(i) {
+    const costs = getCurrentCostsFromDom();
+    costs.splice(i,1);
+    renderMonthlyCostsList(costs);
+  }
+
+  function getCurrentCostsFromDom() {
+    const el = document.getElementById('monthlyCostsList');
+    if (!el) return [];
+    const rows = el.querySelectorAll('div[style*="display:flex"]');
+    return Array.from(rows).map((_,i) => ({
+      name:   document.getElementById('cost-name-'+i)?.value || '',
+      amount: parseFloat(document.getElementById('cost-amt-'+i)?.value) || 0
+    }));
+  }
+
+  function saveFinanceSettings() {
+    const target = document.getElementById('settingMonthlyTarget')?.value;
+    if (target) localStorage.setItem('se_monthly_target', target);
+    const costs = getCurrentCostsFromDom().filter(c => c.name || c.amount > 0);
+    localStorage.setItem('se_monthly_costs', JSON.stringify(costs));
+    showToast('Finance settings saved');
   }
 
   function showWebsiteEnquiries() {
