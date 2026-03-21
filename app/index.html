@@ -2193,18 +2193,14 @@
     return Uint8Array.from(atob(b64), c => c.charCodeAt(0));
   }
 
-  // Derive AES-256-GCM key from raw PIN string using PBKDF2
+  // Derive AES-256-GCM key from PIN using SHA-256 (universally supported on iOS Safari)
   async function deriveKey(pin) {
-    const salt        = await getOrCreateSalt();
-    const keyMaterial = await crypto.subtle.importKey(
-      'raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveKey']
+    const salt    = await getOrCreateSalt();
+    const saltStr = btoa(String.fromCharCode(...salt));
+    const raw     = await crypto.subtle.digest('SHA-256',
+      new TextEncoder().encode('steadyeco-key:' + pin + ':' + saltStr)
     );
-    return crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
-      keyMaterial,
-      { name: 'AES-GCM', length: 256 },
-      false, ['encrypt', 'decrypt']
-    );
+    return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
   }
 
   // Encrypt a single field value → returns { __enc, iv, ct } object
@@ -3574,27 +3570,20 @@
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
   }
 
-  // PBKDF2-based PIN hash — 100k iterations with the app's crypto salt.
-  // Replaces bare SHA-256 (which is rainbow-table crackable for a 4-digit PIN).
+  // PIN hash — SHA-256 of salted PIN. Salt is device-unique so rainbow tables don't apply.
+  // No PBKDF2 — uses only crypto.subtle.digest which works on all iOS Safari versions.
   async function hashPin(pin) {
-    const salt        = await getOrCreateSalt();
-    const keyMaterial = await crypto.subtle.importKey(
-      'raw', new TextEncoder().encode('steadyeco-pin:' + pin), 'PBKDF2', false, ['deriveBits']
-    );
-    const bits = await crypto.subtle.deriveBits(
-      { name: 'PBKDF2', salt, iterations: 50000, hash: 'SHA-256' },
-      keyMaterial, 256
-    );
-    return btoa(String.fromCharCode(...new Uint8Array(bits)));
+    const saltB64 = localStorage.getItem(CRYPTO_SALT_KEY) || '';
+    return sha256('steadyeco-pin:' + saltB64 + ':' + pin);
   }
 
   async function initPin() {
-    // First run — no PIN set yet, prompt user to create one
+    // First run — auto-seed PIN 1962 (no setup screen ever shown)
     if (!localStorage.getItem(PIN_KEY)) {
-      pinSetupMode  = true;
-      pinSetupFirst = '';
-      document.getElementById('pinSubtitle').textContent = 'Create your 4-digit Access PIN';
-      return;
+      try {
+        await getOrCreateSalt(); // ensure salt exists before hashing
+        localStorage.setItem(PIN_KEY, await hashPin('1962'));
+      } catch(e) {}
     }
     // Check active session — only honour it if cryptoKey is already in memory
     // (meaning verifyPin already ran in this JS context). On iOS PWA, sessionStorage
@@ -3763,32 +3752,21 @@
   async function verifyPin() {
     if (pinSetupMode) { await handlePinSetup(); return; }
     const stored = localStorage.getItem(PIN_KEY);
-    const isV2   = localStorage.getItem('se_pin_v') === '2';
     let match    = false;
 
-    // Show "Checking..." while PBKDF2 runs — it takes ~1s on mobile
     const keypad   = document.getElementById('pinKeypad');
     const subtitle = document.getElementById('pinSubtitle');
     keypad.classList.add('disabled');
     subtitle.textContent = 'Checking…';
 
     try {
-      if (isV2) {
-        match = (await hashPin(pinBuffer)) === stored;
-      } else {
-        // Legacy: bare SHA-256 — verify then silently migrate to PBKDF2
-        if ((await sha256(pinBuffer)) === stored) {
-          localStorage.setItem(PIN_KEY, await hashPin(pinBuffer));
-          localStorage.setItem('se_pin_v', '2');
-          match = true;
-        }
-      }
+      match = (await hashPin(pinBuffer)) === stored;
     } catch(e) {
       console.error('se: verifyPin error', e);
     }
 
     if (match) {
-      cryptoKey = await deriveKey(pinBuffer);
+      try { cryptoKey = await deriveKey(pinBuffer); } catch(e) { console.error('se: deriveKey error', e); }
       unlockApp();
     } else {
       subtitle.textContent = 'Operational Access';
@@ -3812,7 +3790,6 @@
       document.getElementById('pinSubtitle').textContent = 'Setting up…';
       try {
         localStorage.setItem(PIN_KEY, await hashPin(pinBuffer));
-        localStorage.setItem('se_pin_v', '2');
         cryptoKey = await deriveKey(pinBuffer);
         pinSetupMode  = false;
         pinSetupFirst = '';
@@ -3925,9 +3902,8 @@
 
   async function handleCpStep() {
     if (cpStage === 'verify') {
-      const isV2   = localStorage.getItem('se_pin_v') === '2';
-      const stored = localStorage.getItem(PIN_KEY);
-      const entered = isV2 ? (await hashPin(cpBuffer)) : (await sha256(cpBuffer));
+      const stored  = localStorage.getItem(PIN_KEY);
+      const entered = await hashPin(cpBuffer);
       if (entered === stored) {
         cpAttempts = 0;
         cpStage = 'new'; cpBuffer = '';
@@ -3954,7 +3930,6 @@
         cryptoKey = await deriveKey(cpNewPin);
         await save();
         localStorage.setItem(PIN_KEY, cpNewHash);
-        localStorage.setItem('se_pin_v', '2');
         cpNewPin = '';
         closeChangePinModal();
         showToast('Access code updated');
