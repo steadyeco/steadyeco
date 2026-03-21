@@ -1433,11 +1433,12 @@
     </div>
 
     <!-- Tab bar -->
-    <div style="display:flex;gap:4px;background:var(--card);border-radius:10px;padding:4px;margin-bottom:20px;">
-      <button id="finTab-overview"  onclick="showFinTab('overview')"  style="flex:1;padding:8px 4px;border:none;border-radius:7px;font-size:0.72rem;font-weight:600;letter-spacing:0.5px;cursor:pointer;transition:all 0.15s;background:var(--green-accent);color:#0A110D;">Overview</button>
-      <button id="finTab-forecast"  onclick="showFinTab('forecast')"  style="flex:1;padding:8px 4px;border:none;border-radius:7px;font-size:0.72rem;font-weight:600;letter-spacing:0.5px;cursor:pointer;transition:all 0.15s;background:transparent;color:var(--muted);">Forecast</button>
-      <button id="finTab-budget"    onclick="showFinTab('budget')"    style="flex:1;padding:8px 4px;border:none;border-radius:7px;font-size:0.72rem;font-weight:600;letter-spacing:0.5px;cursor:pointer;transition:all 0.15s;background:transparent;color:var(--muted);">Budget</button>
-      <button id="finTab-ai"        onclick="showFinTab('ai')"        style="flex:1;padding:8px 4px;border:none;border-radius:7px;font-size:0.72rem;font-weight:600;letter-spacing:0.5px;cursor:pointer;transition:all 0.15s;background:transparent;color:var(--muted);">Ask AI</button>
+    <div style="display:flex;gap:4px;background:var(--card);border-radius:10px;padding:4px;margin-bottom:20px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;">
+      <button id="finTab-overview"  onclick="showFinTab('overview')"  style="flex:1;min-width:64px;padding:8px 4px;border:none;border-radius:7px;font-size:0.68rem;font-weight:600;letter-spacing:0.3px;cursor:pointer;transition:all 0.15s;background:var(--green-accent);color:#0A110D;white-space:nowrap;">Overview</button>
+      <button id="finTab-forecast"  onclick="showFinTab('forecast')"  style="flex:1;min-width:64px;padding:8px 4px;border:none;border-radius:7px;font-size:0.68rem;font-weight:600;letter-spacing:0.3px;cursor:pointer;transition:all 0.15s;background:transparent;color:var(--muted);white-space:nowrap;">Forecast</button>
+      <button id="finTab-budget"    onclick="showFinTab('budget')"    style="flex:1;min-width:56px;padding:8px 4px;border:none;border-radius:7px;font-size:0.68rem;font-weight:600;letter-spacing:0.3px;cursor:pointer;transition:all 0.15s;background:transparent;color:var(--muted);white-space:nowrap;">Budget</button>
+      <button id="finTab-history"   onclick="showFinTab('history')"   style="flex:1;min-width:56px;padding:8px 4px;border:none;border-radius:7px;font-size:0.68rem;font-weight:600;letter-spacing:0.3px;cursor:pointer;transition:all 0.15s;background:transparent;color:var(--muted);white-space:nowrap;">History</button>
+      <button id="finTab-ai"        onclick="showFinTab('ai')"        style="flex:1;min-width:52px;padding:8px 4px;border:none;border-radius:7px;font-size:0.68rem;font-weight:600;letter-spacing:0.3px;cursor:pointer;transition:all 0.15s;background:transparent;color:var(--muted);white-space:nowrap;">Ask AI</button>
     </div>
 
     <!-- ── OVERVIEW ── -->
@@ -1596,6 +1597,30 @@
         <div style="font-size:0.68rem;font-weight:600;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;">Last 6 Months</div>
         <div style="position:relative;height:100px;"><canvas id="finBudgetChart"></canvas></div>
       </div>
+    </div>
+
+    <!-- ── HISTORY ── -->
+    <div id="finPane-history" style="display:none;">
+
+      <!-- 12-month revenue chart -->
+      <div class="card" style="padding:14px 16px;margin-bottom:12px;">
+        <div style="font-size:0.68rem;font-weight:600;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;">Revenue — Last 12 Months</div>
+        <div style="position:relative;height:140px;"><canvas id="finHistoryChart"></canvas></div>
+      </div>
+
+      <!-- All-time stats -->
+      <div class="card" style="padding:14px 16px;margin-bottom:12px;">
+        <div style="font-size:0.68rem;font-weight:600;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;">All Time</div>
+        <div id="histAllTimeStats" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+      </div>
+
+      <!-- BAS quarterly table -->
+      <div class="card" style="padding:14px 16px;margin-bottom:12px;">
+        <div style="font-size:0.68rem;font-weight:600;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;">BAS Summary — By Quarter</div>
+        <div style="font-size:0.7rem;color:var(--muted);margin-bottom:12px;">Australian financial year (Jul–Jun). GST = revenue ÷ 11.</div>
+        <div id="histBASTable"></div>
+      </div>
+
     </div>
 
     <!-- ── ASK AI ── -->
@@ -4100,6 +4125,7 @@
   let budgetViewMonth  = new Date().getMonth();
   let finRevenueChart  = null;
   let finBudgetChart   = null;
+  let finHistoryChart  = null;
 
   function showFinanceScreen() {
     showScreen('finance', 'dashboard');
@@ -4115,21 +4141,23 @@
 
   function showFinTab(tab) {
     currentFinTab = tab;
-    ['overview','forecast','budget','ai'].forEach(t => {
+    ['overview','forecast','budget','history','ai'].forEach(t => {
       document.getElementById('finPane-' + t).style.display = t === tab ? 'flex' : 'none';
       if (t !== 'ai') document.getElementById('finPane-' + t).style.flexDirection = '';
       const btn = document.getElementById('finTab-' + t);
       btn.style.background = t === tab ? 'var(--green-accent)' : 'transparent';
       btn.style.color      = t === tab ? '#0A110D' : 'var(--muted)';
     });
-    // Force overview to block display
+    // Force block display for non-flex panes
     if (tab === 'overview')  document.getElementById('finPane-overview').style.display  = 'block';
     if (tab === 'forecast')  document.getElementById('finPane-forecast').style.display  = 'block';
     if (tab === 'budget')    document.getElementById('finPane-budget').style.display    = 'block';
+    if (tab === 'history')   document.getElementById('finPane-history').style.display   = 'block';
 
     if (tab === 'overview') renderOverview();
     if (tab === 'forecast') renderForecast(currentFcDays);
     if (tab === 'budget')   renderBudget();
+    if (tab === 'history')  renderHistory();
     if (tab === 'ai')       renderAiPane();
   }
 
@@ -4523,6 +4551,192 @@
   function saveBudgetTarget() {
     const val = document.getElementById('budgetTargetInput').value;
     if (val) localStorage.setItem('se_monthly_target', val);
+  }
+
+  // ── History Tab ─────────────────────────────────────────────────
+
+  function getBASQuarters() {
+    // Australian FY: Jul–Jun. FY label = year it ends.
+    // e.g. FY2026 = Jul 2025–Jun 2026
+    // Returns last 8 quarters, newest first.
+    const now      = new Date();
+    const curYear  = now.getFullYear();
+    const curMonth = now.getMonth(); // 0-based
+
+    // Map calendar month → quarter index (0–3) and FY-relative info
+    // Q0: Jul(6)–Sep(8), Q1: Oct(9)–Dec(11), Q2: Jan(0)–Mar(2), Q3: Apr(3)–Jun(5)
+    const Q_DEFS = [
+      { label: 'Q1', name: 'Jul–Sep', months: [6, 7, 8]  },
+      { label: 'Q2', name: 'Oct–Dec', months: [9, 10, 11] },
+      { label: 'Q3', name: 'Jan–Mar', months: [0, 1, 2]  },
+      { label: 'Q4', name: 'Apr–Jun', months: [3, 4, 5]  },
+    ];
+
+    function monthToQ(m) { return Q_DEFS.findIndex(q => q.months.includes(m)); }
+
+    // For a given (calMonth, calYear), compute the FY end-year
+    function fyOf(m, y) { return m >= 6 ? y + 1 : y; }
+
+    // Build calendar months for a quarter given its FY end-year and Q index
+    function qMonths(qIdx, fy) {
+      return Q_DEFS[qIdx].months.map(m => ({ month: m, year: m >= 6 ? fy - 1 : fy }));
+    }
+
+    const quarters = [];
+    let qIdx = monthToQ(curMonth);
+    let fy   = fyOf(curMonth, curYear);
+
+    for (let i = 0; i < 8; i++) {
+      quarters.push({
+        label: Q_DEFS[qIdx].label,
+        name:  Q_DEFS[qIdx].name,
+        fy,
+        isCurrent: i === 0,
+        qMonths: qMonths(qIdx, fy),
+      });
+      // Step back one quarter
+      qIdx--;
+      if (qIdx < 0) { qIdx = 3; fy--; }
+    }
+
+    return quarters;
+  }
+
+  function renderHistory() {
+    renderAllTimeStats();
+    renderHistoryChart();
+    renderBASTable();
+  }
+
+  function renderAllTimeStats() {
+    const paidInvs  = invoices.filter(i => invStatus(i) === 'paid');
+    const totalRev  = paidInvs.reduce((s, i) => s + (i.total || 0), 0);
+    const totalGST  = totalRev / 11;
+    const totalNet  = totalRev - totalGST;
+    const jobsDone  = jobs.filter(j => j.status === 'complete' || j.status === 'paid').length;
+    const avgJob    = paidInvs.length ? totalRev / paidInvs.length : 0;
+
+    const stats = [
+      { label: 'Total Revenue',     value: '$' + totalRev.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') },
+      { label: 'GST Collected',     value: '$' + totalGST.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') },
+      { label: 'Jobs Completed',    value: jobsDone },
+      { label: 'Avg Invoice Value', value: '$' + avgJob.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') },
+    ];
+
+    document.getElementById('histAllTimeStats').innerHTML = stats.map(s => `
+      <div style="background:var(--bg-component);border-radius:10px;padding:12px;">
+        <div style="font-size:0.65rem;color:var(--muted);margin-bottom:4px;">${s.label}</div>
+        <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:300;color:var(--text);">${s.value}</div>
+      </div>`).join('');
+  }
+
+  function renderHistoryChart() {
+    const canvas = document.getElementById('finHistoryChart');
+    if (!canvas) return;
+
+    // Build last 12 months
+    const now     = new Date();
+    const labels  = [];
+    const data    = [];
+    const MONTHS  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      labels.push(MONTHS[d.getMonth()] + (i === 11 || d.getMonth() === 0 ? ' \'' + String(d.getFullYear()).slice(2) : ''));
+      const monthRev = invoices
+        .filter(inv => {
+          if (invStatus(inv) !== 'paid' || !inv.paidAt) return false;
+          const pd = new Date(inv.paidAt);
+          return pd.getFullYear() === d.getFullYear() && pd.getMonth() === d.getMonth();
+        })
+        .reduce((s, inv) => s + (inv.total || 0), 0);
+      data.push(monthRev);
+    }
+
+    if (finHistoryChart) { finHistoryChart.destroy(); finHistoryChart = null; }
+
+    const isDark    = true;
+    const accent    = '#52C483';
+    const accentDim = 'rgba(82,196,131,0.3)';
+
+    // Highlight current month bar
+    const barColors = data.map((_, i) => i === 11 ? accent : accentDim);
+
+    finHistoryChart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{ data, backgroundColor: barColors, borderRadius: 4, borderSkipped: false }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: {
+          callbacks: { label: ctx => ' $' + ctx.parsed.y.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') }
+        }},
+        scales: {
+          x: { ticks: { color: '#7a8a7e', font: { size: 9 } }, grid: { display: false } },
+          y: { ticks: { color: '#7a8a7e', font: { size: 9 },
+                callback: v => '$' + (v >= 1000 ? (v/1000).toFixed(0)+'k' : v) },
+               grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  function renderBASTable() {
+    const quarters = getBASQuarters();
+    const MONTHS   = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    const rows = quarters.map(q => {
+      const qInvs = invoices.filter(inv => {
+        if (invStatus(inv) !== 'paid' || !inv.paidAt) return false;
+        const pd = new Date(inv.paidAt);
+        return q.qMonths.some(qm => qm.month === pd.getMonth() && qm.year === pd.getFullYear());
+      });
+      const qJobs = jobs.filter(j => {
+        if (j.status !== 'complete' && j.status !== 'paid') return false;
+        if (!j.completedAt) return false;
+        const cd = new Date(j.completedAt);
+        return q.qMonths.some(qm => qm.month === cd.getMonth() && qm.year === cd.getFullYear());
+      });
+
+      const revenue = qInvs.reduce((s, i) => s + (i.total || 0), 0);
+      const gst     = revenue / 11;
+      const net     = revenue - gst;
+
+      return { ...q, revenue, gst, net, jobCount: qJobs.length };
+    });
+
+    const fmt = v => v === 0 ? '—' : '$' + v.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+    document.getElementById('histBASTable').innerHTML = `
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+        <table style="width:100%;border-collapse:collapse;font-size:0.75rem;">
+          <thead>
+            <tr style="color:var(--muted);text-align:left;">
+              <th style="padding:6px 4px;font-weight:600;min-width:70px;">Period</th>
+              <th style="padding:6px 4px;font-weight:600;text-align:right;min-width:72px;">Revenue</th>
+              <th style="padding:6px 4px;font-weight:600;text-align:right;min-width:60px;">GST</th>
+              <th style="padding:6px 4px;font-weight:600;text-align:right;min-width:60px;">Net</th>
+              <th style="padding:6px 4px;font-weight:600;text-align:right;min-width:36px;">Jobs</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r => `
+              <tr style="${r.isCurrent ? 'background:rgba(82,196,131,0.08);border-radius:6px;' : ''}border-bottom:1px solid var(--border-light);">
+                <td style="padding:8px 4px;">
+                  <div style="font-weight:600;color:${r.isCurrent ? 'var(--green-accent)' : 'var(--text)'};">${r.label} FY${r.fy}</div>
+                  <div style="font-size:0.65rem;color:var(--muted);">${r.name}${r.isCurrent ? ' · current' : ''}</div>
+                </td>
+                <td style="padding:8px 4px;text-align:right;color:var(--text);">${fmt(r.revenue)}</td>
+                <td style="padding:8px 4px;text-align:right;color:var(--amber);">${fmt(r.gst)}</td>
+                <td style="padding:8px 4px;text-align:right;color:var(--green-accent);">${fmt(r.net)}</td>
+                <td style="padding:8px 4px;text-align:right;color:var(--muted);">${r.jobCount || '—'}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
   }
 
   // ── AI Chat ─────────────────────────────────────────────────────
