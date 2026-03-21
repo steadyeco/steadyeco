@@ -1455,7 +1455,16 @@
     <span class="form-label">Delivery</span>
     <div class="toggle-group" id="deliveryGroup">
       <button class="toggle-btn active" onclick="setDelivery('dropoff')">Drop-off</button>
-      <button class="toggle-btn"        onclick="setDelivery('collection')">We Collect (+$20)</button>
+      <button class="toggle-btn"        onclick="setDelivery('collection')">We Collect</button>
+    </div>
+    <div id="deliveryZoneWrap" style="display:none;margin-top:8px;">
+      <select id="quoteDeliveryZone" onchange="updatePricePreview()" style="width:100%;background:var(--bg-component);border:1px solid var(--border-light);border-radius:10px;padding:12px;font-size:0.88rem;color:var(--text);font-family:'Inter',sans-serif;">
+        <option value="zone1">Freshwater / Edge Hill / Whitfield (+$10)</option>
+        <option value="zone2">Cairns CBD / Smithfield / Stratford / Manunda (+$20)</option>
+        <option value="zone3">Redlynch / Yorkeys Knob / Kewarra Beach (+$30)</option>
+        <option value="zone4">Trinity Beach / Clifton Beach / Palm Cove (+$40)</option>
+        <option value="zone5">Edmonton / Gordonvale / White Rock (+$50)</option>
+      </select>
     </div>
 
     <span class="form-label" id="quoteDateLabel">Preferred Pick-up Date</span>
@@ -2461,6 +2470,13 @@
   let editingCustomerId = null;
   let previousScreen    = 'dashboard';
 
+  const DELIVERY_ZONES = {
+    zone1: { fee: 10,  label: 'Freshwater / Edge Hill / Whitfield' },
+    zone2: { fee: 20,  label: 'Cairns CBD / Smithfield / Stratford / Manunda' },
+    zone3: { fee: 30,  label: 'Redlynch / Yorkeys Knob / Kewarra Beach' },
+    zone4: { fee: 40,  label: 'Trinity Beach / Clifton Beach / Palm Cove' },
+    zone5: { fee: 50,  label: 'Edmonton / Gordonvale / White Rock' },
+  };
   let qSets = 1, qJobType = 'standard', qDelivery = 'dropoff', qPayment = 'cash';
   let qMachineBrand = '', qBladeType = '';
   let jSets = 1, jJobType = 'standard', jDelivery = 'dropoff', jFromQuoteId = null;
@@ -3344,6 +3360,8 @@
     document.querySelectorAll('#bladeTypeGroup .toggle-btn').forEach(b=>b.classList.remove('active'));
     document.getElementById('quotePreferredDate').value='';
     document.getElementById('quoteDateLabel').textContent='Preferred Pick-up Date';
+    document.getElementById('deliveryZoneWrap').style.display='none';
+    if(document.getElementById('quoteDeliveryZone')) document.getElementById('quoteDeliveryZone').value='zone1';
     const sel=document.getElementById('quoteCustomerSelect');
     sel.innerHTML='<option value="">— One-off / No customer —</option>';
     customers.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;sel.appendChild(o);});
@@ -3362,6 +3380,7 @@
     const b=document.querySelectorAll('#deliveryGroup .toggle-btn');
     b[0].className='toggle-btn'+(t==='dropoff'?' active':'');
     b[1].className='toggle-btn'+(t==='collection'?' active':'');
+    document.getElementById('deliveryZoneWrap').style.display = t==='collection' ? 'block' : 'none';
     document.getElementById('quoteDateLabel').textContent = t==='collection' ? 'Collection Date' : 'Preferred Pick-up Date';
     updatePricePreview();
   }
@@ -3374,8 +3393,9 @@
       b.className='toggle-btn'+(val===t?' active':'');
     });
   }
-  function calcQuoteTotal() { const r=qJobType==='emergency'?BASE*2:BASE; return {rate:r,total:qSets*r+(qDelivery==='collection'?20:0)}; }
-  function updatePricePreview() { const {rate,total}=calcQuoteTotal(); document.getElementById('pricePreviewAmount').textContent=`$${total}`; let b=`${qSets} set${qSets>1?'s':''} × $${rate}`; if(qDelivery==='collection') b+=' + $20 delivery'; document.getElementById('pricePreviewBreakdown').textContent=b; }
+  function getDeliveryFee() { if(qDelivery!=='collection') return 0; const z=document.getElementById('quoteDeliveryZone')?.value||'zone1'; return DELIVERY_ZONES[z]?.fee||10; }
+  function calcQuoteTotal() { const r=qJobType==='emergency'?BASE*2:BASE; const d=getDeliveryFee(); return {rate:r,total:qSets*r+d,delivery:d}; }
+  function updatePricePreview() { const {rate,total,delivery}=calcQuoteTotal(); document.getElementById('pricePreviewAmount').textContent=`$${total}`; let b=`${qSets} set${qSets>1?'s':''} × $${rate}`; if(delivery) b+=` + $${delivery} collection`; document.getElementById('pricePreviewBreakdown').textContent=b; }
 
   function setQMachineBrand(brand, btn) {
     qMachineBrand = (qMachineBrand === brand) ? '' : brand;
@@ -3393,7 +3413,8 @@
     const sel=document.getElementById('quoteCustomerSelect'), customerId=sel.value||null;
     const customerName=customerId?(customers.find(x=>x.id===customerId)||{}).name||'Unknown':document.getElementById('quoteOneoffName').value.trim()||'One-off';
     const {total}=calcQuoteTotal();
-    const q={id:Date.now().toString(), ref:getNextRef(), customerId, customerName, sets:qSets, jobType:qJobType, delivery:qDelivery, total, paymentMethod:qPayment, preferredDate:document.getElementById('quotePreferredDate').value||null, machineBrand:qMachineBrand||null, bladeType:qBladeType||null, createdAt:new Date().toISOString()};
+    const deliveryZone=qDelivery==='collection'?(document.getElementById('quoteDeliveryZone')?.value||'zone1'):null;
+    const q={id:Date.now().toString(), ref:getNextRef(), customerId, customerName, sets:qSets, jobType:qJobType, delivery:qDelivery, deliveryZone, total, paymentMethod:qPayment, preferredDate:document.getElementById('quotePreferredDate').value||null, machineBrand:qMachineBrand||null, bladeType:qBladeType||null, createdAt:new Date().toISOString()};
     quotes.push(q); save(); showToast('Quote saved');
     showQuoteDetail(q.id, previousScreen);
   }
@@ -3406,7 +3427,7 @@
     document.getElementById('qdCustomer').textContent =q.customerName;
     document.getElementById('qdSets').textContent     =`${q.sets} set${q.sets>1?'s':''} (${q.sets*2} blades)`;
     document.getElementById('qdJobType').textContent  =q.jobType==='emergency'?'Emergency (2× rate)':'Standard';
-    document.getElementById('qdDelivery').textContent =q.delivery==='collection'?'Collection & delivery ($20)':'Drop-off & pick-up';
+    if(q.delivery==='collection'){const z=DELIVERY_ZONES[q.deliveryZone||'zone2'];document.getElementById('qdDelivery').textContent=`Collection & return — ${z?z.label:''}${z?' (+$'+z.fee+')':''}`;}else{document.getElementById('qdDelivery').textContent='Drop-off & pick-up';}
 
     const pdRow   = document.getElementById('qdPreferredDateRow');
     const pdLabel = document.getElementById('qdPreferredDateLabel');

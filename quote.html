@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -696,6 +697,12 @@
       letter-spacing: 0.3px;
     }
 
+    /* ── MAP ── */
+    .service-area-map-wrap { margin: 40px 0 32px; }
+    .map-caption { font-family: 'DM Sans', sans-serif; font-size: 13px; color: #7a8f76; margin-top: 12px; line-height: 1.6; }
+    .map-caption a { color: #4a9e3f; }
+    @media (max-width: 768px) { #service-map { height: 280px !important; } }
+
     /* ── REDUCED MOTION ── */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
@@ -831,6 +838,11 @@
 
   <!-- ═══ STEP 2 ═══ -->
   <div class="step" id="step2">
+
+    <div class="service-area-map-wrap">
+      <div id="service-map" style="width:100%;height:420px;border:1px solid rgba(74,158,63,0.2);"></div>
+      <p class="map-caption">Servicing a 100km radius from Cairns CBD. Regional and remote projects considered — <a href="/land-regeneration/contact">contact us</a>.</p>
+    </div>
 
     <div class="step-label">How do the blades travel?</div>
     <div class="collect-section">
@@ -1473,6 +1485,48 @@
     const dateInput = document.getElementById('custDate');
     if (dateInput) dateInput.min = new Date().toISOString().split('T')[0];
   })();
+</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/sp0=" crossorigin=""></script>
+<script>
+(function() {
+  var map = L.map('service-map', { zoomControl: true, scrollWheelZoom: false }).setView([-16.9186, 145.7781], 8);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(map);
+
+  L.circle([-16.9186, 145.7781], {
+    radius: 100000,
+    color: '#4a9e3f',
+    weight: 1.5,
+    dashArray: '6, 4',
+    fillColor: '#4a9e3f',
+    fillOpacity: 0.08
+  }).addTo(map);
+
+  var towns = [
+    { coords: [-16.9186, 145.7781], name: 'Cairns', label: 'Headquarters', hq: true },
+    { coords: [-16.4836, 145.4650], name: 'Port Douglas', label: 'Service Area', hq: false },
+    { coords: [-17.2667, 145.4833], name: 'Atherton', label: 'Service Area', hq: false },
+    { coords: [-17.5236, 146.0297], name: 'Innisfail', label: 'Service Area', hq: false },
+    { coords: [-17.0000, 145.4167], name: 'Mareeba', label: 'Service Area', hq: false }
+  ];
+
+  towns.forEach(function(t) {
+    L.circleMarker(t.coords, {
+      radius: t.hq ? 9 : 6,
+      fillColor: t.hq ? '#c8a84b' : '#4a9e3f',
+      color: t.hq ? '#c8a84b' : '#c8a84b',
+      weight: 1,
+      opacity: 1,
+      fillOpacity: 0.9
+    }).bindPopup('<b>' + t.name + '</b><br>' + t.label).addTo(map);
+  });
+
+  window.addEventListener('resize', function() { map.invalidateSize(); });
+})();
 </script>
 </body>
 </html>

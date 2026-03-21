@@ -596,39 +596,77 @@
       display: block;
     }
 
-    /* ── STATS ── */
-    #stats {
-      padding: 72px 0;
-      background: var(--bg-alt);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-    .stats-grid {
+    /* ── STATS COUNTER ── */
+    .se-stats {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      border-top: 1px solid rgba(74,158,63,0.12);
+      border-bottom: 1px solid rgba(74,158,63,0.12);
+      padding: 80px 0;
+      max-width: 1100px;
+      margin: 0 auto;
     }
-    .stat-item {
-      padding: 0 48px;
-      border-right: 1px solid var(--border);
+    .se-stats__item {
+      text-align: center;
+      padding: 0 32px;
+      border-right: 1px solid rgba(74,158,63,0.12);
     }
-    .stat-item:first-child { padding-left: 0; }
-    .stat-item:last-child { border-right: none; }
-    .stat-number {
-      font-family: var(--font-display);
-      font-size: clamp(2.5rem, 5vw, 4rem);
+    .se-stats__item:last-child { border-right: none; }
+    .se-stats__number {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 72px;
       font-weight: 300;
-      color: var(--gold);
+      color: #e8ede6;
       line-height: 1;
-      margin-bottom: 8px;
-      letter-spacing: -0.01em;
+      letter-spacing: -0.03em;
     }
-    .stat-label {
-      font-family: var(--font-body);
-      font-size: var(--label-size);
-      color: var(--muted-light);
-      letter-spacing: var(--label-spacing);
+    .se-stats__unit {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 36px;
+      color: #4a9e3f;
+      vertical-align: super;
+    }
+    .se-stats__label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      font-weight: 400;
+      color: #7a8f76;
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+    @media (max-width: 768px) {
+      .se-stats { grid-template-columns: repeat(2, 1fr); padding: 60px 24px; }
+      .se-stats__item:nth-child(2) { border-right: none; }
+      .se-stats__item:nth-child(3) { border-top: 1px solid rgba(74,158,63,0.12); border-right: 1px solid rgba(74,158,63,0.12); }
+      .se-stats__item:nth-child(4) { border-top: 1px solid rgba(74,158,63,0.12); }
+      .se-stats__number { font-size: 52px; }
+      .se-stats__unit { font-size: 26px; }
+    }
+
+    /* ── PULL QUOTE ── */
+    .pull-quote-section {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 80px 24px;
+      text-align: center;
+    }
+    .pull-quote-rule {
+      width: 40px;
+      height: 1px;
+      background: #c8a84b;
+      margin: 0 auto 32px;
+    }
+    .pull-quote {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(24px, 3vw, 32px);
+      font-style: italic;
+      font-weight: 300;
+      color: #c8a84b;
+      line-height: 1.5;
+      letter-spacing: -0.01em;
+      margin: 0 0 32px;
     }
 
     /* ── SECTIONS ── */
@@ -1468,6 +1506,26 @@
         100% { transform: translate(-50%, -50%) scale(2.2); opacity: 0; }
       }
     }
+
+    /* ── PREMIUM POLISH ── */
+
+    /* Text selection branding */
+    ::selection {
+      background: rgba(74,158,63,0.25);
+      color: #e8ede6;
+    }
+
+    /* Keyboard focus accessibility */
+    :focus-visible {
+      outline: 1px solid #4a9e3f;
+      outline-offset: 3px;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #0a0f0a; }
+    ::-webkit-scrollbar-thumb { background: rgba(74,158,63,0.4); border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: #4a9e3f; }
   </style>
   <!-- GSAP + ScrollTrigger CDN (Pillar 3) -->
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" onerror="document.body.classList.add('js-ready','no-gsap')"></script>
@@ -1559,25 +1617,25 @@
     </div>
   </section>
 
-  <!-- STATS -->
-  <div id="stats">
-    <div class="container">
-      <div class="stats-grid">
-        <div class="stat-item fade-in">
-          <div class="stat-number">$120</div>
-          <div class="stat-label">Per set — transparent, no surprises</div>
-        </div>
-        <div class="stat-item fade-in fade-in-delay-1">
-          <div class="stat-number">1–2 Days</div>
-          <div class="stat-label">Local turnaround — weeks faster than Brisbane</div>
-        </div>
-        <div class="stat-item fade-in fade-in-delay-2">
-          <div class="stat-number">7</div>
-          <div class="stat-label">Years hands-on arborist experience</div>
-        </div>
-      </div>
+  <!-- STATS COUNTER -->
+  <section class="se-stats">
+    <div class="se-stats__item fade-in">
+      <div><span class="se-stats__number" data-target="100">0</span><span class="se-stats__unit">km</span></div>
+      <p class="se-stats__label">Service Radius from Cairns</p>
     </div>
-  </div>
+    <div class="se-stats__item fade-in">
+      <div><span class="se-stats__number" data-target="24">0</span><span class="se-stats__unit">hr</span></div>
+      <p class="se-stats__label">Standard Turnaround</p>
+    </div>
+    <div class="se-stats__item fade-in">
+      <div><span class="se-stats__number" data-target="12">0</span><span class="se-stats__unit">+</span></div>
+      <p class="se-stats__label">Machine Brands Serviced</p>
+    </div>
+    <div class="se-stats__item fade-in">
+      <div><span class="se-stats__number" data-target="7">0</span><span class="se-stats__unit">yr</span></div>
+      <p class="se-stats__label">Years of Precision Work</p>
+    </div>
+  </section>
 
   <!-- SERVICES -->
   <section id="services" class="section">
@@ -1666,6 +1724,15 @@
       </div>
     </div>
   </section>
+
+  <!-- PULL QUOTE -->
+  <div class="pull-quote-section">
+    <div class="pull-quote-rule"></div>
+    <blockquote class="pull-quote">
+      "The edge that keeps FNQ's arborists moving."
+    </blockquote>
+    <div class="pull-quote-rule"></div>
+  </div>
 
   <!-- STORY — SCROLLYTELLING (desktop only, Pillar 4) -->
   <section id="story">
@@ -1863,7 +1930,7 @@
       <div class="footer-inner">
         <div class="footer-logo">Steady <span>Eco</span></div>
         <div class="footer-meta">
-          © 2026 Steady Eco Expansion &nbsp;·&nbsp; Cairns, Queensland<br />
+          © <span id="footer-year"></span> Steady Eco Expansion &nbsp;·&nbsp; Cairns, Queensland<br />
           ABN: 49 553 784 085 &nbsp;·&nbsp; steadyeco.com
         </div>
         <div class="footer-links">
@@ -2004,7 +2071,7 @@
       });
 
       reveal('.section-tag', 0.08);
-      reveal('#stats .stat-item', 0.14, 'top 85%');
+      reveal('.se-stats__item', 0.14, 'top 85%');
       reveal('#services img.fade-in', 0.08);
       reveal('.service-card', 0.15);
       reveal('.process-step', 0.13);
@@ -2289,6 +2356,31 @@
       });
     })();
 
+    // ── STATS COUNTER ANIMATION ──
+    function animateCounters() {
+      document.querySelectorAll('.se-stats__number').forEach(function(counter) {
+        var target = parseInt(counter.dataset.target);
+        var duration = 1800;
+        var start = performance.now();
+        function update(time) {
+          var elapsed = time - start;
+          var progress = Math.min(elapsed / duration, 1);
+          var eased = 1 - Math.pow(1 - progress, 3);
+          counter.textContent = Math.floor(eased * target);
+          if (progress < 1) requestAnimationFrame(update);
+          else counter.textContent = target;
+        }
+        requestAnimationFrame(update);
+      });
+    }
+    var statsSection = document.querySelector('.se-stats');
+    if (statsSection) {
+      var statsObserver = new IntersectionObserver(function(entries) {
+        if (entries[0].isIntersecting) { animateCounters(); statsObserver.disconnect(); }
+      }, { threshold: 0.3 });
+      statsObserver.observe(statsSection);
+    }
+
     const contactForm = document.querySelector('form[action*="formspree"]');
     if (contactForm) {
       contactForm.addEventListener('submit', async function(e) {
@@ -2315,6 +2407,7 @@
       });
     }
   </script>
+<script>document.getElementById('footer-year').textContent = new Date().getFullYear();</script>
 
 </body>
 </html>

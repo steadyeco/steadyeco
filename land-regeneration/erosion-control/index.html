@@ -343,7 +343,7 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <p>© 2026 Steady Eco Land Regeneration — Cairns, Far North Queensland</p>
+        <p>© <span id="footer-year"></span> Steady Eco Land Regeneration — Cairns, Far North Queensland</p>
         <p><a href="/">Also: Chipper Blade Sharpening →</a></p>
       </div>
     </div>
@@ -385,5 +385,6 @@
     }
     window.addEventListener('load', initHero);
   </script>
+<script>document.getElementById('footer-year').textContent = new Date().getFullYear();</script>
 </body>
 </html>

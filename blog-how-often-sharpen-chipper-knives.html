@@ -283,7 +283,7 @@
       <div class="footer-inner">
         <div class="footer-logo">Steady <span>Eco</span></div>
         <div class="footer-meta">
-          © 2026 Steady Eco Expansion &nbsp;·&nbsp; Cairns, Queensland<br />
+          © <span id="footer-year"></span> Steady Eco Expansion &nbsp;·&nbsp; Cairns, Queensland<br />
           ABN: 49 553 784 085 &nbsp;·&nbsp; steadyeco.com
         </div>
         <div class="footer-links">
@@ -295,6 +295,7 @@
       </div>
     </div>
   </footer>
+<script>document.getElementById('footer-year').textContent = new Date().getFullYear();</script>
 
 </body>
 </html>
