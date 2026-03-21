@@ -1473,6 +1473,12 @@
       <input type="date" id="quotePreferredDate" />
     </div>
 
+    <span class="form-label">Quote Expiry</span>
+    <div class="field">
+      <label>Expires (optional)</label>
+      <input type="date" id="quoteExpiry" />
+    </div>
+
     <span class="form-label">Payment Method</span>
     <div class="toggle-group-3" id="paymentGroup">
       <button class="toggle-btn active" onclick="setPayment('cash')">Cash</button>
@@ -1508,6 +1514,7 @@
     <div class="info-row" id="qdPreferredDateRow" style="display:none;"><span class="info-row-label" id="qdPreferredDateLabel">Pick-up Date</span><span class="info-row-value" id="qdPreferredDate"></span></div>
     <div class="info-row"><span class="info-row-label">Payment Method</span> <span class="info-row-value" id="qdPayment"></span></div>
     <div class="info-row"><span class="info-row-label">Quote Date</span>     <span class="info-row-value" id="qdDate"></span></div>
+    <div class="info-row" id="qdExpiryRow" style="display:none;"><span class="info-row-label">Expiry</span><span class="info-row-value" id="qdExpiry"></span></div>
 
     <div style="margin-top:16px; margin-bottom:4px;">
       <button class="btn-full btn-green" id="qdBookJobBtn" onclick="bookJobFromQuote()">📅 Book This Job</button>
@@ -2571,6 +2578,8 @@
 
   function showScreen(id, from) {
     previousScreen = from || 'dashboard';
+    // Clear customer search when navigating away from customers screen
+    if (id !== 'customers') { const cs = document.getElementById('customerSearch'); if (cs) cs.value = ''; }
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('screen-' + id).classList.add('active');
   }
@@ -2598,6 +2607,7 @@
     }
   }
   function showCustomersScreen() { renderCustomers(); showScreen('customers', 'dashboard'); setDockActive(''); }
+  function _clearCustomerSearch() { const el = document.getElementById('customerSearch'); if (el) el.value = ''; }
   function showQuotesScreen()    { renderQuotes();    showScreen('quotes',    'dashboard'); setDockActive(''); }
   function showJobsScreen()      { renderJobs(); showScreen('jobs', 'dashboard'); setJobsView(currentJobsView); setDockActive(''); }
   function showInvoicesScreen()  { renderInvoices();  showScreen('invoices',  'dashboard'); setDockActive('invoices'); }
@@ -2866,6 +2876,25 @@
         <div class="dash-alert-actions">
           <button class="dash-alert-btn" onclick="sendPaymentReminderSMS('${inv.id}')">Send Reminder SMS</button>
           <button class="dash-alert-btn ghost" onclick="showInvoiceDetail('${inv.id}','dashboard')">View Invoice</button>
+        </div></div>`;
+    });
+    // Expiring quotes alert (within 3 days or already expired, quote not yet booked)
+    const _today2 = new Date(); _today2.setHours(0,0,0,0);
+    const expiringQuotes = quotes.filter(q => {
+      if (!q.expiryDate || jobs.some(j => j.quoteId === q.id)) return false;
+      const exp = new Date(q.expiryDate);
+      const days = Math.ceil((exp - _today2) / 86400000);
+      return days <= 3;
+    });
+    expiringQuotes.forEach(q => {
+      const exp = new Date(q.expiryDate);
+      const days = Math.ceil((exp - _today2) / 86400000);
+      const label = days < 0 ? 'Quote expired' : (days === 0 ? 'Quote expires today' : `Quote expires in ${days} day${days!==1?'s':''}`);
+      alerts += `<div class="dash-alert">
+        <div class="dash-alert-title">📋 ${label}</div>
+        <div class="dash-alert-body">${esc(q.customerName)} · ${esc(q.ref||'')} · $${q.total}</div>
+        <div class="dash-alert-actions">
+          <button class="dash-alert-btn" onclick="showQuoteDetail('${q.id}','dashboard')">View Quote</button>
         </div></div>`;
     });
     // Step 13 — predictive prompts
@@ -3237,7 +3266,7 @@
       const last = custInvs.reduce((a,b) => new Date(a.issueDate) > new Date(b.issueDate) ? a : b);
       lastInvStr = ' · Invoiced ' + new Date(last.issueDate+'T12:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short'});
     }
-    return `<div class="customer-card" onclick="showCustomerDetail('${c.id}','${from}')">
+    return `<div class="customer-card" data-name="${esc(c.name)}" data-phone="${esc(c.phone||'')}" onclick="showCustomerDetail('${c.id}','${from}')">
       <div class="customer-avatar">${initials}</div>
       <div class="customer-info"><div class="customer-name">${esc(c.name)}</div><div class="customer-meta">${esc(meta + lastInvStr)}</div></div>
       <div class="customer-arrow">›</div>
@@ -3362,6 +3391,8 @@
     document.getElementById('quoteDateLabel').textContent='Preferred Pick-up Date';
     document.getElementById('deliveryZoneWrap').style.display='none';
     if(document.getElementById('quoteDeliveryZone')) document.getElementById('quoteDeliveryZone').value='zone1';
+    const _expD = new Date(); _expD.setDate(_expD.getDate() + 30);
+    document.getElementById('quoteExpiry').value = _expD.toISOString().split('T')[0];
     const sel=document.getElementById('quoteCustomerSelect');
     sel.innerHTML='<option value="">— One-off / No customer —</option>';
     customers.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;sel.appendChild(o);});
@@ -3414,7 +3445,7 @@
     const customerName=customerId?(customers.find(x=>x.id===customerId)||{}).name||'Unknown':document.getElementById('quoteOneoffName').value.trim()||'One-off';
     const {total}=calcQuoteTotal();
     const deliveryZone=qDelivery==='collection'?(document.getElementById('quoteDeliveryZone')?.value||'zone1'):null;
-    const q={id:Date.now().toString(), ref:getNextRef(), customerId, customerName, sets:qSets, jobType:qJobType, delivery:qDelivery, deliveryZone, total, paymentMethod:qPayment, preferredDate:document.getElementById('quotePreferredDate').value||null, machineBrand:qMachineBrand||null, bladeType:qBladeType||null, createdAt:new Date().toISOString()};
+    const q={id:Date.now().toString(), ref:getNextRef(), customerId, customerName, sets:qSets, jobType:qJobType, delivery:qDelivery, deliveryZone, total, paymentMethod:qPayment, preferredDate:document.getElementById('quotePreferredDate').value||null, expiryDate:document.getElementById('quoteExpiry').value||null, machineBrand:qMachineBrand||null, bladeType:qBladeType||null, createdAt:new Date().toISOString()};
     quotes.push(q); save(); showToast('Quote saved');
     showQuoteDetail(q.id, previousScreen);
   }
@@ -3440,6 +3471,19 @@
     const payLabels = { cash:'Cash', transfer:'Bank Transfer', card:'Card' };
     document.getElementById('qdPayment').textContent = payLabels[q.paymentMethod] || 'Cash';
     document.getElementById('qdDate').textContent    = new Date(q.createdAt).toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
+    // Expiry row
+    const expRow = document.getElementById('qdExpiryRow');
+    if (q.expiryDate) {
+      const exp = new Date(q.expiryDate);
+      const today = new Date(); today.setHours(0,0,0,0);
+      const isExpired = exp < today;
+      const daysLeft = Math.ceil((exp - today) / 86400000);
+      const label = isExpired ? 'Expired' : (daysLeft === 0 ? 'Expires today' : `Expires in ${daysLeft} day${daysLeft!==1?'s':''}`);
+      const color = isExpired ? 'var(--danger)' : (daysLeft <= 3 ? 'var(--amber)' : 'var(--text-secondary)');
+      if (expRow) { expRow.style.display='flex'; document.getElementById('qdExpiry').textContent=label; document.getElementById('qdExpiry').style.color=color; }
+    } else {
+      if (expRow) expRow.style.display='none';
+    }
     document.getElementById('qdBookJobBtn').style.display=jobs.some(j=>j.quoteId===q.id)?'none':'block';
     document.getElementById('qdSmsText').textContent  =buildSMS(q);
     document.getElementById('qdEmailText').textContent=buildEmail(q);
@@ -5404,6 +5448,7 @@ Be direct, conversational, and specific. Sam reads this on his phone between job
   const SB_SETTINGS          = 'sb_settings';
   const SB_LAST_RESET_MONTH  = 'sb_last_reset_month';
   const SB_IMPORT_HASHES     = 'sb_import_hashes';
+  const SB_MERCHANT_LEARNING = 'sb_merchant_learning';
 
   const SB_ALL_KEYS = [
     SB_INCOME_SOURCES, SB_ENVELOPES, SB_ENVELOPE_GROUPS, SB_TRANSACTIONS,
@@ -6104,18 +6149,33 @@ Be direct, conversational, and specific. Sam reads this on his phone between job
   // ── Westpac CSV Import ────────────────────────────────────────
   let _csvRows = [];
 
+  function normalizeNarration(narration) {
+    return narration
+      .toUpperCase()
+      .replace(/\b\d{6,}\b/g, '')
+      .replace(/\bREF\s*[:#]?\s*\S+/gi, '')
+      .replace(/\bTXN\s*[:#]?\s*\S+/gi, '')
+      .replace(/\d{1,2}\/\d{1,2}\s+\d{2}:\d{2}/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
   const CSV_RULES = [
-    { match: ['WOOLWORTHS','COLES','IGA ','ALDI','FOODWORKS','SPAR','HARRIS FARM','FRESH FOOD MART'], name: 'Groceries' },
-    { match: ['BP ','CALTEX','SHELL','AMPOL','UNITED PETROL','7-ELEVEN','PUMA ENERGY','LIBERTY OIL','COLES EXPRESS','METRO PETRO'], name: 'Fuel' },
-    { match: ['ERGON','ENERGEX','ORIGIN ENERGY','AGL ','SYNERGY ENERGY','SIMPLY ENERGY','POWER AND WATER'], name: 'Utilities' },
-    { match: ['MCDONALDS','KFC','SUBWAY','DOMINOS','HUNGRY JACKS','PIZZA HUT','UBER* EATS','DOORDASH','MENULOG','DELIVEROO','CAFE ','COFFEE','RESTAURANT','NOODLE','SUSHI','GRILL','BAKERY','TAKEAWAY'], name: 'Dining Out' },
-    { match: ['NETFLIX','SPOTIFY','APPLE.COM','APPLE ITUNES','GOOGLE PLAY','AMAZON PRIME','DISNEY+','FOXTEL','EVENT CINEMAS','VILLAGE CINEMA','STEAM ','ADOBE '], name: 'Entertainment' },
-    { match: ['RENT ','REAL ESTATE','PROPERTY MGMT','LANDLORD','STRATA'], name: 'Rent' },
-    { match: ['RACQ','NRMA','BUPA ','MEDIBANK','HCF ','NIB ','INSURANCE','ALLIANZ'], name: 'Insurance' },
-    { match: ['GYM','SNAP FITNESS','ANYTIME FITNESS','GOODLIFE','YOGA','F45','CROSSFIT'], name: 'Health & Fitness' },
-    { match: ['CHEMIST','PHARMACY','PRICELINE','TERRY WHITE','AMCAL','BLOOMS THE'], name: 'Health' },
-    { match: ['REPCO','SUPERCHEAP','AUTO PARTS','MIDAS','ULTRA TUNE','CAR WASH'], name: 'Car' },
-    { match: ['KMART','TARGET','BIG W','MYER','DAVID JONES','COTTON ON','H&M ','UNIQLO','RIVERS'], name: 'Clothing' },
+    { match: ['WOOLWORTHS','WOOLIES','COLES','IGA','ALDI','FOODWORKS','SPAR','HARRIS FARM','FRESH FOOD MART','DRAKES','RITCHIES'], name: 'Groceries' },
+    { match: ['BP ','BP AUSTRALIA','CALTEX','SHELL','AMPOL','UNITED PETROL','7-ELEVEN','PUMA ENERGY','LIBERTY OIL','COLES EXPRESS','METRO PETRO','OTR ','VIVA ENERGY'], name: 'Fuel' },
+    { match: ['ERGON','ENERGEX','ORIGIN ENERGY','AGL ','SYNERGY','SIMPLY ENERGY','POWER AND WATER','ACTEW','ENDEAVOUR ENERGY'], name: 'Utilities' },
+    { match: ['MCDONALDS','KFC ','SUBWAY','DOMINOS','HUNGRY JACKS','PIZZA HUT','UBER* EATS','UBEREATS','DOORDASH','MENULOG','DELIVEROO','CAFE ','COFFEE','RESTAURANT','NOODLE','SUSHI','GRILL','BAKERY','TAKEAWAY','MACCAS','RED ROOSTER','OPORTO','NANDOS'], name: 'Dining Out' },
+    { match: ['NETFLIX','SPOTIFY','APPLE.COM','APPLE ITUNES','ITUNES.COM','GOOGLE PLAY','AMAZON PRIME','DISNEY+','FOXTEL','BINGE','STAN ','PARAMOUNT','EVENT CINEMAS','VILLAGE CINEMA','STEAM ','ADOBE ','MICROSOFT','YOUTUBE'], name: 'Entertainment' },
+    { match: ['RENT ','REAL ESTATE','PROPERTY MGMT','LANDLORD','STRATA','RAY WHITE','LJ HOOKER','HARCOURTS'], name: 'Rent' },
+    { match: ['RACQ','NRMA','BUPA ','MEDIBANK','HCF ','NIB ','INSURANCE','ALLIANZ','QBE ','SUNCORP','YOUI','BUDGET DIRECT'], name: 'Insurance' },
+    { match: ['GYM','SNAP FITNESS','ANYTIME FITNESS','GOODLIFE','YOGA','F45','CROSSFIT','PLANET FITNESS','JETTS'], name: 'Health & Fitness' },
+    { match: ['CHEMIST','PHARMACY','PRICELINE','TERRY WHITE','AMCAL','BLOOMS THE','DISCOUNT DRUG','GUARDIAN PHARMACY'], name: 'Health' },
+    { match: ['REPCO','SUPERCHEAP AUTO','AUTOPRO','MIDAS','ULTRA TUNE','CAR WASH','AUTOZONE','BURSON','BAPCOR'], name: 'Car' },
+    { match: ['KMART','TARGET','BIG W','MYER','DAVID JONES','COTTON ON','H&M ','UNIQLO','RIVERS','BEST & LESS','LOWES','JEANSWEST'], name: 'Clothing' },
+    { match: ['BUNNINGS','MITRE 10','TOTAL TOOLS','SYDNEY TOOLS','TOOLS','HARDWARE','WORK GEAR','WORKWEAR','PROTECTOR'], name: 'Business Expenses' },
+    { match: ['TELSTRA','OPTUS','VODAFONE','BOOST MOBILE','AMAYSIM','ALDImobile','BELONG ','TPG ','AUSSIE BB'], name: 'Phone & Internet' },
+    { match: ['WOOLWORTHS METRO','BWS ','DAN MURPHY','LIQUORLAND','FIRST CHOICE','BOTTLE-O'], name: 'Dining Out' },
+    { match: ['TRANSFER','PAYROLL','SALARY','WAGE','INCOME'], name: 'Income' },
   ];
 
   function csvAutoMatch(narration, envelopes) {
@@ -6131,6 +6191,25 @@ Be direct, conversational, and specific. Sam reads this on his phone between job
       if (up.includes(env.name.toUpperCase())) return env.id;
     }
     return '';
+  }
+
+  function learnMerchantMatch(narration, envelopeId) {
+    const learning = sbLoad(SB_MERCHANT_LEARNING, {});
+    const key = normalizeNarration(narration).slice(0, 60);
+    if (key) { learning[key] = envelopeId; sbSave(SB_MERCHANT_LEARNING, learning); }
+  }
+
+  function csvAutoMatchWithLearning(narration, envelopes) {
+    // Check learned patterns first
+    const learning = sbLoad(SB_MERCHANT_LEARNING, {});
+    const norm = normalizeNarration(narration);
+    const key = norm.slice(0, 60);
+    if (learning[key]) {
+      const env = envelopes.find(e => e.id === learning[key]);
+      if (env) return env.id;
+    }
+    // Fall back to rules
+    return csvAutoMatch(narration, envelopes);
   }
 
   // Real SHA-256 digest — opaque hex string, reveals nothing about the transaction
@@ -6210,7 +6289,7 @@ Be direct, conversational, and specific. Sam reads this on his phone between job
     const hashes = await Promise.all(rows.map(r => csvRowHash(r)));
     _csvRows = rows.map((r, i) => ({
       ...r,
-      envelope_id: r.type === 'expense' ? csvAutoMatch(r.narration, envelopes) : '',
+      envelope_id: r.type === 'expense' ? csvAutoMatchWithLearning(r.narration, envelopes) : '',
       hash:        hashes[i],
       isDupe:      hashSet.has(hashes[i]),
       selected:    !hashSet.has(hashes[i])
@@ -6275,7 +6354,10 @@ Be direct, conversational, and specific. Sam reads this on his phone between job
   }
 
   function csvSetEnv(el) {
-    _csvRows[parseInt(el.dataset.idx)].envelope_id = el.value;
+    const idx = parseInt(el.dataset.idx);
+    _csvRows[idx].envelope_id = el.value;
+    if (el.value) learnMerchantMatch(_csvRows[idx].narration, el.value);
+    updateCsvBtn();
   }
 
   function updateCsvBtn() {
