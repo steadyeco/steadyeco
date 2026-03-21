@@ -2200,7 +2200,7 @@
       'raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveKey']
     );
     return crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt, iterations: 200000, hash: 'SHA-256' },
+      { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
       keyMaterial,
       { name: 'AES-GCM', length: 256 },
       false, ['encrypt', 'decrypt']
@@ -3582,7 +3582,7 @@
       'raw', new TextEncoder().encode('steadyeco-pin:' + pin), 'PBKDF2', false, ['deriveBits']
     );
     const bits = await crypto.subtle.deriveBits(
-      { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+      { name: 'PBKDF2', salt, iterations: 50000, hash: 'SHA-256' },
       keyMaterial, 256
     );
     return btoa(String.fromCharCode(...new Uint8Array(bits)));
@@ -3596,12 +3596,20 @@
       document.getElementById('pinSubtitle').textContent = 'Create your 4-digit Access PIN';
       return;
     }
-    // Check active session
+    // Check active session — only honour it if cryptoKey is already in memory
+    // (meaning verifyPin already ran in this JS context). On iOS PWA, sessionStorage
+    // is wiped on every cold launch so this block is normally skipped entirely.
+    // If cryptoKey is null the session token is stale — fall through to PIN entry.
     const unlocked = sessionStorage.getItem('se_unlocked');
     const unlockTime = parseInt(sessionStorage.getItem('se_unlock_time') || '0');
-    if (unlocked === '1' && (Date.now() - unlockTime) < INACTIVITY_MS) {
+    if (unlocked === '1' && (Date.now() - unlockTime) < INACTIVITY_MS && cryptoKey) {
       unlockApp();
       return;
+    }
+    // Stale session token without a live key — clear it so we don't loop
+    if (unlocked === '1') {
+      sessionStorage.removeItem('se_unlocked');
+      sessionStorage.removeItem('se_unlock_time');
     }
     // Check lockout
     const lockout = parseInt(localStorage.getItem(PIN_LOCKOUT) || '0');
@@ -3619,7 +3627,10 @@
   function unlockApp() {
     sessionStorage.setItem('se_unlocked', '1');
     sessionStorage.setItem('se_unlock_time', Date.now().toString());
-    document.getElementById('pin-screen').classList.add('hidden');
+    const pinScreen = document.getElementById('pin-screen');
+    pinScreen.classList.add('hidden');
+    // Force iOS layout engine to reflow immediately after display:none
+    void document.body.offsetHeight;
     localStorage.setItem(PIN_ATTEMPTS, '0');
     resetInactivityTimer();
     // Show dashboard immediately — don't wait for async chain
@@ -3687,9 +3698,23 @@
   document.addEventListener('touchstart', () => { if (!document.getElementById('pin-screen').classList.contains('hidden')) return; resetInactivityTimer(); }, { passive: true });
   document.addEventListener('click',      () => { if (!document.getElementById('pin-screen').classList.contains('hidden')) return; resetInactivityTimer(); }, { passive: true });
 
-  // Lock immediately when app is backgrounded (switched away on iPhone)
+  // Lock when app is backgrounded — but only after a 30-second grace period.
+  // iOS Safari fires visibilitychange=hidden for even brief app switches (notification
+  // pull-down, accidental home swipe), which would lock the user out mid-use.
+  // 30 seconds: long enough for accidental switches, short enough to protect data.
+  let _visibilityHiddenAt = 0;
+  let _visibilityLockTimer = null;
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') { lockApp(); }
+    if (document.visibilityState === 'hidden') {
+      _visibilityHiddenAt = Date.now();
+      _visibilityLockTimer = setTimeout(() => {
+        // Only lock if still hidden after grace period
+        if (document.visibilityState === 'hidden') { lockApp(); }
+      }, 30000);
+    } else {
+      // App came back to foreground — cancel the pending lock
+      clearTimeout(_visibilityLockTimer);
+    }
   });
 
   // Detect new website enquiries in real time when app is open in the same browser as the quote form
