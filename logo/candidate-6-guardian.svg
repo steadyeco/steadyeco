@@ -1,25 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"
      aria-label="Steady Eco — The Cassowary Mark">
   <!-- ═══════════════════════════════════════════
-       CANDIDATE 1 — OBSIDIAN
-       "One colour. One form. The purest expression."
+       CANDIDATE 6 — GUARDIAN
+       "The bird carries the seed. The cassowary IS the regeneration."
 
-       Pure monochrome cassowary silhouette.
-       Source: PhyloPic Casuarius casuarius (T. Michael Keesey)
-       License: Creative Commons Public Domain Mark 1.0
-       Recoloured to #e8ede6 (Steady Eco off-white) on #0a0f0a
+       Full cassowary silhouette with a leaf/seed negative space
+       cut from the body. The FedEx arrow moment — hidden meaning
+       inside the mark. The bird contains the restoration.
 
-       Facing LEFT — looking toward the future.
-
-       AT 16px: White vertical bird form. Casque peak visible.
-       AT 32px: Full cassowary silhouette readable.
+       AT 32px: leaf is a subtle lighter area inside the body
+       AT 128px: clearly a leaf shape. Magic.
+       AT 512px: breathtaking. The conversation piece.
        ═══════════════════════════════════════════ -->
 
   <rect id="se-bg" width="512" height="512" rx="72" fill="#0a0f0a"/>
 
-  <!-- Mirrored horizontally: scale(-0.028, -0.028) flips left-right -->
-  <g id="se-cassowary" transform="translate(437, 488) scale(-0.028, -0.028)">
-    <path id="se-body" fill="#e8ede6" d="M2310 15336 c-241 -86 -513 -269 -750 -506 -147 -147 -229 -251 -366
+  <!-- Full cassowary body in green -->
+  <g id="se-body-group" transform="translate(75, 488) scale(0.028, -0.028)">
+    <path id="se-body" fill="#4a9e3f" d="M2310 15336 c-241 -86 -513 -269 -750 -506 -147 -147 -229 -251 -366
 -465 -49 -76 -113 -165 -142 -197 -92 -99 -237 -165 -457 -208 -201 -40 -384
 -119 -476 -207 -63 -60 -127 -168 -116 -197 17 -43 186 -75 562 -106 307 -25
 379 -35 477 -66 107 -34 331 -143 531 -257 402 -232 472 -305 484 -510 5 -74
@@ -109,4 +107,35 @@
 -105 219 -256 403 -455 558 -81 62 -111 92 -128 126 -26 55 -62 213 -103 460
 -45 270 -74 365 -127 412 -57 51 -143 60 -243 24z"/>
   </g>
+
+  <!-- CASQUE — gold overlay -->
+  <g transform="translate(75, 488) scale(0.028, -0.028)">
+    <clipPath id="casque-area">
+      <rect x="5000" y="13500" width="6000" height="3000"/>
+    </clipPath>
+    <path id="se-casque" fill="#c8a84b" clip-path="url(#casque-area)" d="M2310 15336 c-241 -86 -513 -269 -750 -506 -147 -147 -229 -251 -366
+-465 -49 -76 -113 -165 -142 -197 -92 -99 -237 -165 -457 -208 -201 -40 -384
+-119 -476 -207 -63 -60 -127 -168 -116 -197 17 -43 186 -75 562 -106 307 -25
+379 -35 477 -66 107 -34 331 -143 531 -257 402 -232 472 -305 484 -510 5 -74
+2 -106 -15 -167 -12 -41 -28 -118 -37 -170 -9 -52 -25 -113 -35 -135 -12 -25
+-19 -58 -18 -86 2 -37 -3 -52 -24 -78 -15 -17 -30 -48 -33 -69 -7 -49 -81
+-271 -173 -517z"/>
+  </g>
+
+  <!-- THE LEAF — negative space inside the body
+       A simple double-curve leaf (two cubic Bézier arcs)
+       Centred within the body mass area
+       Width: ~25% of body, Height: ~40% of body
+       Leaf tip points upward -->
+  <path id="se-leaf" fill="#0a0f0a"
+        d="M 230,290
+           C 215,320 215,355 230,380
+           C 238,392 248,395 255,380
+           C 265,355 265,320 255,290
+           C 248,278 238,278 230,290
+           Z"/>
+
+  <!-- Leaf vein — single thin centre line -->
+  <line id="se-leaf-vein" x1="243" y1="285" x2="243" y2="390"
+        stroke="#4a9e3f" stroke-width="0.8" opacity="0.3"/>
 </svg>

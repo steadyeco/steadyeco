@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- CANDIDATE 3: THE MONOGRAM — S with casque
+       The S letterform becomes the cassowary's neck.
+       Gold casque rises from the top terminal. -->
+  <rect width="512" height="512" rx="72" fill="#0a0f0a"/>
+
+  <!-- The S — thick, elegant, Cormorant-inspired curves -->
+  <path d="
+    M 330,165
+    C 325,128 298,100 256,95
+    C 210,95 180,118 180,155
+    C 180,195 210,215 250,230
+    L 275,240
+    C 325,258 350,282 350,325
+    C 350,378 310,415 256,420
+    C 205,425 175,400 168,365"
+    fill="none" stroke="#4a9e3f" stroke-width="42"
+    stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Top serif -->
+  <line x1="315" y1="165" x2="350" y2="165"
+        stroke="#4a9e3f" stroke-width="14" stroke-linecap="round"/>
+  <!-- Bottom serif -->
+  <line x1="150" y1="365" x2="185" y2="365"
+        stroke="#4a9e3f" stroke-width="14" stroke-linecap="round"/>
+
+  <!-- THE CASQUE — gold, rising from the S like a crown
+       Uses the real cassowary casque shape from the SVGRepo icon,
+       scaled and positioned at the top of the S -->
+  <g transform="translate(280, 60) scale(1.8) rotate(-15)">
+    <path d="M 0,55 C -2,48 -3,38 -1,28 C 0,20 3,12 8,6
+             C 12,1 18,-1 23,0 C 28,2 30,8 30,15
+             C 30,22 28,32 24,40 C 20,48 15,53 10,55 Z"
+          fill="#c8a84b"/>
+  </g>
+
+  <!-- Eye — where casque meets the S -->
+  <circle cx="322" cy="140" r="6" fill="#c8a84b"/>
+  <circle cx="322" cy="140" r="3" fill="#0a0f0a"/>
+</svg>

@@ -1,25 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"
-     aria-label="Steady Eco — The Cassowary Mark">
-  <!-- ═══════════════════════════════════════════
-       CANDIDATE 1 — OBSIDIAN
-       "One colour. One form. The purest expression."
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- CANDIDATE 2: THE ANCIENT — Real Southern Cassowary silhouette
+       Source: PhyloPic by T. Michael Keesey (Public Domain CC0)
+       Species: Casuarius casuarius johnsonii
+       Full body, authentic proportions, gold casque highlight -->
+  <rect width="512" height="512" rx="72" fill="#0a0f0a"/>
 
-       Pure monochrome cassowary silhouette.
-       Source: PhyloPic Casuarius casuarius (T. Michael Keesey)
-       License: Creative Commons Public Domain Mark 1.0
-       Recoloured to #e8ede6 (Steady Eco off-white) on #0a0f0a
+  <!-- Subtle circular container -->
+  <circle cx="256" cy="256" r="225" fill="none" stroke="rgba(74,158,63,0.15)" stroke-width="1"/>
 
-       Facing LEFT — looking toward the future.
-
-       AT 16px: White vertical bird form. Casque peak visible.
-       AT 32px: Full cassowary silhouette readable.
-       ═══════════════════════════════════════════ -->
-
-  <rect id="se-bg" width="512" height="512" rx="72" fill="#0a0f0a"/>
-
-  <!-- Mirrored horizontally: scale(-0.028, -0.028) flips left-right -->
-  <g id="se-cassowary" transform="translate(437, 488) scale(-0.028, -0.028)">
-    <path id="se-body" fill="#e8ede6" d="M2310 15336 c-241 -86 -513 -269 -750 -506 -147 -147 -229 -251 -366
+  <!-- THE CASSOWARY — real vector silhouette, transformed to fit -->
+  <g transform="translate(130, 475) scale(0.031, -0.031)">
+    <path fill="#4a9e3f" d="M2310 15336 c-241 -86 -513 -269 -750 -506 -147 -147 -229 -251 -366
 -465 -49 -76 -113 -165 -142 -197 -92 -99 -237 -165 -457 -208 -201 -40 -384
 -119 -476 -207 -63 -60 -127 -168 -116 -197 17 -43 186 -75 562 -106 307 -25
 379 -35 477 -66 107 -34 331 -143 531 -257 402 -232 472 -305 484 -510 5 -74
@@ -108,5 +99,12 @@
 74 54 265 33 269 51 365 73 398 15 22 18 48 17 186 0 276 -42 492 -128 671
 -105 219 -256 403 -455 558 -81 62 -111 92 -128 126 -26 55 -62 213 -103 460
 -45 270 -74 365 -127 412 -57 51 -143 60 -243 24z"/>
+  </g>
+
+  <!-- CASQUE HIGHLIGHT — gold overlay on the casque area -->
+  <g transform="translate(130, 475) scale(0.031, -0.031)">
+    <!-- Casque region approximation — top of the head -->
+    <circle cx="8500" cy="14800" r="600" fill="#c8a84b" opacity="0.9"/>
+    <ellipse cx="8200" cy="15100" rx="400" ry="250" fill="#c8a84b" opacity="0.7"/>
   </g>
 </svg>

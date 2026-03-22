@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- ═══════════════════════════════════════════════════
+       THE CROWN — Version B (RECOMMENDED)
+       Geometric primitives only. No freehand paths.
+
+       CONSTRUCTION:
+       • Casque: tilted ellipse, rx:ry = 1:2.618 (golden²)
+       • Head: circle, r = rx × 1.618 (golden ratio of casque width)
+       • Beak: right-pointing triangle (polygon)
+       • Eye: concentric circles (negative space)
+       • Neck: rounded rect
+       • Forward lean: 12° on casque
+
+       AT 16px: Gold oval above green circle with dark eye dot.
+       Reads as "crowned creature looking at you." Not a blob.
+       ═══════════════════════════════════════════════════ -->
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="72" fill="#0a0f0a"/>
+
+  <!-- NECK — grounds the mark, green column -->
+  <rect x="238" y="370" width="44" height="60" rx="18"
+        fill="#4a9e3f" opacity="0.45"/>
+
+  <!-- HEAD — green circle. r = 52 × 1.618 ≈ 84 (capped for balance) -->
+  <circle cx="262" cy="340" r="60" fill="#4a9e3f"/>
+
+  <!-- BEAK — clean triangle extending right -->
+  <polygon points="315,330 375,345 315,355" fill="#4a9e3f"/>
+
+  <!-- BEAK edge highlight — the "edge" that connects to sharpening -->
+  <line x1="315" y1="330" x2="375" y2="345"
+        stroke="#4a9e3f" stroke-width="1" opacity="0.6"/>
+
+  <!-- THE CASQUE — gold tilted ellipse. The crown. The signature. -->
+  <ellipse cx="258" cy="210" rx="52" ry="136"
+           fill="#c8a84b"
+           transform="rotate(-12, 258, 210)"/>
+
+  <!-- Casque inner depth -->
+  <ellipse cx="256" cy="213" rx="34" ry="120"
+           fill="#0a0f0a" opacity="0.1"
+           transform="rotate(-12, 256, 213)"/>
+
+  <!-- EYE — the mark looks back at you -->
+  <circle cx="280" cy="332" r="9" fill="#0a0f0a"/>
+  <circle cx="282" cy="330" r="3" fill="#c8a84b" opacity="0.5"/>
+
+  <!-- Wattle hint — single subtle stroke -->
+  <line x1="245" y1="365" x2="242" y2="395"
+        stroke="#7a8f76" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+</svg>

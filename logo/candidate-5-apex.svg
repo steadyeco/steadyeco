@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"
+     aria-label="Steady Eco — The Cassowary Mark">
+  <!-- ═══════════════════════════════════════════
+       CANDIDATE 5 — APEX
+       "We don't need to prove anything. The mark speaks."
+
+       Three elements. Three meanings.
+       Vertical bar = strength, growth, the body
+       Gold parallelogram = the casque, the crown
+       Horizontal bar = the dagger claw, the edge, the blade
+
+       Construction: pure rectangles and one polygon.
+       ═══════════════════════════════════════════ -->
+
+  <rect id="se-bg" width="512" height="512" rx="72" fill="#0a0f0a"/>
+
+  <!-- THE VERTICAL BODY — green rectangle, rounded top -->
+  <rect id="se-body" x="220" y="130" width="72" height="310"
+        rx="6" ry="6" fill="#4a9e3f"/>
+
+  <!-- THE CASQUE — gold parallelogram, forward-leaning -->
+  <polygon id="se-casque" points="238,130 256,30 272,42 260,130"
+           fill="#c8a84b"/>
+
+  <!-- THE DAGGER CLAW — horizontal bar, the edge -->
+  <rect id="se-claw" x="140" y="434" width="80" height="6"
+        rx="3" fill="#4a9e3f"/>
+
+  <!-- Claw tip — tiny triangle for blade quality -->
+  <polygon id="se-claw-tip" points="140,434 132,437 140,440"
+           fill="#4a9e3f"/>
+</svg>

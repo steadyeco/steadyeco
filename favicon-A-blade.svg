@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- ═══════════════════════════════════════════════════
+       THE BLADE — Version A
+       Built from geometric primitives, NOT freehand paths.
+
+       CONSTRUCTION:
+       • Primary shape: tilted ellipse (golden ratio aspect 1:2.618)
+       • Inner cut: same ellipse, slightly smaller, background fill
+       • Forward lean: 12° rotation
+       • Proportions: rx=48, ry=126 (ratio ≈ 1:2.625 ≈ golden²)
+
+       AT 16px: A gold blade tilted forward on dark. Clean. Bold.
+       ═══════════════════════════════════════════════════ -->
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="72" fill="#0a0f0a"/>
+
+  <!-- THE CASQUE — one tilted ellipse. Pure geometry. -->
+  <ellipse cx="260" cy="232" rx="52" ry="136"
+           fill="#c8a84b"
+           transform="rotate(-12, 260, 232)"/>
+
+  <!-- Inner depth — same shape, smaller, background tinted -->
+  <ellipse cx="258" cy="235" rx="32" ry="118"
+           fill="#0a0f0a" opacity="0.12"
+           transform="rotate(-12, 258, 235)"/>
+</svg>

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- 32x32 optimized — simplified silhouette, essential gesture only -->
+
+  <!-- Dark background -->
+  <rect width="32" height="32" rx="5" fill="#0a0f0a"/>
+
+  <!-- Subtle circular container -->
+  <circle cx="16" cy="16" r="14" fill="none"
+          stroke="rgba(74,158,63,0.25)" stroke-width="0.5"/>
+
+  <!-- BODY — compact boulder shape -->
+  <ellipse cx="16" cy="18" rx="8" ry="6" fill="#4a9e3f"/>
+
+  <!-- NECK — upright column -->
+  <line x1="14" y1="13" x2="14" y2="8"
+        stroke="#4a9e3f" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- HEAD -->
+  <circle cx="14" cy="6.5" r="2.5" fill="#4a9e3f"/>
+
+  <!-- CASQUE — gold crown -->
+  <path d="M 13,6.5 L 12,3.5 L 13.5,2 L 15.5,3 L 15,5.5 Z"
+        fill="#c8a84b"/>
+
+  <!-- EYE -->
+  <circle cx="13" cy="6" r="0.7" fill="#0a0f0a"/>
+
+  <!-- LEFT LEG with dagger claw -->
+  <line x1="13" y1="23" x2="12" y2="28"
+        stroke="#4a9e3f" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Dagger claw -->
+  <line x1="12" y1="28" x2="15" y2="29"
+        stroke="#c8a84b" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- RIGHT LEG — raised -->
+  <line x1="19" y1="22" x2="20" y2="26"
+        stroke="#4a9e3f" stroke-width="1.5" stroke-linecap="round"/>
+
+</svg>

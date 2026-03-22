@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- 32x32 optimized — simplified for small rendering -->
+
+  <!-- Dark background -->
+  <rect width="32" height="32" rx="5" fill="#0a0f0a"/>
+
+  <!-- CASQUE — bold gold wedge, forward lean -->
+  <path d="M 13,18 L 15,6 C 15.5,4.5 16.5,3.5 17,3 L 17.5,2.8
+           C 18,2.7 18.5,3 18.7,3.5 L 19.5,6 L 20.5,18 Z"
+        fill="#c8a84b"/>
+
+  <!-- NECK — gold connection -->
+  <line x1="17" y1="18" x2="17" y2="21"
+        stroke="#c8a84b" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- BODY FEATHERS — two green strokes (simplified from 3) -->
+  <line x1="11" y1="23" x2="23" y2="23"
+        stroke="#4a9e3f" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="13" y1="26" x2="21" y2="26"
+        stroke="#4a9e3f" stroke-width="1.5" stroke-linecap="round"/>
+
+</svg>

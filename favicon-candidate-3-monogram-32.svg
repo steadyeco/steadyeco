@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- 32x32 optimized — S + casque, essential forms only -->
+
+  <!-- Dark background -->
+  <rect width="32" height="32" rx="5" fill="#0a0f0a"/>
+
+  <!-- THE S — simplified, thick strokes for readability -->
+  <path d="
+    M 20,9
+    C 19,7 17,5.5 15.5,5.5
+    C 13.5,5.5 12,7 12,9
+    C 12,11 13.5,12 15.5,13
+    L 17.5,14
+    C 20,15 21.5,16.5 21.5,19
+    C 21.5,22 19.5,23.5 16.5,24
+    C 14,24.5 12,23 11.5,21"
+    fill="none" stroke="#4a9e3f" stroke-width="2.5"
+    stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- CASQUE — gold accent from top of S -->
+  <path d="M 19.5,9 L 19,6.5 C 19,5.5 19.5,4 20.5,3
+           L 21.5,2.5 C 22,2.5 22.5,3 22.5,3.5
+           L 22,5.5 L 21,8.5 Z"
+        fill="#c8a84b"/>
+
+</svg>

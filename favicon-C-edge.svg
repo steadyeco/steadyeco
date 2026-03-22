@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- ═══════════════════════════════════════════════════
+       THE EDGE — Version C
+       Casque + beak line. Crown meets blade.
+
+       CONSTRUCTION:
+       • Casque: tilted ellipse (same as A and B)
+       • Head contour: circle arc (stroke only, no fill)
+       • Beak: single line extending right — THE edge
+       • Eye: gold dot on green arc
+
+       AT 16px: Gold blade with a thin horizontal line.
+       Crown and edge. Power and precision.
+       ═══════════════════════════════════════════════════ -->
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="72" fill="#0a0f0a"/>
+
+  <!-- HEAD CONTOUR — circle arc, stroke only -->
+  <circle cx="262" cy="345" r="55"
+          fill="none" stroke="#4a9e3f" stroke-width="3"
+          stroke-dasharray="173 173" stroke-dashoffset="-30"/>
+
+  <!-- BEAK LINE — the edge. Single clean stroke. -->
+  <line x1="312" y1="340" x2="385" y2="336"
+        stroke="#4a9e3f" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- THE CASQUE — gold tilted ellipse -->
+  <ellipse cx="258" cy="210" rx="52" ry="136"
+           fill="#c8a84b"
+           transform="rotate(-12, 258, 210)"/>
+
+  <!-- Casque depth -->
+  <ellipse cx="256" cy="213" rx="34" ry="120"
+           fill="#0a0f0a" opacity="0.1"
+           transform="rotate(-12, 256, 213)"/>
+
+  <!-- EYE — gold dot -->
+  <circle cx="282" cy="330" r="5" fill="#c8a84b"/>
+  <circle cx="282" cy="330" r="2" fill="#0a0f0a"/>
+
+  <!-- Neck stroke — thin anchor -->
+  <line x1="258" y1="385" x2="255" y2="420"
+        stroke="#4a9e3f" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+</svg>

@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"
+     aria-label="Steady Eco — The Cassowary Mark">
+  <!-- ═══════════════════════════════════════════
+       CANDIDATE 4 — GOLDEN RATIO
+       "Constructed with a compass and ruler."
+
+       Built ONLY from geometric primitives:
+       circles, ellipses, rects, lines.
+       Golden ratio: φ = 1.618, U = 48px
+
+       Casque: rotated ellipse, clipped
+       Head: circle
+       Neck: tapered rect
+       Body: large ellipse
+       Legs: lines
+       Dagger claw: rect
+       ═══════════════════════════════════════════ -->
+
+  <rect id="se-bg" width="512" height="512" rx="72" fill="#0a0f0a"/>
+
+  <defs>
+    <!-- Clip for casque — only show above skull line -->
+    <clipPath id="casque-clip">
+      <rect x="200" y="0" width="120" height="145"/>
+    </clipPath>
+  </defs>
+
+  <!-- CASQUE — ellipse, rotated 15° forward, clipped at skull line
+       rx = U×0.35 = 16.8 ≈ 17, ry = U×1.2 = 57.6 ≈ 58 -->
+  <ellipse id="se-casque" cx="260" cy="100" rx="17" ry="58"
+           fill="#c8a84b" transform="rotate(-15, 260, 100)"
+           clip-path="url(#casque-clip)"/>
+
+  <!-- HEAD — circle, r = U×0.75 = 36 -->
+  <circle id="se-head" cx="265" cy="160" r="36" fill="#4a9e3f"/>
+
+  <!-- EYE — negative space -->
+  <circle id="se-eye" cx="278" cy="155" r="5" fill="#0a0f0a"/>
+  <circle cx="279" cy="154" r="1.5" fill="#c8a84b" opacity="0.5"/>
+
+  <!-- BEAK — triangle, angled 10° down, U×0.6 = 29 long -->
+  <polygon id="se-beak" points="298,158 328,166 298,172" fill="#4a9e3f"/>
+
+  <!-- NECK — tapered rectangle connecting head to body
+       Width: U×0.7=34 at top, U×0.85=41 at bottom
+       Height: U×2.5 = 120 -->
+  <path id="se-neck" d="M 248,190 L 282,190 L 286,310 L 244,310 Z" fill="#4a9e3f"/>
+
+  <!-- BODY — primary ellipse
+       cx=245, cy=340, rx=U×1.9=91, ry=U×1.5=72
+       Rotated 5° forward -->
+  <ellipse id="se-body" cx="245" cy="345" rx="91" ry="72"
+           fill="#4a9e3f" transform="rotate(-5, 245, 345)"/>
+
+  <!-- LEFT LEG — long lower leg, angled 5° backward
+       Length: U×2.5 = 120 -->
+  <line id="se-leg-left" x1="225" y1="405" x2="218" y2="478"
+        stroke="#4a9e3f" stroke-width="8" stroke-linecap="round"/>
+
+  <!-- RIGHT LEG — slightly forward, in stride -->
+  <line id="se-leg-right" x1="268" y1="405" x2="272" y2="472"
+        stroke="#4a9e3f" stroke-width="8" stroke-linecap="round"/>
+
+  <!-- LEFT FOOT — three toes -->
+  <line x1="218" y1="478" x2="205" y2="486" stroke="#4a9e3f" stroke-width="4" stroke-linecap="round"/>
+  <line x1="218" y1="478" x2="218" y2="490" stroke="#4a9e3f" stroke-width="4" stroke-linecap="round"/>
+  <line x1="218" y1="478" x2="230" y2="487" stroke="#4a9e3f" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- THE DAGGER CLAW — the signature detail
+       Width: U×0.1 = 4.8 ≈ 5, Length: U×0.85 = 41
+       Positioned at inner toe, pointing FORWARD (right) -->
+  <rect id="se-claw" x="230" y="484" width="41" height="5" rx="1" fill="#c8a84b"/>
+
+  <!-- RIGHT FOOT -->
+  <line x1="272" y1="472" x2="262" y2="480" stroke="#4a9e3f" stroke-width="4" stroke-linecap="round"/>
+  <line x1="272" y1="472" x2="272" y2="484" stroke="#4a9e3f" stroke-width="4" stroke-linecap="round"/>
+  <line x1="272" y1="472" x2="284" y2="481" stroke="#4a9e3f" stroke-width="4" stroke-linecap="round"/>
+  <!-- Right dagger claw -->
+  <rect x="284" y="478" width="38" height="5" rx="1" fill="#c8a84b"/>
+</svg>
