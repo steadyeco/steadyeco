@@ -8,6 +8,7 @@
   <meta name="apple-mobile-web-app-title" content="Steady Eco" />
   <meta name="theme-color" content="#0A110D" />
   <title>Steady Eco</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -1600,7 +1601,7 @@
 
     <div style="margin-top:8px;">
       <button class="btn-full btn-ghost" onclick="duplicateCurrentInvoice()" style="margin-bottom:8px;">⧉ Duplicate Invoice</button>
-      <button class="btn-full btn-ghost" onclick="window.print()" style="margin-bottom:8px;">🖨️  Save as PDF</button>
+      <button class="btn-full btn-ghost" onclick="downloadInvoicePDF(currentInvoiceId)" style="margin-bottom:8px;">📄 Download Invoice PDF</button>
       <button class="btn-full btn-danger" onclick="confirmDelete(this, deleteCurrentInvoice)">Delete Invoice</button>
     </div>
   </div>
@@ -3695,6 +3696,149 @@
     const biz     = settings.business||'Steady Eco';
     const pay     = PAY_LABELS[inv.paymentMethod]||'Cash';
     return `Hi ${fn},\n\nPlease find your tax invoice from ${biz} below.\n\nTAX INVOICE\n─────────────────────\nInvoice No:   ${inv.ref}\nIssue Date:   ${issued}\nDue Date:     ${due}\n\nBill To:      ${inv.customerName}\n\nLINE ITEMS\n─────────────────────\n${inv.sets} set${inv.sets>1?'s':''} blade sharpening${inv.jobType==='emergency'?' (emergency)':''}:  $${(inv.sets*rate).toFixed(2)}${delFee?`\nCollection & delivery:  $${delFee}.00`:''}\n\nSubtotal (ex GST):   $${subtotal.toFixed(2)}\nGST (10%):           $${gst.toFixed(2)}\n\nTOTAL (inc GST):     $${inv.total}.00\n─────────────────────\n\nPayment method: ${pay}\n\nThank you for your business.\n\nKind regards,\n${biz}\nABN 49 553 784 085`;
+  }
+
+  function downloadInvoicePDF(id) {
+    const inv = invoices.find(x => x.id === id);
+    if (!inv) return;
+    const cust     = customers.find(x => x.id === inv.customerId);
+    const rate     = inv.jobType === 'emergency' ? BASE * 2 : BASE;
+    const delFee   = inv.delivery === 'collection' ? 20 : 0;
+    const { subtotal, gst } = calcGST(inv.total);
+    const issued   = new Date(inv.issueDate+'T12:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'});
+    const due      = new Date(inv.dueDate+'T12:00:00').toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    const jobSuffix = inv.jobType === 'emergency' ? ' (emergency)' : '';
+    const custABNLine = (inv.total >= 1000 && cust && cust.abn)
+      ? `<tr><td class="lbl">Customer ABN</td><td>${cust.abn}</td></tr>` : '';
+    const bankLine = (settings.bankBSB || settings.bankAccount)
+      ? `<tr><td class="lbl">Bank Transfer</td><td>${[settings.bankBSB && `BSB: ${settings.bankBSB}`, settings.bankAccount && `Acc: ${settings.bankAccount}`].filter(Boolean).join('  ·  ')}</td></tr>` : '';
+    const deliveryLine = delFee
+      ? `<tr><td>Collection &amp; delivery</td><td class="amt">$20.00</td></tr>` : '';
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invoice ${inv.ref} — Steady Eco</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  @page { size: A4 portrait; margin: 20mm 18mm 22mm 18mm; }
+  body { font-family: 'DM Sans', system-ui, sans-serif; font-size: 10.5pt; font-weight: 300; color: #1a1a18; background: #fff; line-height: 1.5; padding: 0 24px 40px; max-width: 760px; margin: 0 auto; }
+  .screen-hint { text-align: center; padding: 24px 0 20px; border-bottom: 1px solid #e8e8e0; margin-bottom: 32px; }
+  .screen-hint p { font-size: 0.82rem; color: #7a7a70; margin-bottom: 12px; }
+  .print-btn { display: inline-block; padding: 10px 28px; background: #2a6e24; color: #fff; border: none; border-radius: 6px; font-size: 0.88rem; cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 400; letter-spacing: 0.02em; }
+  @media print { .screen-hint { display: none; } }
+  .inv-header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 20pt; border-bottom: 0.5pt solid #2a6e24; margin-bottom: 20pt; }
+  .brand { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 26pt; font-weight: 300; letter-spacing: 0.08em; text-transform: uppercase; color: #0d1a0d; }
+  .brand span { color: #2a6e24; }
+  .brand-sub { font-size: 7.5pt; letter-spacing: 0.15em; text-transform: uppercase; color: #7a7a70; margin-top: 3pt; }
+  .inv-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 20pt; font-weight: 300; color: #0d1a0d; text-align: right; }
+  .inv-ref { font-size: 8pt; letter-spacing: 0.1em; color: #7a7a70; text-align: right; margin-top: 3pt; }
+  .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 20pt; margin-bottom: 22pt; }
+  .meta-block h4 { font-size: 7pt; letter-spacing: 0.2em; text-transform: uppercase; color: #2a6e24; margin-bottom: 8pt; font-weight: 500; }
+  .meta-block table { border-collapse: collapse; width: 100%; }
+  .meta-block td { font-size: 9.5pt; padding: 2.5pt 0; color: #1a1a18; vertical-align: top; }
+  .meta-block td.lbl { color: #7a7a70; width: 80pt; }
+  .total-banner { background: #f4f9f4; border-left: 2.5pt solid #2a6e24; padding: 12pt 14pt; margin-bottom: 22pt; display: flex; justify-content: space-between; align-items: center; }
+  .total-amount { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 24pt; font-weight: 300; color: #0d1a0d; }
+  .total-label { font-size: 7.5pt; letter-spacing: 0.15em; text-transform: uppercase; color: #7a7a70; margin-bottom: 3pt; }
+  .total-sub { font-size: 8pt; color: #7a7a70; text-align: right; line-height: 1.6; }
+  .items-label { font-size: 7pt; letter-spacing: 0.2em; text-transform: uppercase; color: #2a6e24; margin-bottom: 8pt; font-weight: 500; }
+  table.items { width: 100%; border-collapse: collapse; margin-bottom: 22pt; }
+  table.items thead th { font-size: 7pt; letter-spacing: 0.15em; text-transform: uppercase; color: #7a7a70; font-weight: 400; padding: 5pt 0; border-bottom: 0.5pt solid #d8d8cc; text-align: left; }
+  table.items thead th.amt { text-align: right; }
+  table.items td { font-size: 9.5pt; padding: 7pt 0; border-bottom: 0.25pt solid #ebebea; color: #1a1a18; }
+  table.items td.amt { text-align: right; }
+  table.items tr.sub td { color: #7a7a70; font-size: 9pt; border-bottom: none; padding-bottom: 3pt; padding-top: 10pt; }
+  table.items tr.gst td { color: #7a7a70; font-size: 9pt; border-bottom: 0.5pt solid #2a6e24; padding-bottom: 7pt; }
+  table.items tr.tot td { font-weight: 500; font-size: 11pt; color: #0d1a0d; border-bottom: none; padding-top: 7pt; }
+  .inv-footer { border-top: 0.5pt solid #d8d8cc; padding-top: 14pt; display: flex; justify-content: space-between; font-size: 8pt; color: #7a7a70; line-height: 1.8; }
+  .inv-footer strong { color: #1a1a18; font-weight: 400; }
+</style>
+</head>
+<body>
+  <div class="screen-hint">
+    <p>To save as PDF: tap the <strong>Share</strong> button → <strong>Print</strong> → pinch to zoom out → tap the share icon again → <strong>Save to Files</strong></p>
+    <button class="print-btn" onclick="window.print()">Print / Save as PDF</button>
+  </div>
+
+  <div class="inv-header">
+    <div>
+      <div class="brand">Steady <span>Eco</span></div>
+      <div class="brand-sub">Cairns · Far North Queensland</div>
+    </div>
+    <div>
+      <div class="inv-title">Tax Invoice</div>
+      <div class="inv-ref">${inv.ref} · Issued ${issued}</div>
+    </div>
+  </div>
+
+  <div class="meta">
+    <div class="meta-block">
+      <h4>Bill To</h4>
+      <table>
+        <tr><td class="lbl">Customer</td><td>${inv.customerName}</td></tr>
+        ${custABNLine}
+        <tr><td class="lbl">Payment</td><td>${PAY_LABELS[inv.paymentMethod] || 'Cash'}</td></tr>
+        ${bankLine}
+      </table>
+    </div>
+    <div class="meta-block">
+      <h4>Invoice Details</h4>
+      <table>
+        <tr><td class="lbl">Invoice No</td><td>${inv.ref}</td></tr>
+        <tr><td class="lbl">Issue Date</td><td>${issued}</td></tr>
+        <tr><td class="lbl">Due Date</td><td>${due}</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="total-banner">
+    <div>
+      <div class="total-label">Total Inc. GST</div>
+      <div class="total-amount">$${inv.total}.00</div>
+    </div>
+    <div class="total-sub">
+      ${inv.sets} set${inv.sets > 1 ? 's' : ''} blade sharpening${jobSuffix}<br>
+      Due ${due}
+    </div>
+  </div>
+
+  <div class="items-label">Line Items</div>
+  <table class="items">
+    <thead>
+      <tr><th>Description</th><th class="amt">Amount</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>${inv.sets} set${inv.sets > 1 ? 's' : ''} blade sharpening${jobSuffix}</td><td class="amt">$${(inv.sets * rate).toFixed(2)}</td></tr>
+      ${deliveryLine}
+      <tr class="sub"><td>Subtotal (ex GST)</td><td class="amt">$${subtotal.toFixed(2)}</td></tr>
+      <tr class="gst"><td>GST (10%)</td><td class="amt">$${gst.toFixed(2)}</td></tr>
+      <tr class="tot"><td>Total (inc GST)</td><td class="amt">$${inv.total}.00</td></tr>
+    </tbody>
+  </table>
+
+  <div class="inv-footer">
+    <div>
+      <strong>Samuel James Stead trading as Steady Eco</strong><br>
+      ABN 49 553 784 085 · Cairns, Far North Queensland<br>
+      sam@steadyeco.com · steadyeco.com
+    </div>
+    <div style="text-align:right;">
+      <strong>Payment due by</strong><br>
+      ${due}
+    </div>
+  </div>
+</body>
+</html>`;
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const url  = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 120000);
   }
 
   function deleteCurrentInvoice() {

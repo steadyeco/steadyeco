@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Dark green background with rounded corners — Steady Eco brand -->
+  <rect width="200" height="200" rx="28" fill="#0a0f0a"/>
+
+  <!-- Cassowary silhouette in brand gold — layered shapes merge into one form -->
+  <g fill="#c8a84b">
+
+    <!-- Neck — thick column, tapers slightly -->
+    <rect x="74" y="130" width="52" height="68" rx="10"/>
+
+    <!-- Head — oval, overlaps neck top -->
+    <ellipse cx="108" cy="116" rx="36" ry="30"/>
+
+    <!-- Casque — the defining feature of a cassowary
+         Forward-leaning bony ridge rising from the skull.
+         Points: back-base, back-peak, front-peak, front-base -->
+    <polygon points="90,94 102,40 124,60 118,88"/>
+
+    <!-- Beak — short triangle projecting right -->
+    <polygon points="140,108 165,116 140,126"/>
+
+    <!-- Wattle — teardrop hanging from chin -->
+    <ellipse cx="84" cy="146" rx="9" ry="15"/>
+
+  </g>
+
+  <!-- Eye — dark cutout brings the face to life -->
+  <circle cx="124" cy="110" r="6" fill="#0a0f0a"/>
+
+</svg>
