@@ -55,7 +55,7 @@
     .nav-phone { color: var(--green-accent) !important; border: 1px solid rgba(74,158,63,0.3) !important; padding: 8px 20px !important; }
     .nav-phone::after { display: none !important; }
     .nav-phone:hover { background: rgba(74,158,63,0.08) !important; }
-    .hamburger { display: none; flex-direction: column; gap: 6px; cursor: pointer; padding: 4px; background: none; border: none; }
+    .hamburger { display: none; flex-direction: column; gap: 6px; cursor: pointer; padding: 12px; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; background: none; border: none; }
     .hamburger span { display: block; width: 22px; height: 1px; background: var(--text); transition: 0.3s; }
     .mobile-menu { display: none; flex-direction: column; background: var(--bg); border-top: 1px solid var(--border); padding: 40px; gap: 32px; }
     .mobile-menu a { font-family: var(--font-display); font-size: 2rem; font-weight: 300; color: var(--muted); letter-spacing: 0.05em; transition: color 0.3s ease; }
@@ -144,7 +144,7 @@
     .form-input, .form-select, .form-textarea {
       width: 100%; background: var(--card); border: 1px solid rgba(74,158,63,0.2);
       border-radius: 2px; padding: 16px 20px; color: var(--text);
-      font-family: var(--font-body); font-size: 15px; font-weight: 300; line-height: 1.5;
+      font-family: var(--font-body); font-size: 16px; font-weight: 300; line-height: 1.5;
       transition: border-color 0.3s ease; outline: none; -webkit-appearance: none;
     }
     .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--green-accent); }
@@ -348,6 +348,7 @@
       <div class="form-wrap fade">
         <form action="https://formspree.io/f/xvzwlpko" method="POST">
           <input type="hidden" name="_subject" value="Steady Eco Portal Access Request" />
+          <input type="hidden" name="_next" value="https://steadyeco.com/portal#access-form" />
           <div class="honeypot">
             <label>Leave this blank <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" /></label>
           </div>
@@ -554,6 +555,25 @@
       setTimeout(() => document.querySelector('.hero-ctas')?.classList.add('in'), 200 + idx * 80);
     }
     window.addEventListener('load', initHero);
+
+    // 5. Formspree AJAX submit
+    document.querySelectorAll('form[action*="formspree"]').forEach(form => {
+      form.addEventListener('submit', async e => {
+        e.preventDefault();
+        const btn = form.querySelector('[type="submit"]');
+        const orig = btn.textContent; btn.textContent = 'Sending…'; btn.disabled = true;
+        try {
+          const r = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
+          if (r.ok) {
+            form.innerHTML = '<div style="padding:64px 48px;text-align:center;"><div style="font-family:var(--font-display);font-size:3.5rem;color:var(--green-accent);margin-bottom:20px;">&#10003;</div><div style="font-family:var(--font-display);font-size:2rem;font-weight:300;color:var(--text);margin-bottom:16px;">Request Received</div><p style="color:var(--muted);font-family:var(--font-body);font-size:15px;line-height:1.75;">We\'ll review your access request within one business day.</p></div>';
+          } else {
+            btn.textContent = orig; btn.disabled = false;
+          }
+        } catch {
+          btn.textContent = orig; btn.disabled = false;
+        }
+      });
+    });
   </script>
 <script>document.getElementById('footer-year').textContent = new Date().getFullYear();</script>
 </body>

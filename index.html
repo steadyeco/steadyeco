@@ -183,12 +183,12 @@
       overflow-x: hidden;
     }
 
-    h1, h2, h3 {
+    h1, h2 {
       font-family: var(--font-display);
       line-height: 1.05;
       font-weight: 300;
     }
-    h4 {
+    h3, h4 {
       font-family: var(--font-body);
       font-weight: 500;
     }
@@ -336,7 +336,11 @@
       flex-direction: column;
       gap: 6px;
       cursor: pointer;
-      padding: 4px;
+      padding: 12px;
+      min-width: 44px;
+      min-height: 44px;
+      align-items: center;
+      justify-content: center;
     }
     .hamburger span {
       display: block;
@@ -1076,7 +1080,7 @@
       outline: none;
       color: var(--text);
       font-family: var(--font-body);
-      font-size: 0.88rem;
+      font-size: 16px;
       font-weight: 300;
       width: 100%;
       padding: 0;
@@ -1241,7 +1245,7 @@
       background: none;
       border: none;
       color: var(--text);
-      font-family: 'Inter', sans-serif;
+      font-family: var(--font-body);
       font-size: 0.92rem;
       font-weight: 400;
       cursor: pointer;
@@ -1598,7 +1602,7 @@
         </p>
         <div class="hero-ctas">
           <a href="/quote" class="btn btn-primary">Get a Quote — Most Jobs Next Business Day</a>
-          <a href="/quote" class="btn btn-outline">How It Works</a>
+          <a href="/how-it-works" class="btn btn-outline">How It Works</a>
         </div>
         <p style="font-family:var(--font-body);font-size:0.78rem;color:var(--muted-light);margin-top:16px;line-height:1.6;">Running Bandit, Vermeer, Morbark, Rayco, Timberwolf, Greenmech or Jensen? We have your angles on file.</p>
         <div class="hero-trust">
@@ -1648,7 +1652,7 @@
     </div>
 
     <div class="container" style="margin-bottom:32px;">
-      <img src="images/hero-image.jpg" alt="Precision blade sharpening in the workshop" style="width:100%;display:block;object-fit:cover;object-position:center 18%;max-height:340px;" class="fade-in" />
+      <img src="images/hero-image.jpg" alt="Precision blade sharpening in the workshop" loading="lazy" style="width:100%;display:block;object-fit:cover;object-position:center 18%;max-height:340px;" class="fade-in" />
     </div>
 
     <div class="container">
@@ -1794,7 +1798,7 @@
           <p class="fade-in">Land regeneration services are on the way. Watch this space.</p>
         </div>
         <div class="about-right fade-in">
-          <img src="images/about-image.jpg" alt="Sam sharpening chipper knives in the Steady Eco workshop, Cairns" style="width:100%; display:block; object-fit:cover; object-position:center 12%; max-height:360px; margin-bottom:2px;" />
+          <img src="images/about-image.jpg" alt="Sam sharpening chipper knives in the Steady Eco workshop, Cairns" loading="lazy" style="width:100%; display:block; object-fit:cover; object-position:center 12%; max-height:360px; margin-bottom:2px;" />
           <div class="about-stat-list">
             <div class="about-stat">
               <div class="about-stat-num">7</div>
@@ -1895,7 +1899,7 @@
           <p class="fade-in">The fastest way to reach us is a phone call. Leave a message if we're on the tools and we'll get back to you same day.</p>
           <a href="tel:+61456190202" class="phone-link fade-in">0456 190 202</a>
           <p style="font-family:'DM Sans',sans-serif;font-size:0.8rem;color:#7a8f76;margin-top:8px;">Prefer enquiries via the form — we respond within 1 business day.</p>
-          <p class="phone-note fade-in">📍 Cairns, Queensland &nbsp;·&nbsp; Same-day callback</p>
+          <p class="phone-note fade-in">Cairns, Queensland &nbsp;·&nbsp; Same-day callback</p>
           <div class="hours-block fade-in">
             <div class="hours-header">Business Hours</div>
             <div class="hours-row"><span>Monday – Saturday</span><span>5:00am – 6:30pm</span></div>

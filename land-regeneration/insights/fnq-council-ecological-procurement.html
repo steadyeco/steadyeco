@@ -33,7 +33,8 @@
     }
     html { scroll-behavior: smooth; }
     body { background: var(--bg); color: var(--muted); font-family: var(--font-body); font-size: 16px; line-height: 1.75; font-weight: 300; overflow-x: hidden; }
-    h1, h2, h3 { font-family: var(--font-display); font-weight: 300; color: var(--text); }
+    h1, h2 { font-family: var(--font-display); font-weight: 300; color: var(--text); }
+    h3 { font-family: var(--font-body); font-weight: 500; color: var(--text); }
     a { color: inherit; text-decoration: none; }
     .container { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
     #scroll-bar { position: fixed; top: 0; left: 0; height: 2px; width: 0; background: var(--green-accent); z-index: 200; pointer-events: none; }
@@ -53,7 +54,7 @@
     .nav-phone { color: var(--green-accent) !important; border: 1px solid rgba(74,158,63,0.3) !important; padding: 8px 20px !important; }
     .nav-phone::after { display: none !important; }
     .nav-phone:hover { background: rgba(74,158,63,0.08) !important; }
-    .hamburger { display: none; flex-direction: column; gap: 6px; cursor: pointer; padding: 4px; background: none; border: none; }
+    .hamburger { display: none; flex-direction: column; gap: 6px; cursor: pointer; padding: 12px; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; background: none; border: none; }
     .hamburger span { display: block; width: 22px; height: 1px; background: var(--text); transition: 0.3s; }
     .mobile-menu { display: none; flex-direction: column; background: var(--bg); border-top: 1px solid var(--border); padding: 40px; gap: 32px; }
     .mobile-menu a { font-family: var(--font-display); font-size: 2rem; font-weight: 300; color: var(--muted); letter-spacing: 0.05em; transition: color 0.3s ease; }
