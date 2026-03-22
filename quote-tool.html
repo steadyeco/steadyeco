@@ -254,7 +254,7 @@
     <div class="field-group">
       <label for="numSets">Number of Sets</label>
       <input type="number" id="numSets" min="1" max="50" placeholder="e.g. 2" oninput="updatePrice()" />
-      <div style="font-size:0.7rem; color:var(--muted); margin-top:4px;">1 set = 2 blades · $120 per set</div>
+      <div style="font-size:0.7rem; color:var(--muted); margin-top:4px;">1 set = all blades in your machine · $120 per set</div>
     </div>
 
     <div class="field-group">
@@ -356,7 +356,6 @@
 
   function updatePrice() {
     const sets = parseInt(document.getElementById('numSets').value) || 0;
-    const blades = sets * 2;
     let base = sets * PRICE_PER_SET;
     if (jobType === 'emergency') base *= 2;
 
@@ -374,7 +373,7 @@
 
     let breakdown = '';
     if (sets > 0) {
-      breakdown += `${sets} set${sets > 1 ? 's' : ''} (${blades} blade${blades > 1 ? 's' : ''}) × $${PRICE_PER_SET}`;
+      breakdown += `${sets} set${sets > 1 ? 's' : ''} × $${PRICE_PER_SET}`;
       if (jobType === 'emergency') breakdown += ` × 2 (emergency)`;
       breakdown += ` = $${base}\n`;
       if (zone === 'portdouglas') {
@@ -395,7 +394,6 @@
   function getQuoteData() {
     const name = document.getElementById('custName').value.trim() || 'there';
     const sets = parseInt(document.getElementById('numSets').value) || 0;
-    const blades = sets * 2;
     let base = sets * PRICE_PER_SET;
     if (jobType === 'emergency') base *= 2;
     const zone = getZone();
@@ -404,7 +402,7 @@
     const delivery = isCallZone ? null : zoneData.fee;
     const total = isCallZone ? null : base + delivery;
     const today = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
-    return { name, sets, blades, base, delivery, total, today, zone, zoneData, isCallZone };
+    return { name, sets, base, delivery, total, today, zone, zoneData, isCallZone };
   }
 
   function generateSMS() {
@@ -413,7 +411,7 @@
 
     let msg = `Hi ${d.name}, thanks for getting in touch with Steady Eco.\n\n`;
     msg += `Here's your quote for blade sharpening:\n`;
-    msg += `• ${d.sets} set${d.sets > 1 ? 's' : ''} (${d.blades} blade${d.blades > 1 ? 's' : ''}) — $${d.base}`;
+    msg += `• ${d.sets} set${d.sets > 1 ? 's' : ''} — $${d.base}`;
     if (jobType === 'emergency') msg += ` (emergency rate)`;
     msg += `\n`;
     if (d.zone === 'portdouglas') {
@@ -444,7 +442,7 @@
     msg += `QUOTE — ${d.today}\n`;
     msg += `---\n\n`;
     msg += `Service: Woodchipper Blade Sharpening\n`;
-    msg += `Sets: ${d.sets} set${d.sets > 1 ? 's' : ''} (${d.blades} blade${d.blades > 1 ? 's' : ''})\n`;
+    msg += `Sets: ${d.sets} set${d.sets > 1 ? 's' : ''}\n`;
     if (jobType === 'emergency') msg += `Rate: Emergency (after-hours)\n`;
     msg += `\n`;
     msg += `Blade sharpening: $${d.base}\n`;

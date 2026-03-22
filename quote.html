@@ -823,7 +823,7 @@
         <button class="step-count-btn" onclick="changeSets(-1)">−</button>
         <div>
           <div class="sets-count" id="setsDisplay">1</div>
-          <div class="sets-note">1 set = 2 blades · $120 per set</div>
+          <div class="sets-note">1 set = all blades in your machine · $120 per set</div>
         </div>
         <button class="step-count-btn" onclick="changeSets(1)">+</button>
       </div>
@@ -1321,7 +1321,7 @@
       company ? `Company: ${company}` : null,
       `Machine: ${machineName || 'Not specified'}`,
       selectedBladeType ? `Blade Type: ${selectedBladeType}` : null,
-      `Sets: ${sets} set${sets !== 1 ? 's' : ''} (${sets * 2} blades)`,
+      `Sets: ${sets} set${sets !== 1 ? 's' : ''}`,
       `Job Type: ${isEmergency ? 'Emergency' : 'Standard'}`,
       `Delivery: ${collectMode === 'collect' ? `Collect & return${suburbName ? ' — ' + suburbName : ''}` : 'Customer drop-off'}`,
       `Total: ${tp != null ? '$' + tp : 'Call to confirm'}`,
@@ -1392,11 +1392,10 @@
   /* ── SMS & EMAIL BUILDERS ── */
   function buildSMS(name, ref, bp, cf, tp, suburbName, callConfirm, preferredDate) {
     const fn = name.split(' ')[0];
-    const blades = sets * 2;
     const machineName = selectedMachine === 'Other' ? otherMachineText : selectedMachine;
     let msg = 'Hi ' + fn + ', thanks for reaching out to Steady Eco.\n\n';
     msg += "Here's your quote:\n";
-    msg += '• ' + sets + ' set' + (sets > 1 ? 's' : '') + ' (' + blades + ' blades) · ' + machineName;
+    msg += '• ' + sets + ' set' + (sets > 1 ? 's' : '') + ' · ' + machineName;
     if (isEmergency) msg += ' · emergency rate';
     msg += ' · $' + bp + '\n';
     if (selectedBladeType) msg += '• Blade type: ' + selectedBladeType + '\n';
@@ -1417,7 +1416,6 @@
   }
 
   function buildEmail(name, ref, bp, cf, tp, suburbName, callConfirm, today, preferredDate) {
-    const blades = sets * 2;
     const machineName = selectedMachine === 'Other' ? otherMachineText : selectedMachine;
     const line = '──────────────────────────────';
     let msg = 'Subject: Quote ' + ref + ' — Woodchipper Blade Sharpening · Steady Eco\n\n';
@@ -1427,7 +1425,7 @@
     msg += 'QUOTE ' + ref + ' · ' + today + '\n';
     msg += line + '\n\n';
     msg += 'Machine:          ' + machineName + '\n';
-    msg += 'Sets (blades):    ' + sets + ' set' + (sets > 1 ? 's' : '') + ' (' + blades + ' blades)\n';
+    msg += 'Sets:             ' + sets + ' set' + (sets > 1 ? 's' : '') + '\n';
     if (selectedBladeType) msg += 'Blade type:       ' + selectedBladeType + '\n';
     if (isEmergency) msg += 'Rate:             Emergency (2×)\n';
     if (preferredDate) msg += 'Preferred date:   ' + preferredDate + '\n';

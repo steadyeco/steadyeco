@@ -2994,7 +2994,7 @@
     document.getElementById('jdRef').textContent   = j.ref || '';
 
     document.getElementById('jdCustomer').textContent = j.customerName;
-    document.getElementById('jdSets').textContent     = `${j.sets} set${j.sets>1?'s':''} (${j.sets*2} blades)`;
+    document.getElementById('jdSets').textContent     = `${j.sets} set${j.sets>1?'s':''}`;
     document.getElementById('jdJobType').textContent  = j.jobType === 'emergency' ? 'Emergency (2× rate)' : 'Standard';
     document.getElementById('jdDelivery').textContent = j.delivery === 'collection' ? 'Collection & delivery ($20)' : 'Drop-off & pick-up';
     const mbRow = document.getElementById('jdMachineBrandRow');
@@ -3330,7 +3330,7 @@
       const em=q.jobType==='emergency';
       return `<div class="history-quote-card ${em?'emergency':''}" onclick="showQuoteDetail('${q.id}','customer-detail')">
         <div class="history-quote-top">
-          <div>${q.ref?`<div class="history-quote-ref">${esc(q.ref)}</div>`:''}<div class="history-quote-date">${d}</div><div class="history-quote-detail">${q.sets} set${q.sets>1?'s':''} (${q.sets*2} blades) · ${em?'Emergency':'Standard'} · ${q.delivery==='collection'?'Collection':'Drop-off'}</div></div>
+          <div>${q.ref?`<div class="history-quote-ref">${esc(q.ref)}</div>`:''}<div class="history-quote-date">${d}</div><div class="history-quote-detail">${q.sets} set${q.sets>1?'s':''} · ${em?'Emergency':'Standard'} · ${q.delivery==='collection'?'Collection':'Drop-off'}</div></div>
           <div class="history-quote-total ${em?'emergency':''}">$${q.total}</div>
         </div>
       </div>`;
@@ -3460,7 +3460,7 @@
     document.getElementById('qdTotal').textContent    =`$${q.total}`;
     document.getElementById('qdRef').textContent      =q.ref||'';
     document.getElementById('qdCustomer').textContent =q.customerName;
-    document.getElementById('qdSets').textContent     =`${q.sets} set${q.sets>1?'s':''} (${q.sets*2} blades)`;
+    document.getElementById('qdSets').textContent     =`${q.sets} set${q.sets>1?'s':''}`;
     document.getElementById('qdJobType').textContent  =q.jobType==='emergency'?'Emergency (2× rate)':'Standard';
     if(q.delivery==='collection'){const z=DELIVERY_ZONES[q.deliveryZone||'zone2'];document.getElementById('qdDelivery').textContent=`Collection & return — ${z?z.label:''}${z?' (+$'+z.fee+')':''}`;}else{document.getElementById('qdDelivery').textContent='Drop-off & pick-up';}
 
@@ -3525,7 +3525,7 @@
     }
     const machineSection = q.machineBrand ? `\nMachine brand:   ${q.machineBrand}` : '';
     const bladeSection   = q.bladeType   ? `\nBlade type:      ${q.bladeType}` : '';
-    return `Hi ${fn},\n\nThank you for getting in touch. Here is your quote for woodchipper blade sharpening.\n\nQUOTE REFERENCE: ${q.ref||'—'}\n\nQUOTE SUMMARY\n─────────────────────\nSets of blades:  ${q.sets} (${q.sets*2} blades)\nService type:    ${st}\nDelivery:        ${dl}${dateSection}${machineSection}${bladeSection}\nPayment method:  ${payMethod}\n\nBREAKDOWN\n─────────────────────\nBlades (${q.sets} × $${r}/set):  $${bt}.00${q.delivery==='collection'?'\nCollection & delivery:  $20.00':''}\n\nTOTAL:  $${q.total}.00\n─────────────────────\n\nPayment is due on pickup.\n\nKind regards,\n${biz}\nABN 49 553 784 085`;
+    return `Hi ${fn},\n\nThank you for getting in touch. Here is your quote for woodchipper blade sharpening.\n\nQUOTE REFERENCE: ${q.ref||'—'}\n\nQUOTE SUMMARY\n─────────────────────\nSets of blades:  ${q.sets}\nService type:    ${st}\nDelivery:        ${dl}${dateSection}${machineSection}${bladeSection}\nPayment method:  ${payMethod}\n\nBREAKDOWN\n─────────────────────\nBlades (${q.sets} × $${r}/set):  $${bt}.00${q.delivery==='collection'?'\nCollection & delivery:  $20.00':''}\n\nTOTAL:  $${q.total}.00\n─────────────────────\n\nPayment is due on pickup.\n\nKind regards,\n${biz}\nABN 49 553 784 085`;
   }
 
   function deleteCurrentQuote() {
@@ -4680,7 +4680,7 @@
           </div>
           <div style="background:var(--card);border-radius:10px;padding:12px;">
             <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Sets</div>
-            <div style="font-size:0.88rem;color:var(--text);font-weight:500;">${q.sets || 1} set${(q.sets||1)!==1?'s':''} (${(q.sets||1)*2} blades)</div>
+            <div style="font-size:0.88rem;color:var(--text);font-weight:500;">${q.sets || 1} set${(q.sets||1)!==1?'s':''}</div>
           </div>
           <div style="background:var(--card);border-radius:10px;padding:12px;">
             <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Job Type</div>
