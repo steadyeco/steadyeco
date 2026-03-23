@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://steadyeco.com/sitemap.xml
+
+# Steady Eco — Chipper Blade Sharpening, Cairns QLD

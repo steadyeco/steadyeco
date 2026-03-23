@@ -33,6 +33,13 @@ Thumbs.db
 !portal/index.html
 !portal/*.html
 !land-regeneration/coming-soon/index.html
+!services/**/*.html
+!locations/**/*.html
+!guides/**/*.html
+!blade-types/**/*.html
+!industries/**/*.html
+!sitemap.xml
+!robots.txt
 *.com
 *.exe
 *.asar
