@@ -8,10 +8,6 @@
   <meta name="apple-mobile-web-app-title" content="Steady Eco" />
   <meta name="theme-color" content="#0A110D" />
   <title>Steady Eco</title>
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="manifest" href="/site.webmanifest">
-  <meta name="theme-color" content="#0a0f0a">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -330,7 +326,7 @@
       padding: 12px 16px;
       margin-bottom: 16px;
     }
-    .search-bar input { background: none; border: none; outline: none; color: var(--text); font-family: 'Inter', sans-serif; font-size: 16px; flex: 1; }
+    .search-bar input { background: none; border: none; outline: none; color: var(--text); font-family: 'Inter', sans-serif; font-size: 0.9rem; flex: 1; }
     .search-bar input::placeholder { color: var(--muted); }
     .search-icon { color: var(--muted); font-size: 1rem; }
 
@@ -574,7 +570,7 @@
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     /* ══════════════════════════════ INVOICE ════════════════════════════════ */
-    .inv-status-draft    { background: #1C1C2A; color: #8888CC; }
+    .inv-status-draft    { background: #0f1a0f; color: var(--muted-light); }
     .inv-status-sent     { background: var(--teal-bg);    color: var(--teal); }
     .inv-status-paid     { background: var(--green-deep); color: var(--green-accent); }
     .inv-status-overdue  { background: var(--amber-bg);   color: var(--amber); }
@@ -588,7 +584,7 @@
       margin-bottom: 2px;
     }
     .invoice-card:active { background: var(--card-hover); }
-    .invoice-card.draft   { border-left-color: #8888CC; opacity: 0.7; }
+    .invoice-card.draft   { border-left-color: var(--muted-light); opacity: 0.7; }
     .invoice-card.sent    { border-left-color: var(--teal); }
     .invoice-card.paid    { border-left-color: var(--green-accent); opacity: 0.65; }
     .invoice-card.overdue { border-left-color: var(--amber); }
@@ -2241,6 +2237,12 @@
     <div class="section-label" style="margin-top:36px; margin-bottom:12px;">Data</div>
     <button class="btn-full btn-ghost" onclick="exportData()">Export Backup (JSON)</button>
 
+    <div class="section-label" style="margin-top:24px; margin-bottom:8px;">Cloud Backup</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">Your data is synced to AWS. If your phone resets, tap Restore to get everything back.</div>
+    <button class="btn-full btn-green" onclick="cloudSync()" id="btn-cloud-sync">Sync to Cloud</button>
+    <button class="btn-full btn-ghost" onclick="cloudRestore()" style="margin-top:8px;">Restore from Cloud</button>
+    <div id="cloud-sync-status" style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center;"></div>
+
     <div class="section-label" style="margin-top:36px; margin-bottom:12px;">Blade Angle Reference</div>
     <div style="font-size:11px;color:var(--muted);margin-bottom:12px;letter-spacing:0.3px;">Factory specifications on file — grind target per brand</div>
     <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
@@ -3780,7 +3782,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Invoice ${inv.ref} — Steady Eco</title>
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -3940,6 +3941,65 @@
     const url=URL.createObjectURL(blob), a=document.createElement('a');
     a.href=url; a.download=`steady-eco-backup-${new Date().toISOString().slice(0,10)}.json`; a.click();
     URL.revokeObjectURL(url); showToast('Backup downloaded');
+  }
+
+  // ── Cloud Sync (AWS) ──────────────────────────────────────────
+  const SYNC_URL = 'https://x267gkoc7k.execute-api.ap-southeast-2.amazonaws.com/sync';
+  const SYNC_KEY = 'se_sync_2026_fnq';
+
+  async function cloudSync() {
+    const btn = document.getElementById('btn-cloud-sync');
+    const status = document.getElementById('cloud-sync-status');
+    btn.disabled = true; btn.textContent = 'Syncing...';
+    try {
+      const data = { customers, quotes, jobs, invoices, settings, syncedAt: new Date().toISOString() };
+      const res = await fetch(SYNC_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': SYNC_KEY },
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      if (result.success) {
+        status.textContent = 'Last synced: ' + new Date(result.updatedAt).toLocaleString('en-AU');
+        status.style.color = 'var(--green-accent)';
+        showToast('Synced to cloud');
+      } else {
+        throw new Error('Sync failed');
+      }
+    } catch (e) {
+      status.textContent = 'Sync failed — check connection';
+      status.style.color = 'var(--danger)';
+      showToast('Cloud sync failed');
+    }
+    btn.disabled = false; btn.textContent = 'Sync to Cloud';
+  }
+
+  async function cloudRestore() {
+    if (!confirm('This will replace ALL local data with the cloud backup. Are you sure?')) return;
+    const status = document.getElementById('cloud-sync-status');
+    try {
+      const res = await fetch(SYNC_URL, {
+        method: 'GET',
+        headers: { 'x-api-key': SYNC_KEY }
+      });
+      const result = await res.json();
+      if (!result.data) { showToast('No cloud backup found'); return; }
+      const d = result.data;
+      if (d.customers) customers = d.customers;
+      if (d.quotes) quotes = d.quotes;
+      if (d.jobs) jobs = d.jobs;
+      if (d.invoices) invoices = d.invoices;
+      if (d.settings) { Object.assign(settings, d.settings); }
+      await saveAllData();
+      status.textContent = 'Restored from: ' + new Date(result.updatedAt).toLocaleString('en-AU');
+      status.style.color = 'var(--green-accent)';
+      showToast('Data restored from cloud');
+      renderDashboard();
+    } catch (e) {
+      status.textContent = 'Restore failed — check connection';
+      status.style.color = 'var(--danger)';
+      showToast('Cloud restore failed');
+    }
   }
 
   function copyText(elId, btn) {
