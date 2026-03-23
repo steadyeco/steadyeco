@@ -4,6 +4,8 @@ Thumbs.db
 *.pak
 *.json
 *.js
+!feature-flags.js
+!land-regeneration/gate.js
 *.css
 *.md
 *.dll
@@ -30,6 +32,7 @@ Thumbs.db
 !land-regeneration/insights/*.html
 !portal/index.html
 !portal/*.html
+!land-regeneration/coming-soon/index.html
 *.com
 *.exe
 *.asar
