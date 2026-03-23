@@ -1,5 +1,7 @@
 .DS_Store
 Thumbs.db
+aws-backend/
+seo-pages/
 *.log
 *.pak
 *.json
