@@ -2916,7 +2916,7 @@
     }
     jobs.filter(j => j.scheduledDate === tomorrowStr && (j.status === 'booked' || j.status === 'in_progress')).forEach(j => {
       const jName = typeof j.customerName === 'string' ? j.customerName : '';
-      const sms = `Hi ${jName.split(' ')[0]}, confirming your blade sharpening ${j.delivery === 'collection' ? 'collection' : 'drop-off'} tomorrow. Any questions give me a call. — ${settings.business || 'Steady Eco'}`;
+      const sms = `Hi ${jName.split(' ')[0]}, confirming your blade sharpening ${j.delivery === 'collection' ? 'collection' : 'drop-off'} tomorrow. Your blades will be ready for pick-up the following day. Total: $${j.total}. Any questions give me a call. — ${settings.business || 'Steady Eco'}`;
       alerts += `<div class="dash-alert">
         <div class="dash-alert-title">📅 Job Tomorrow</div>
         <div class="dash-alert-body">${esc(j.customerName)} · ${esc(j.ref || '')} · ${j.delivery === 'collection' ? 'Collection &amp; delivery' : 'Drop-off'}</div>
@@ -4109,9 +4109,11 @@
     let msg;
     if (j.scheduledDate) {
       const dateDisp = new Date(j.scheduledDate+'T12:00:00').toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
-      msg = `Hi ${fn}, your blade sharpening is booked for ${dateDisp}. ${j.delivery==='collection'?'We\'ll collect and return your blades.':'Drop off your blades and we\'ll have them ready for pick-up.'} Any questions, give me a call. — ${settings.business||'Steady Eco'}`;
+      const nextDay = new Date(j.scheduledDate+'T12:00:00'); nextDay.setDate(nextDay.getDate()+1);
+      const readyDisp = nextDay.toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
+      msg = `Hi ${fn}, your blade sharpening is booked in for ${dateDisp}. Your blades will be ready for pick-up ${readyDisp}. Total: $${j.total}. ${j.delivery==='collection'?'We\'ll collect and return your blades.':''} Any questions, give me a call. — ${settings.business||'Steady Eco'}`;
     } else {
-      msg = `Hi ${fn}, confirming your blade sharpening ${j.delivery==='collection'?'collection':'drop-off'} tomorrow. Any questions give me a call. — ${settings.business||'Steady Eco'}`;
+      msg = `Hi ${fn}, confirming your blade sharpening ${j.delivery==='collection'?'collection':'drop-off'} tomorrow. Total: $${j.total}. Any questions give me a call. — ${settings.business||'Steady Eco'}`;
     }
     if (phone) window.location.href = `sms:${phone}?body=${encodeURIComponent(msg)}`;
     else showToast('No phone number on file');
