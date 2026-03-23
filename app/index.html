@@ -3116,7 +3116,9 @@
     const confirmSec = document.getElementById('jdConfirmSection');
     if (j.status === 'booked' && j.scheduledDate) {
       const dateDisp = new Date(j.scheduledDate+'T12:00:00').toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
-      const sms = `Hi ${j.customerName.split(' ')[0]}, your blade sharpening is booked for ${dateDisp}. ${j.delivery==='collection'?'We\'ll collect and return your blades.':'Drop off your blades and we\'ll have them ready for pick-up.'} Any questions, give me a call. — ${settings.business||'Steady Eco'}`;
+      const nextDay = new Date(j.scheduledDate+'T12:00:00'); nextDay.setDate(nextDay.getDate()+1);
+      const readyDisp = nextDay.toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
+      const sms = `Hi ${j.customerName.split(' ')[0]}, your blade sharpening is booked in for ${dateDisp}. Your blades will be ready for pick-up ${readyDisp}. Total: $${j.total}. ${j.delivery==='collection'?'We\'ll collect and return your blades.':''} Any questions, give me a call. — ${settings.business||'Steady Eco'}`;
       confirmSec.innerHTML = `<div class="copy-block" style="margin-top:0;">
         <div class="copy-block-header"><span class="copy-block-title">💬 Booking Confirmation SMS</span><button class="copy-btn" onclick="sendJobReminderSMS('${j.id}')">Send SMS</button></div>
         <div class="copy-block-text" id="jdConfirmSmsText"></div></div>`;
