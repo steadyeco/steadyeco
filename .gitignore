@@ -9,8 +9,11 @@ seo-pages/
 !feature-flags.js
 !land-regeneration/gate.js
 !js/premium.js
+!seo-pages/js/seo-renderer.js
+!seo-pages/template.html
 *.css
 !css/brand.css
+!seo-pages/css/seo.css
 *.md
 *.dll
 *.dat
@@ -44,6 +47,7 @@ seo-pages/
 !blade-types/**/*.html
 !industries/**/*.html
 !sitemap.xml
+!sitemap-seo.xml
 !robots.txt
 *.com
 *.exe
