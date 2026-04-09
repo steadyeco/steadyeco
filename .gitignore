@@ -8,7 +8,9 @@ seo-pages/
 *.js
 !feature-flags.js
 !land-regeneration/gate.js
+!js/premium.js
 *.css
+!css/brand.css
 *.md
 *.dll
 *.dat
@@ -36,6 +38,7 @@ seo-pages/
 !portal/*.html
 !land-regeneration/coming-soon/index.html
 !services/**/*.html
+!sectors/**/*.html
 !locations/**/*.html
 !guides/**/*.html
 !blade-types/**/*.html

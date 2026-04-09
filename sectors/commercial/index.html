@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Commercial Property Maintenance Cairns — Steady Eco</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#0a0f0a">
+  <meta name="description" content="Commercial property maintenance in Cairns. Grounds maintenance, tree management, vegetation control, and blade sharpening for resorts, body corporates, property managers, and businesses across FNQ." />
+  <link rel="canonical" href="https://steadyeco.com/sectors/commercial/">
+  <meta property="og:title" content="Commercial Property Maintenance — Steady Eco Cairns" />
+  <meta property="og:description" content="Grounds maintenance, tree management, and vegetation control for commercial properties across FNQ." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://steadyeco.com/sectors/commercial/" />
+  <meta property="og:image" content="https://steadyeco.com/images/machinery-background.jpg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/brand.css" />
+  <style>
+    .page-hero { position: relative; min-height: 65vh; display: flex; align-items: flex-end; padding: 0 0 80px; background: var(--bg); overflow: hidden; }
+    .page-hero-glow { position: absolute; inset: 0; background: radial-gradient(ellipse 60% 50% at 15% 70%, rgba(26,51,24,0.6) 0%, transparent 70%); pointer-events: none; }
+    .page-hero-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(74,158,63,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(74,158,63,0.03) 1px, transparent 1px); background-size: 60px 60px; pointer-events: none; opacity: 0.5; }
+    .page-hero-ghost { position: absolute; bottom: -0.12em; right: -0.02em; font-family: var(--font-display); font-size: 12vw; font-weight: 300; text-transform: uppercase; color: var(--text); opacity: 0.025; line-height: 1; pointer-events: none; user-select: none; white-space: nowrap; }
+    .page-hero .container { position: relative; z-index: 2; padding-top: 160px; }
+    .page-hero h1 { font-size: clamp(2.5rem, 5.5vw, 5rem); margin-bottom: 24px; }
+    .page-hero h1 .green { color: var(--green-accent); }
+    .page-hero-sub { font-size: 0.95rem; color: var(--muted-light); max-width: 560px; line-height: 1.85; font-weight: 300; margin-bottom: 36px; }
+    .page-hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; }
+
+    .who-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; background: var(--border); margin-bottom: 60px; }
+    .who-item { background: var(--bg-alt); padding: 28px 24px; display: flex; align-items: center; gap: 14px; transition: background 0.3s, padding-left 0.3s; }
+    .who-item:hover { background: var(--card-hover); padding-left: 30px; }
+    .who-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green-accent); flex-shrink: 0; }
+    .who-item span { font-size: 0.84rem; color: var(--muted-light); font-weight: 300; }
+
+    .services-list { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: var(--border); }
+    .sl-item { background: var(--bg); padding: 36px 32px; position: relative; overflow: hidden; transition: background 0.3s; }
+    .sl-item::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--green-accent); transform: scaleX(0); transform-origin: left; transition: transform 0.5s cubic-bezier(0.16,1,0.3,1); }
+    .sl-item:hover { background: var(--card-hover); }
+    .sl-item:hover::before { transform: scaleX(1); }
+    .sl-num { font-family: var(--font-display); font-size: 2rem; font-weight: 300; color: var(--border-light); opacity: 0.5; margin-bottom: 12px; }
+    .sl-item h4 { font-size: 0.92rem; color: var(--text); margin-bottom: 8px; font-weight: 500; }
+    .sl-item p { font-size: 0.82rem; color: var(--muted-light); line-height: 1.75; font-weight: 300; }
+
+    .cta-section { position: relative; padding: 100px 0; text-align: center; background: var(--bg-alt); border-top: 1px solid var(--border); overflow: hidden; }
+    .cta-glow { position: absolute; inset: 0; background: radial-gradient(ellipse 50% 60% at 50% 50%, rgba(74,158,63,0.06) 0%, transparent 70%); pointer-events: none; }
+    .cta-section h2 { font-size: clamp(2rem, 4.5vw, 3.5rem); margin-bottom: 16px; position: relative; }
+    .cta-section p { color: var(--muted-light); font-size: 0.9rem; margin-bottom: 36px; font-weight: 300; position: relative; }
+    .cta-section .btn { margin: 0 8px; position: relative; }
+    .cta-phone { display: block; margin-top: 24px; font-family: var(--font-display); font-size: 1.4rem; color: var(--gold); font-weight: 300; transition: color 0.3s; position: relative; }
+    .cta-phone:hover { color: var(--text); }
+
+    @media (max-width: 768px) { .who-grid { grid-template-columns: 1fr 1fr; } .services-list { grid-template-columns: 1fr; } .page-hero .container { padding-top: 120px; } .page-hero-ctas { flex-direction: column; } .page-hero-ctas .btn { width: 100%; justify-content: center; } }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" onerror="document.body.classList.add('js-ready','no-gsap')"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" onerror="document.body.classList.add('js-ready','no-gsap')"></script>
+</head>
+<body>
+  <div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
+  <div class="cursor-ring" id="cursorRing" aria-hidden="true"><span class="cursor-ring-label">View</span></div>
+  <div id="preloader" aria-hidden="true"><div class="pre-logo">Steady <span>Eco</span></div><div class="pre-bar"><div class="pre-fill" id="preFill"></div></div></div>
+  <div id="scroll-bar" style="position:fixed;top:0;left:0;height:2px;width:0%;background:linear-gradient(90deg,var(--green-accent),var(--gold));z-index:200;transition:width 0.1s linear;pointer-events:none;" aria-hidden="true"></div>
+
+  <nav id="navbar"><div class="container nav-inner"><a href="/" class="nav-logo">Steady <span>Eco</span></a><ul class="nav-links"><li class="nav-dropdown"><a href="/#services">Services <span class="nav-dropdown-arrow"></span></a><div class="nav-dropdown-menu"><a href="/services/landscaping/">Landscaping</a><a href="/services/tree-work/">Tree Work</a><a href="/services/blade-sharpening/">Blade Sharpening</a><a href="/services/vegetation-management/">Vegetation Mgmt</a></div></li><li><a href="/#about">About</a></li><li><a href="/#contact">Contact</a></li><li><a href="/quote" class="nav-cta">Get a Quote</a></li></ul><div class="hamburger" onclick="toggleMenu()" aria-label="Menu"><span></span><span></span><span></span></div></div>
+  <div class="mobile-menu" id="mobileMenu"><span class="mobile-menu-label">Services</span><div class="mobile-menu-sub"><a href="/services/landscaping/" onclick="toggleMenu()">Landscaping</a><a href="/services/tree-work/" onclick="toggleMenu()">Tree Work</a><a href="/services/blade-sharpening/" onclick="toggleMenu()">Blade Sharpening</a></div><a href="/#about" onclick="toggleMenu()">About</a><a href="/#contact" onclick="toggleMenu()">Contact</a><a href="/quote" onclick="toggleMenu()" style="color:var(--green-accent);">Get a Quote</a></div></nav>
+
+  <section class="page-hero">
+    <div class="page-hero-glow"></div><div class="page-hero-grid"></div>
+    <div class="page-hero-ghost" aria-hidden="true">COMMERCIAL</div>
+    <div class="container">
+      <div class="section-tag fade-in">Commercial</div>
+      <h1 class="fade-in">Commercial Property <span class="green">Maintenance</span></h1>
+      <p class="page-hero-sub fade-in">Reliable grounds maintenance, tree management, and vegetation control for commercial properties across Cairns and Far North Queensland. Fully equipped, one operator you can count on.</p>
+      <div class="page-hero-ctas fade-in">
+        <a href="/quote" class="btn btn-primary">Request a Quote</a>
+        <a href="tel:+61456190202" class="btn btn-outline">Call 0456 190 202</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background:var(--bg);">
+    <div class="container">
+      <div class="section-tag fade-in">Who We Work With</div>
+      <h2 class="section-title fade-in">We Service</h2>
+      <div class="who-grid">
+        <div class="who-item fade-in"><span class="who-dot"></span><span>Resorts &amp; Eco-Lodges</span></div>
+        <div class="who-item fade-in"><span class="who-dot"></span><span>Body Corporates</span></div>
+        <div class="who-item fade-in"><span class="who-dot"></span><span>Property Managers</span></div>
+        <div class="who-item fade-in"><span class="who-dot"></span><span>Real Estate Agencies</span></div>
+        <div class="who-item fade-in"><span class="who-dot"></span><span>Golf Courses</span></div>
+        <div class="who-item fade-in"><span class="who-dot"></span><span>Schools &amp; Facilities</span></div>
+        <div class="who-item fade-in"><span class="who-dot"></span><span>Commercial Lots</span></div>
+        <div class="who-item fade-in"><span class="who-dot"></span><span>Agricultural Properties</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background:var(--bg-alt);">
+    <div class="container">
+      <div class="section-tag fade-in">What We Offer</div>
+      <h2 class="section-title fade-in">Commercial <span class="dim">Services</span></h2>
+      <div class="services-list">
+        <div class="sl-item fade-in" data-cursor="view"><div class="sl-num">01</div><h4>Grounds Maintenance</h4><p>Regular mowing, edging, hedging, and garden care on fortnightly or weekly schedules. Priority scheduling for contract clients.</p></div>
+        <div class="sl-item fade-in" data-cursor="view"><div class="sl-num">02</div><h4>Tree Management</h4><p>Pruning, palm cleaning, hazard tree assessment, and removal. Keep your property safe and compliant.</p></div>
+        <div class="sl-item fade-in" data-cursor="view"><div class="sl-num">03</div><h4>Vegetation Control</h4><p>Land clearing, weed management, and vegetation setback for commercial sites and development lots.</p></div>
+        <div class="sl-item fade-in" data-cursor="view"><div class="sl-num">04</div><h4>Storm Response</h4><p>Priority emergency clean-up for commercial clients after cyclones and severe weather events.</p></div>
+        <div class="sl-item fade-in" data-cursor="view"><div class="sl-num">05</div><h4>Green Waste Removal</h4><p>Tipper truck on every job. All waste removed. Site left clean and presentable.</p></div>
+        <div class="sl-item fade-in" data-cursor="view"><div class="sl-num">06</div><h4>Blade Sharpening</h4><p>For operators running chippers on commercial sites. $120/set, 1-2 day turnaround, factory spec.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="cta-glow"></div>
+    <div class="container">
+      <h2 class="fade-in">Need a Reliable <span style="color:var(--green-accent);">Contractor?</span></h2>
+      <p class="fade-in">One call, one operator, all your property maintenance sorted.</p>
+      <div class="fade-in"><a href="/quote" class="btn btn-primary">Request a Quote</a><a href="tel:+61456190202" class="btn btn-outline">Call Us</a></div>
+      <a href="tel:+61456190202" class="cta-phone fade-in">0456 190 202</a>
+    </div>
+  </section>
+
+

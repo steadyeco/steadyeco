@@ -3,35 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Get a Quote — Steady Eco</title>
+  <title>Get a Quote — Steady Eco | Cairns Landscaping, Tree Work & Blade Sharpening</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#0a0f0a">
-  <meta name="description" content="Get an instant blade sharpening quote from Steady Eco in Cairns. $120 per set, 1–2 day turnaround, collection available across FNQ." />
+  <meta name="description" content="Get a free quote for landscaping, tree work, or blade sharpening from Steady Eco in Cairns. Same-week response across FNQ." />
   <link rel="canonical" href="https://steadyeco.com/quote">
 
-  <!-- Open Graph -->
-  <meta property="og:title" content="Get a Quote — Steady Eco Blade Sharpening" />
-  <meta property="og:description" content="$120 per set. 1–2 day turnaround. Pickup and drop-off across FNQ." />
+  <meta property="og:title" content="Get a Quote — Steady Eco" />
+  <meta property="og:description" content="Free quotes for landscaping, tree work, and blade sharpening across Cairns and FNQ." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://steadyeco.com/quote" />
   <meta property="og:image" content="https://steadyeco.com/images/machinery-background.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Get a Quote — Steady Eco" />
-  <meta name="twitter:description" content="$120 per set. Factory spec. 1–2 days. Cairns, QLD." />
+  <meta name="twitter:description" content="Landscaping, tree work, blade sharpening. Cairns & FNQ." />
   <meta name="twitter:image" content="https://steadyeco.com/images/machinery-background.jpg" />
 
-  <!-- Schema -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "name": "Steady Eco",
-    "description": "Professional chipper blade sharpening in Cairns and Far North Queensland.",
+    "description": "Cairns landscaping, tree work, and chipper blade sharpening across Far North Queensland.",
     "url": "https://steadyeco.com",
     "telephone": "+61456190202",
-    "priceRange": "$120 per set",
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "Cairns",
@@ -150,9 +147,10 @@
       background: #1e2d25;
       transition: background 300ms ease;
     }
-    .progress-dot:nth-child(2) { left: calc(33.33% - 3.5px); }
-    .progress-dot:nth-child(3) { left: calc(66.66% - 3.5px); }
-    .progress-dot:nth-child(4) { left: calc(100% - 3.5px); }
+    .progress-dot:nth-child(2) { left: calc(25% - 3.5px); }
+    .progress-dot:nth-child(3) { left: calc(50% - 3.5px); }
+    .progress-dot:nth-child(4) { left: calc(75% - 3.5px); }
+    .progress-dot:nth-child(5) { left: calc(100% - 3.5px); }
     .progress-dot.done {
       background: var(--gold);
       animation: dotPulse 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -180,6 +178,129 @@
       margin-bottom: 20px;
     }
 
+    /* ═══ SERVICE SELECTOR (Step 0) ═══ */
+    .service-select-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .service-select-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 28px 16px 22px;
+      cursor: pointer;
+      text-align: center;
+      border-radius: 6px;
+      will-change: transform;
+      transition: border-color 250ms ease-out, box-shadow 250ms ease-out, color 250ms ease-out, transform 250ms ease-out, background 250ms ease-out;
+    }
+    .service-select-card:hover { border-color: var(--border-l); transform: translateY(-3px); background: var(--card-h); }
+    .service-select-card.selected {
+      border-color: var(--green);
+      box-shadow: inset 0 0 0 1px var(--green), 0 0 24px rgba(74,158,63,0.18);
+      transform: translateY(-2px);
+    }
+    .service-select-card .ssc-icon {
+      display: block;
+      margin: 0 auto 12px;
+      width: 40px;
+      height: 40px;
+    }
+    .service-select-card .ssc-icon svg { width: 100%; height: 100%; }
+    .service-select-card .ssc-title {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: 0.3px;
+      margin-bottom: 4px;
+    }
+    .service-select-card .ssc-sub {
+      font-size: 0.68rem;
+      color: var(--muted);
+      letter-spacing: 0.3px;
+    }
+    .service-select-card.selected .ssc-title { color: var(--green); }
+
+    /* ═══ GENERAL QUOTE FORM (non-blade services) ═══ */
+    .general-form-section { margin-bottom: 24px; }
+    .general-form-section .step-label { margin-bottom: 12px; }
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .checkbox-pill {
+      padding: 10px 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--muted-l);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.76rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+      letter-spacing: 0.5px;
+      border-radius: 4px;
+      transition: border-color 200ms ease, color 200ms ease, background 200ms ease, transform 200ms ease;
+    }
+    .checkbox-pill:hover { border-color: var(--border-l); color: var(--text); transform: translateY(-1px); }
+    .checkbox-pill.checked {
+      border-color: var(--green);
+      color: var(--green);
+      background: rgba(74,158,63,0.06);
+    }
+    .size-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .size-card {
+      padding: 16px 8px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--muted-l);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+      letter-spacing: 0.5px;
+      border-radius: 4px;
+      transition: border-color 200ms ease, color 200ms ease, transform 200ms ease, background 200ms ease;
+    }
+    .size-card:hover { border-color: var(--border-l); color: var(--text); transform: translateY(-1px); }
+    .size-card.selected {
+      border-color: var(--green);
+      color: var(--green);
+      background: rgba(74,158,63,0.06);
+    }
+    .general-textarea {
+      width: 100%;
+      background: var(--bg-alt);
+      border: 1px solid var(--border-l);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      padding: 14px;
+      outline: none;
+      resize: none;
+      min-height: 100px;
+      transition: border-color 200ms ease;
+    }
+    .general-textarea:focus { border-color: var(--green); }
+    .general-textarea::placeholder { color: var(--muted); }
+    .photo-hint {
+      margin-top: 12px;
+      padding: 12px 14px;
+      background: rgba(200,168,75,0.06);
+      border-left: 2px solid var(--gold);
+      font-size: 0.78rem;
+      color: var(--muted-l);
+      line-height: 1.5;
+    }
+
     /* ── MACHINE CARDS ── */
     .machine-grid {
       display: grid;
@@ -198,15 +319,17 @@
       color: var(--muted-l);
       text-align: center;
       letter-spacing: 0.5px;
-      transition: border-color 250ms ease-out, box-shadow 250ms ease-out, color 250ms ease-out;
+      border-radius: 6px;
+      will-change: transform;
+      transition: border-color 250ms ease-out, box-shadow 250ms ease-out, color 250ms ease-out, transform 250ms ease-out, background 250ms ease-out;
     }
-    .machine-card:hover { border-color: var(--border-l); color: var(--text); }
+    .machine-card:hover { border-color: var(--border-l); color: var(--text); transform: translateY(-2px); background: var(--card-h); }
     .machine-card.selected {
       border-color: var(--green);
       color: var(--text);
-      box-shadow: inset 0 0 0 1px var(--green), 0 0 20px rgba(74,158,63,0.15);
+      box-shadow: inset 0 0 0 1px var(--green), 0 0 24px rgba(74,158,63,0.18);
+      transform: translateY(-2px);
     }
-    .machine-card .mc-icon { font-size: 1.4rem; display: block; margin-bottom: 6px; }
 
     .other-machine-wrap {
       overflow: hidden;
@@ -367,7 +490,8 @@
       color: var(--muted-l);
       text-align: center;
       letter-spacing: 0.5px;
-      transition: border-color 250ms ease-out, color 250ms ease-out, box-shadow 250ms ease-out;
+      border-radius: 6px;
+      transition: border-color 250ms ease-out, color 250ms ease-out, box-shadow 250ms ease-out, transform 250ms ease-out;
     }
     .collect-card .cc-icon { font-size: 1.4rem; display: block; margin-bottom: 8px; }
     .collect-card:hover { border-color: var(--border-l); color: var(--text); }
@@ -391,30 +515,6 @@
       margin-bottom: 24px;
     }
     .zone-panel-inner { padding-top: 16px; }
-
-    .zone-map {
-      width: 100%;
-      max-width: 220px;
-      display: block;
-      margin: 0 auto 16px;
-    }
-    .zone-ring {
-      fill: none;
-      stroke: var(--green);
-      stroke-width: 1;
-      opacity: 0.12;
-      transition: opacity 250ms ease, stroke-width 250ms ease;
-      transform-origin: center;
-    }
-    .zone-ring.active {
-      opacity: 0.7;
-      animation: ringPulse 400ms ease-out;
-    }
-    @keyframes ringPulse {
-      0%   { transform: scale(1); }
-      50%  { transform: scale(1.04); }
-      100% { transform: scale(1); }
-    }
 
     select {
       width: 100%;
@@ -525,6 +625,7 @@
     .turnaround-strip .ta-text { font-size: 0.78rem; color: var(--muted-l); line-height: 1.5; }
 
     /* ── BUTTONS ── */
+    .general-textarea { border-radius: 6px; }
     .next-btn {
       display: block;
       width: 100%;
@@ -538,6 +639,7 @@
       letter-spacing: 2.5px;
       text-transform: uppercase;
       cursor: pointer;
+      border-radius: 4px;
       transition: background 200ms ease, transform 200ms ease;
       margin-top: 4px;
     }
@@ -601,6 +703,7 @@
       flex-shrink: 0;
     }
     .ticker-amount.call-mode { color: var(--gold); font-size: clamp(22px, 5vw, 32px); }
+    .ticker-amount.quote-mode { color: var(--gold); font-size: clamp(18px, 4vw, 24px); font-family: 'DM Sans', sans-serif; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
 
     /* ── CONFIRM PANEL ── */
     .confirm-panel {
@@ -691,35 +794,6 @@
       margin-bottom: 28px;
       margin-top: 8px;
     }
-
-    .copy-btn {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      cursor: pointer;
-      margin-bottom: 8px;
-      transition: border-color 200ms ease, color 200ms ease, background 200ms ease;
-    }
-    .copy-btn.gold {
-      background: transparent;
-      border: 1px solid var(--gold);
-      color: var(--gold);
-    }
-    .copy-btn.gold:hover { background: rgba(200,168,75,0.08); }
-    .copy-btn.gold.copied { background: rgba(200,168,75,0.12); }
-    .copy-btn.muted {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--muted);
-    }
-    .copy-btn.muted:hover { border-color: var(--border-l); color: var(--text); }
-    .copy-btn.muted.copied { border-color: var(--green); color: var(--green); }
-
     .confirm-phone {
       font-size: 12px;
       color: var(--muted);
@@ -751,24 +825,198 @@
 <!-- NAV -->
 <nav class="site-nav">
   <a href="/" class="nav-logo">Steady <span>Eco</span></a>
-  <a href="/" class="nav-back">← Back to site</a>
+  <div style="display:flex;align-items:center;gap:24px;margin-left:auto;">
+    <a href="tel:+61456190202" class="nav-back" style="color:var(--gold);font-size:0.82rem;letter-spacing:0.5px;">0456 190 202</a>
+    <a href="/" class="nav-back">&larr; Back to site</a>
+  </div>
 </nav>
 
 <!-- MAIN -->
 <div class="wrap">
 
-  <h1 class="form-hero" id="formHero">What does your<br><em>chipper need?</em></h1>
+  <h1 class="form-hero" id="formHero">What do you<br><em>need done?</em></h1>
 
-  <!-- PROGRESS -->
+  <!-- PROGRESS (4 dots now: service → details → location → contact) -->
   <div class="progress-track">
     <div class="progress-fill" id="progressFill"></div>
     <span class="progress-dot" id="pdot1"></span>
     <span class="progress-dot" id="pdot2"></span>
     <span class="progress-dot" id="pdot3"></span>
+    <span class="progress-dot" id="pdot4"></span>
   </div>
 
-  <!-- ═══ STEP 1 ═══ -->
-  <div class="step active" id="step1">
+  <!-- ═══ STEP 0: SERVICE SELECTOR ═══ -->
+  <div class="step active" id="step0">
+    <div class="step-label">Choose a Service</div>
+    <div class="service-select-grid">
+
+      <button class="service-select-card" data-service="landscaping" onclick="selectService(this)">
+        <div class="ssc-icon"><svg viewBox="0 0 40 40" fill="none" stroke="#4a9e3f" stroke-width="1.5"><path d="M20 36V18M12 36V24M28 36V22"/><circle cx="20" cy="12" r="7"/><circle cx="12" cy="20" r="4"/><circle cx="28" cy="17" r="5"/></svg></div>
+        <div class="ssc-title">Landscaping</div>
+        <div class="ssc-sub">Mowing, hedging, clean-ups</div>
+      </button>
+
+      <button class="service-select-card" data-service="tree-work" onclick="selectService(this)">
+        <div class="ssc-icon"><svg viewBox="0 0 40 40" fill="none" stroke="#4a9e3f" stroke-width="1.5"><path d="M20 38V20"/><path d="M20 20L12 10L20 4L28 10Z"/><path d="M20 26L14 18"/><path d="M20 26L26 18"/></svg></div>
+        <div class="ssc-title">Tree Work</div>
+        <div class="ssc-sub">Pruning, removal, chipping</div>
+      </button>
+
+      <button class="service-select-card" data-service="blade-sharpening" onclick="selectService(this)">
+        <div class="ssc-icon"><svg viewBox="0 0 40 40" fill="none" stroke="#4a9e3f" stroke-width="1.5"><rect x="4" y="16" width="32" height="8" rx="1"/><path d="M8 16V12M16 16V10M24 16V10M32 16V12"/><path d="M4 24l4 4M36 24l-4 4"/></svg></div>
+        <div class="ssc-title">Blade Sharpening</div>
+        <div class="ssc-sub">$120/set, 1-2 day turnaround</div>
+      </button>
+
+      <button class="service-select-card" data-service="vegetation-management" onclick="selectService(this)">
+        <div class="ssc-icon"><svg viewBox="0 0 40 40" fill="none" stroke="#4a9e3f" stroke-width="1.5"><path d="M6 34C6 20 20 6 34 6"/><path d="M14 34C14 24 22 14 34 10"/><path d="M22 34C22 28 26 22 34 18"/><line x1="2" y1="36" x2="38" y2="36"/></svg></div>
+        <div class="ssc-title">Vegetation Mgmt</div>
+        <div class="ssc-sub">Clearing, site prep, weed control</div>
+      </button>
+
+    </div>
+    <button class="next-btn" onclick="goFromStep0()" id="step0Next" style="opacity:0.5;pointer-events:none;">Next &rarr;</button>
+  </div>
+
+  <!-- ═══ STEP 1A: LANDSCAPING DETAILS ═══ -->
+  <div class="step" id="step1-landscaping">
+    <div class="step-label">Landscaping Details</div>
+
+    <div class="general-form-section">
+      <div class="step-label" style="color:var(--muted-l);">What do you need? (select all that apply)</div>
+      <div class="checkbox-grid">
+        <button class="checkbox-pill" onclick="togglePill(this)">Mowing</button>
+        <button class="checkbox-pill" onclick="togglePill(this)">Hedging</button>
+        <button class="checkbox-pill" onclick="togglePill(this)">Garden Maintenance</button>
+        <button class="checkbox-pill" onclick="togglePill(this)">Mulching</button>
+        <button class="checkbox-pill" onclick="togglePill(this)">Property Clean-Up</button>
+        <button class="checkbox-pill" onclick="togglePill(this)">Green Waste Removal</button>
+      </div>
+    </div>
+
+    <div class="general-form-section">
+      <div class="step-label" style="color:var(--muted-l);">Property Size</div>
+      <div class="size-cards">
+        <button class="size-card" onclick="selectSize(this)">Small</button>
+        <button class="size-card" onclick="selectSize(this)">Medium</button>
+        <button class="size-card" onclick="selectSize(this)">Large / Acreage</button>
+      </div>
+    </div>
+
+    <div class="general-form-section">
+      <div class="step-label" style="color:var(--muted-l);">Frequency</div>
+      <div class="size-cards">
+        <button class="size-card" onclick="selectFreq(this)">One-Off</button>
+        <button class="size-card" onclick="selectFreq(this)">Fortnightly</button>
+        <button class="size-card" onclick="selectFreq(this)">Weekly</button>
+      </div>
+    </div>
+
+    <div class="general-form-section">
+      <div class="step-label" style="color:var(--muted-l);">Anything else we should know?</div>
+      <textarea class="general-textarea" id="landscapingNotes" placeholder="E.g. access issues, steep blocks, pets, specific areas to focus on..."></textarea>
+    </div>
+
+    <div class="photo-hint">
+      Have photos of the property? Attach them when you email us or mention details in the notes above for a more accurate quote.
+    </div>
+
+    <div style="margin-top:12px;padding:12px 14px;background:rgba(200,168,75,0.06);border-left:2px solid var(--gold);font-size:0.78rem;color:var(--muted-l);line-height:1.5;">
+      <strong style="color:var(--gold);">Pricing guide:</strong> Landscaping starts from $80/hr for standard residential work. Ride-on mowing from $60/hr. We'll confirm your exact price in the quote.
+    </div>
+
+    <button class="back-link" onclick="goBackToStep0()">&larr; Change service</button>
+    <button class="next-btn" onclick="goToContactStep()">Your Details &rarr;</button>
+  </div>
+
+  <!-- ═══ STEP 1B: TREE WORK DETAILS ═══ -->
+  <div class="step" id="step1-tree-work">
+    <div class="step-label">Tree Work Details</div>
+
+    <div class="general-form-section">
+      <div class="step-label" style="color:var(--muted-l);">What do you need? (select all that apply)</div>
+      <div class="checkbox-grid">
+        <button class="checkbox-pill" onclick="togglePill(this)">Pruning</button>
+        <button class="checkbox-pill" onclick="togglePill(this)">Tree Removal</button>
+        <button class="checkbox-pill" onclick="togglePill(this)">Palm Cleaning</button>
+        <button class="checkbox-pill" onclick="togglePill(this)">Chipping</button>
+        <button class="checkbox-pill" onclick="togglePill(this)">Stump Grinding</button>
+        <button class="checkbox-pill" onclick="togglePill(this)">Green Waste Removal</button>
+        <button class="checkbox-pill" onclick="togglePill(this)">Storm Clean-Up</button>
+        <button class="checkbox-pill" onclick="togglePill(this)">Other</button>
+      </div>
+    </div>
+
+    <div class="general-form-section">
+      <div class="step-label" style="color:var(--muted-l);">Approximate Tree Height</div>
+      <div class="size-cards">
+        <button class="size-card" onclick="selectTreeHeight(this)">Under 5m</button>
+        <button class="size-card" onclick="selectTreeHeight(this)">5 - 10m</button>
+        <button class="size-card" onclick="selectTreeHeight(this)">Over 10m</button>
+      </div>
+    </div>
+
+    <div class="general-form-section">
+      <div class="step-label" style="color:var(--muted-l);">Near power lines or structures?</div>
+      <div class="size-cards" style="grid-template-columns: 1fr 1fr;">
+        <button class="size-card" onclick="selectNearStructures(this)">Yes</button>
+        <button class="size-card" onclick="selectNearStructures(this)">No</button>
+      </div>
+    </div>
+
+    <div class="general-form-section">
+      <div class="step-label" style="color:var(--muted-l);">Anything else?</div>
+      <textarea class="general-textarea" id="treeNotes" placeholder="E.g. number of trees, species, access issues, urgency..."></textarea>
+    </div>
+
+    <div class="photo-hint">
+      Photos help us quote tree work accurately. Mention tree details in the notes above or email photos after submitting.
+    </div>
+
+    <button class="back-link" onclick="goBackToStep0()">&larr; Change service</button>
+    <button class="next-btn" onclick="goToContactStep()">Your Details &rarr;</button>
+  </div>
+
+  <!-- ═══ STEP 1C: VEGETATION MANAGEMENT DETAILS ═══ -->
+  <div class="step" id="step1-vegetation-management">
+    <div class="step-label">Vegetation Management Details</div>
+
+    <div class="general-form-section">
+      <div class="step-label" style="color:var(--muted-l);">What do you need? (select all that apply)</div>
+      <div class="checkbox-grid">
+        <button class="checkbox-pill" onclick="togglePill(this)">Land Clearing</button>
+        <button class="checkbox-pill" onclick="togglePill(this)">Site Preparation</button>
+        <button class="checkbox-pill" onclick="togglePill(this)">Weed Control</button>
+        <button class="checkbox-pill" onclick="togglePill(this)">Roadside Vegetation</button>
+        <button class="checkbox-pill" onclick="togglePill(this)">Large-Area Mowing</button>
+        <button class="checkbox-pill" onclick="togglePill(this)">Other</button>
+      </div>
+    </div>
+
+    <div class="general-form-section">
+      <div class="step-label" style="color:var(--muted-l);">Property Type</div>
+      <div class="size-cards">
+        <button class="size-card" onclick="selectPropertyType(this)">Residential</button>
+        <button class="size-card" onclick="selectPropertyType(this)">Commercial</button>
+        <button class="size-card" onclick="selectPropertyType(this)">Council / Govt</button>
+      </div>
+    </div>
+
+    <div class="general-form-section">
+      <div class="step-label" style="color:var(--muted-l);">Describe the job</div>
+      <textarea class="general-textarea" id="vegNotes" placeholder="E.g. area size, vegetation type, access, timeline..."></textarea>
+    </div>
+
+    <div class="photo-hint">
+      Have photos of the site? Mention details in the notes above or email photos after submitting for a more accurate quote.
+    </div>
+
+    <button class="back-link" onclick="goBackToStep0()">&larr; Change service</button>
+    <button class="next-btn" onclick="goToContactStep()">Your Details &rarr;</button>
+  </div>
+
+  <!-- ═══ STEP 1D: BLADE SHARPENING (existing wizard) ═══ -->
+  <div class="step" id="step1-blade-sharpening">
 
     <div class="step-label">Your Machine</div>
     <div class="machine-grid">
@@ -836,7 +1084,7 @@
     </div>
 
     <div class="other-machine-wrap" id="otherMachineWrap">
-      <input type="text" id="otherMachineInput" placeholder="e.g. Altec, Rayco, John Deere…" oninput="onOtherMachine()" autocomplete="off" />
+      <input type="text" id="otherMachineInput" placeholder="e.g. Altec, Rayco, John Deere..." oninput="onOtherMachine()" autocomplete="off" />
     </div>
 
     <div class="jtype-section" style="margin-bottom:28px;">
@@ -853,10 +1101,10 @@
     <div class="sets-section">
       <div class="step-label">Number of Sets</div>
       <div class="sets-row">
-        <button class="step-count-btn" onclick="changeSets(-1)">−</button>
+        <button class="step-count-btn" onclick="changeSets(-1)">&minus;</button>
         <div>
           <div class="sets-count" id="setsDisplay">1</div>
-          <div class="sets-note">1 set = all blades in your machine · $120 per set</div>
+          <div class="sets-note">1 set = all blades in your machine &middot; $120 per set</div>
         </div>
         <button class="step-count-btn" onclick="changeSets(1)">+</button>
       </div>
@@ -866,31 +1114,32 @@
       <div class="step-label">Job Type</div>
       <div class="jtype-row">
         <button class="jtype-btn active-std" id="btnStd" onclick="setJobType(false)">Standard</button>
-        <button class="jtype-btn" id="btnEmg" onclick="setJobType(true)">Emergency 2×</button>
+        <button class="jtype-btn" id="btnEmg" onclick="setJobType(true)">Emergency 2&times;</button>
       </div>
     </div>
 
-    <button class="next-btn" onclick="goStep(2)">Delivery →</button>
+    <button class="back-link" onclick="goBackToStep0()">&larr; Change service</button>
+    <button class="next-btn" onclick="goToBladeStep2()">Delivery &rarr;</button>
   </div>
 
-  <!-- ═══ STEP 2 ═══ -->
-  <div class="step" id="step2">
+  <!-- ═══ STEP 2: BLADE DELIVERY ═══ -->
+  <div class="step" id="step2-blade">
 
     <div class="service-area-map-wrap">
       <div id="service-map" style="width:100%;height:420px;border:1px solid rgba(74,158,63,0.2);"></div>
-      <p class="map-caption">Servicing a 100km radius from Cairns CBD. Regional and remote projects considered — <a href="/land-regeneration/contact">contact us</a>.</p>
+      <p class="map-caption">Servicing a 100km radius from Cairns CBD.</p>
     </div>
 
     <div class="step-label">How do the blades travel?</div>
     <div class="collect-section">
       <div class="collect-grid">
         <button class="collect-card selected" id="cardDropoff" onclick="setCollect('dropoff')">
-          <span class="cc-icon">🏠</span>
+          <span class="cc-icon">&#127968;</span>
           Drop Off &amp; Pick Up
           <div style="font-size:0.68rem;color:var(--muted);margin-top:4px;">No charge</div>
         </button>
         <button class="collect-card" id="cardCollect" onclick="setCollect('collect')">
-          <span class="cc-icon">🚛</span>
+          <span class="cc-icon">&#128666;</span>
           Delivery
           <div style="font-size:0.68rem;color:var(--muted);margin-top:4px;">From $10</div>
         </button>
@@ -900,19 +1149,19 @@
     <div class="zone-panel" id="zonePanel">
       <div class="zone-panel-inner">
         <div class="suburb-wrap">
-          <input class="suburb-input" id="suburbInput" type="text" placeholder="Type your suburb…" autocomplete="off" oninput="onSuburbInput()" />
+          <input class="suburb-input" id="suburbInput" type="text" placeholder="Type your suburb..." autocomplete="off" oninput="onSuburbInput()" />
           <div class="suburb-suggestions" id="suburbSuggestions"></div>
           <div class="suburb-result none" id="suburbResult" style="display:none;"></div>
         </div>
       </div>
     </div>
 
-    <button class="back-link" onclick="goStep(1)">← Back</button>
-    <button class="next-btn" onclick="goStep(3)">Your details →</button>
+    <button class="back-link" onclick="goBackToBlade1()">&larr; Back</button>
+    <button class="next-btn" onclick="goToContactStep()">Your Details &rarr;</button>
   </div>
 
-  <!-- ═══ STEP 3 ═══ -->
-  <div class="step" id="step3">
+  <!-- ═══ CONTACT STEP (shared across all services) ═══ -->
+  <div class="step" id="stepContact">
 
     <div class="step-label">Almost Done</div>
 
@@ -920,58 +1169,56 @@
       <div class="float-group" id="grpName">
         <input type="text" id="custName" placeholder=" " autocomplete="name" oninput="onInput('grpName','custName')" />
         <label for="custName">Your name *</label>
-        <span class="input-check">✓</span>
+        <span class="input-check">&check;</span>
       </div>
 
       <div class="float-group" id="grpCompany">
         <input type="text" id="custCompany" placeholder=" " autocomplete="organization" oninput="onInput('grpCompany','custCompany')" />
         <label for="custCompany">Company Name (optional)</label>
-        <span class="input-check">✓</span>
+        <span class="input-check">&check;</span>
       </div>
 
       <div class="float-group" id="grpPhone">
         <input type="tel" id="custPhone" placeholder=" " autocomplete="tel" inputmode="tel" oninput="onInput('grpPhone','custPhone')" />
         <label for="custPhone">Mobile number *</label>
-        <span class="input-check">✓</span>
+        <span class="input-check">&check;</span>
       </div>
       <div class="field-note" id="phoneNote" style="display:none;color:var(--danger);">Please enter a valid Australian mobile number</div>
-
-      <div class="float-group" id="grpDate">
-        <input type="date" id="custDate" placeholder=" " oninput="onInput('grpDate','custDate')" style="padding-top:22px;padding-bottom:8px;padding-left:14px;color-scheme:dark;" />
-        <label for="custDate" style="pointer-events:none;">Preferred Drop-Off Date (optional)</label>
-        <span class="input-check">✓</span>
-      </div>
-      <div class="field-note">Optional — we'll confirm availability</div>
 
       <div class="float-group" id="grpEmail">
         <input type="email" id="custEmail" placeholder=" " autocomplete="email" oninput="onInput('grpEmail','custEmail')" />
         <label for="custEmail">Email (optional)</label>
-        <span class="input-check">✓</span>
+        <span class="input-check">&check;</span>
       </div>
-      <div class="field-note">Email optional — for a PDF copy of your quote</div>
+
+      <div class="float-group" id="grpSuburb" style="display:none;">
+        <input type="text" id="custSuburb" placeholder=" " autocomplete="address-level2" oninput="onInput('grpSuburb','custSuburb')" />
+        <label for="custSuburb">Suburb *</label>
+        <span class="input-check">&check;</span>
+      </div>
     </div>
 
     <div class="turnaround-strip" id="turnaroundStrip">
-      <span class="ta-icon">⏱</span>
-      <span class="ta-text" id="turnaroundText">1–2 business days · Emergency: same day if received before 10am</span>
+      <span class="ta-icon">&#9201;</span>
+      <span class="ta-text" id="turnaroundText">We respond to all enquiries within 1 business day.</span>
     </div>
 
-    <button class="back-link" onclick="goStep(2)">← Back</button>
+    <button class="back-link" id="contactBackBtn" onclick="goBackFromContact()">&larr; Back</button>
     <button class="next-btn" id="submitBtn" onclick="submitQuote()">Request Your Quote</button>
   </div>
 
   <!-- ═══ CONFIRMATION ═══ -->
   <div class="confirm-panel" id="confirmPanel">
-    <div class="confirm-check">✓</div>
+    <div class="confirm-check">&check;</div>
     <div class="ref-label">Job Reference</div>
     <div class="ref-number" id="refDisplay"></div>
     <div class="confirm-divider"></div>
-    <p class="confirm-prose">Your quote has been prepared.</p>
+    <p class="confirm-prose">Your enquiry has been sent.</p>
     <div class="confirm-price" id="confirmPrice"></div>
     <div class="confirm-breakdown" id="confirmBreakdown"></div>
-    <p class="confirm-message">We'll review your request and be in touch within 1 business day to confirm.</p>
-    <p class="confirm-phone">Questions? <a href="/#contact">Send us a message</a></p>
-    <p class="confirm-legal">This quote is valid for 7 days · Steady Eco · ABN 49 553 784 085</p>
+    <p class="confirm-message">We'll review your request and be in touch within 1 business day.</p>
+    <p class="confirm-phone">Questions? Call <a href="tel:+61456190202">0456 190 202</a></p>
+    <p class="confirm-legal">Steady Eco &middot; ABN 49 553 784 085</p>
   </div>
 
 </div><!-- /wrap -->
@@ -980,99 +1227,235 @@
 <div class="price-ticker" id="priceTicker">
   <div class="ticker-left">
     <div class="ticker-label">Estimated Total</div>
-    <div class="ticker-breakdown" id="tickerBreakdown">Select machine &amp; sets above</div>
+    <div class="ticker-breakdown" id="tickerBreakdown">Select a service above</div>
   </div>
-  <div class="ticker-amount" id="tickerAmount">$0</div>
+  <div class="ticker-amount quote-mode" id="tickerAmount">Free Quote</div>
 </div>
 
 <script>
-  /* ── STATE ── */
+  /* ══ STATE ══ */
+  let selectedServiceType = null; // 'landscaping', 'tree-work', 'blade-sharpening', 'vegetation-management'
   let selectedMachine  = null;
   let otherMachineText = '';
   let sets             = 1;
   let isEmergency      = false;
   let collectMode      = 'dropoff';
-  let selectedSuburb   = null;   // { name, fee } — fee can be null (call to confirm)
-  let currentStep      = 1;
+  let selectedSuburb   = null;
   let prevPrice        = 0;
-  let smsCopyText      = '';
-  let emailCopyText    = '';
-  let selectedBladeType = '';    // optional blade type
+  let selectedBladeType = '';
 
-  /* ── SUBURB LOOKUP ── */
-  const SUBURBS = {
-    // $10 — within ~10km of Freshwater
-    'freshwater':10,'edge hill':10,'whitfield':10,'barron':10,'stratford':10,
-    'smithfield':10,'caravonica':10,'cairns north':10,'parramatta park':10,
-    'westcourt':10,'cairns':10,'cairns city':10,'cairns cbd':10,
-    'manunda':10,'mooroobool':10,'kanimbla':10,'manoora':10,'bungalow':10,
-    'aeroglen':10,'portsmith':10,
-    // $20 — within ~20km
-    'woree':20,'earlville':20,'redlynch':20,'yorkeys knob':20,
-    'holloways beach':20,'trinity beach':20,'trinity park':20,
-    'mt sheridan':20,'mount sheridan':20,'edmonton':20,'bentley park':20,
-    'white rock':20,'gordonvale':20,'machans beach':20,
-    // $30 — within ~30km
-    'kewarra beach':30,'clifton beach':30,'palm cove':30,
-    // $40 — within ~40km
-    'ellis beach':40,'buchan point':40,
-    // Call to confirm
-    'port douglas':null,'mossman':null,'daintree':null,'cape tribulation':null,
-    'mareeba':null,'atherton':null,'innisfail':null,'kuranda':null,
-    'cardwell':null,'mission beach':null,'tully':null,'babinda':null,
-    'ravenshoe':null,'malanda':null,'yungaburra':null,
-  };
+  // General form state
+  let generalServices = [];
+  let generalSize = '';
+  let generalFreq = '';
+  let generalTreeHeight = '';
+  let generalNearStructures = '';
+  let generalPropertyType = '';
 
-  /* ── PRICE ── */
-  function basePrice()     { return sets * 120 * (isEmergency ? 2 : 1); }
-  function collectionFee() {
-    if (collectMode !== 'collect') return 0;
-    if (!selectedSuburb) return null;   // not yet selected
-    return selectedSuburb.fee;          // fee can be null = call to confirm
+  /* ══ URL PARAM PRE-SELECT ══ */
+  (function() {
+    const params = new URLSearchParams(window.location.search);
+    const svc = params.get('service');
+    if (svc) {
+      const card = document.querySelector(`.service-select-card[data-service="${svc}"]`);
+      if (card) {
+        // Auto-select and advance
+        setTimeout(() => { selectService(card); setTimeout(() => goFromStep0(), 100); }, 200);
+      }
+    }
+  })();
+
+  /* ══ SERVICE SELECTOR ══ */
+  function selectService(btn) {
+    document.querySelectorAll('.service-select-card').forEach(c => c.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedServiceType = btn.dataset.service;
+    const nextBtn = document.getElementById('step0Next');
+    nextBtn.style.opacity = '1';
+    nextBtn.style.pointerEvents = 'auto';
+    heroRecede();
+    updateTicker();
   }
-  function totalPrice() {
-    const cf = collectionFee();
-    if (cf === null) return null;
-    return basePrice() + cf;
-  }
-  function isCallToConfirm() { return collectMode === 'collect' && selectedSuburb && selectedSuburb.fee === null; }
 
-  function animatePrice(target) {
-    const el = document.getElementById('tickerAmount');
-    if (target === null) {
-      el.textContent = 'Call to confirm';
-      el.className = 'ticker-amount call-mode';
-      prevPrice = 0;
+  function goFromStep0() {
+    if (!selectedServiceType) return;
+    var step0 = document.getElementById('step0');
+    step0.classList.remove('active');
+
+    // Show/hide 4th dot based on flow length
+    var pdot4 = document.getElementById('pdot4');
+    if (pdot4) {
+      pdot4.style.display = (selectedServiceType === 'blade-sharpening') ? 'block' : 'none';
+    }
+    // Reposition dots for 3-step flows
+    var pdot2 = document.getElementById('pdot2');
+    var pdot3 = document.getElementById('pdot3');
+    if (selectedServiceType !== 'blade-sharpening') {
+      if (pdot2) pdot2.style.left = 'calc(50% - 3.5px)';
+      if (pdot3) pdot3.style.left = 'calc(100% - 3.5px)';
+    } else {
+      if (pdot2) pdot2.style.left = 'calc(33.33% - 3.5px)';
+      if (pdot3) pdot3.style.left = 'calc(66.66% - 3.5px)';
+    }
+
+    if (selectedServiceType === 'blade-sharpening') {
+      showStep('step1-blade-sharpening', true);
+      document.getElementById('priceTicker').style.borderTopColor = 'var(--gold)';
+    } else {
+      showStep('step1-' + selectedServiceType, true);
+    }
+    updateProgress(2);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  function goBackToStep0() {
+    document.querySelectorAll('.step').forEach(function(s) { s.classList.remove('active', 'from-right', 'from-left'); });
+    // Reset all form selections
+    document.querySelectorAll('.checkbox-pill.checked').forEach(function(p) { p.classList.remove('checked'); });
+    document.querySelectorAll('.size-card.selected').forEach(function(c) { c.classList.remove('selected'); });
+    generalServices = [];
+    generalSize = '';
+    generalFreq = '';
+    generalTreeHeight = '';
+    generalNearStructures = '';
+    generalPropertyType = '';
+    // Reset textareas
+    var textareas = document.querySelectorAll('.general-textarea');
+    textareas.forEach(function(ta) { ta.value = ''; });
+    showStep('step0', false);
+    updateProgress(1);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  /* ══ GENERAL FORM HELPERS ══ */
+  function togglePill(btn) {
+    btn.classList.toggle('checked');
+    // Update generalServices array
+    const parent = btn.closest('.checkbox-grid');
+    generalServices = Array.from(parent.querySelectorAll('.checked')).map(b => b.textContent.trim());
+  }
+
+  function selectSize(btn) {
+    btn.closest('.size-cards').querySelectorAll('.size-card').forEach(c => c.classList.remove('selected'));
+    btn.classList.add('selected');
+    generalSize = btn.textContent.trim();
+  }
+  function selectFreq(btn) {
+    btn.closest('.size-cards').querySelectorAll('.size-card').forEach(c => c.classList.remove('selected'));
+    btn.classList.add('selected');
+    generalFreq = btn.textContent.trim();
+  }
+  function selectTreeHeight(btn) {
+    btn.closest('.size-cards').querySelectorAll('.size-card').forEach(c => c.classList.remove('selected'));
+    btn.classList.add('selected');
+    generalTreeHeight = btn.textContent.trim();
+  }
+  function selectNearStructures(btn) {
+    btn.closest('.size-cards').querySelectorAll('.size-card').forEach(c => c.classList.remove('selected'));
+    btn.classList.add('selected');
+    generalNearStructures = btn.textContent.trim();
+  }
+  function selectPropertyType(btn) {
+    btn.closest('.size-cards').querySelectorAll('.size-card').forEach(c => c.classList.remove('selected'));
+    btn.classList.add('selected');
+    generalPropertyType = btn.textContent.trim();
+  }
+
+  /* ══ BLADE SHARPENING FLOW ══ */
+  function goToBladeStep2() {
+    if (!selectedMachine) {
+      document.querySelectorAll('.machine-card').forEach(c => {
+        c.style.borderColor = 'rgba(224,82,82,0.5)';
+        setTimeout(() => c.style.borderColor = '', 1200);
+      });
       return;
     }
-    el.className = 'ticker-amount';
-    const from = prevPrice;
-    const duration = 400;
-    const start = performance.now();
-    (function tick(now) {
-      const p = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - p, 3);
-      el.textContent = '$' + Math.round(from + (target - from) * eased);
-      if (p < 1) requestAnimationFrame(tick);
-      else prevPrice = target;
-    })(performance.now());
-  }
-
-  function updateTicker() {
-    const machineName = selectedMachine === 'Other' ? (otherMachineText || 'Other') : (selectedMachine || '—');
-    const tp = totalPrice();
-    animatePrice(tp);
-    let breakdown = sets + ' set' + (sets > 1 ? 's' : '') + ' · ' + machineName;
-    if (isEmergency) breakdown += ' · emergency';
-    if (collectMode === 'collect') {
-      if (!selectedSuburb) breakdown += ' · delivery (select suburb)';
-      else if (selectedSuburb.fee === null) breakdown += ' · delivery TBC';
-      else breakdown += ' · delivery $' + selectedSuburb.fee;
+    if (selectedMachine === 'Other' && !otherMachineText) {
+      document.getElementById('otherMachineInput').focus();
+      document.getElementById('otherMachineInput').style.borderColor = 'var(--danger)';
+      setTimeout(() => document.getElementById('otherMachineInput').style.borderColor = '', 1200);
+      return;
     }
-    document.getElementById('tickerBreakdown').textContent = breakdown;
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active', 'from-right', 'from-left'));
+    showStep('step2-blade', true);
+    updateProgress(3);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    // Init map
+    if (!window._mapInit) initMap();
   }
 
-  /* ── MACHINE ── */
+  function goBackToBlade1() {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active', 'from-right', 'from-left'));
+    showStep('step1-blade-sharpening', false);
+    updateProgress(2);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  /* ══ CONTACT STEP ══ */
+  function goToContactStep() {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active', 'from-right', 'from-left'));
+    showStep('stepContact', true);
+
+    // Show suburb field for non-blade services
+    const suburbField = document.getElementById('grpSuburb');
+    suburbField.style.display = (selectedServiceType !== 'blade-sharpening') ? 'block' : 'none';
+
+    // Update turnaround text
+    const turnaroundText = document.getElementById('turnaroundText');
+    if (selectedServiceType === 'blade-sharpening') {
+      turnaroundText.textContent = isEmergency
+        ? 'Emergency: same-day turnaround if received before 10am'
+        : '1-2 business days · Emergency: same day if received before 10am';
+      document.getElementById('turnaroundStrip').classList.toggle('emergency', isEmergency);
+    } else {
+      turnaroundText.textContent = 'We respond to all enquiries within 1 business day.';
+    }
+
+    updateProgress(selectedServiceType === 'blade-sharpening' ? 4 : 3);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  function goBackFromContact() {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active', 'from-right', 'from-left'));
+    if (selectedServiceType === 'blade-sharpening') {
+      showStep('step2-blade', false);
+      updateProgress(3);
+    } else {
+      showStep('step1-' + selectedServiceType, false);
+      updateProgress(2);
+    }
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  /* ══ STEP HELPERS ══ */
+  function showStep(id, forward) {
+    const el = document.getElementById(id);
+    el.classList.add('active', forward ? 'from-right' : 'from-left');
+    setTimeout(() => el.classList.remove('from-right', 'from-left'), 400);
+  }
+
+  function updateProgress(step) {
+    const total = selectedServiceType === 'blade-sharpening' ? 4 : 3;
+    const pct = ((step - 1) / total) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    for (let i = 1; i <= 4; i++) {
+      const dot = document.getElementById('pdot' + i);
+      if (dot) {
+        if (i < step) { if (!dot.classList.contains('done')) dot.classList.add('done'); }
+        else dot.classList.remove('done');
+      }
+    }
+  }
+
+  /* ══ HERO RECEDE ══ */
+  let heroDone = false;
+  function heroRecede() {
+    if (heroDone) return;
+    heroDone = true;
+    document.getElementById('formHero').classList.add('receded');
+  }
+
+  /* ══ BLADE SHARPENING — MACHINE/SETS/PRICING ══ */
   function selectMachine(btn) {
     document.querySelectorAll('.machine-card').forEach(c => c.classList.remove('selected'));
     btn.classList.add('selected');
@@ -1094,14 +1477,12 @@
     updateTicker();
   }
 
-  /* ── BLADE TYPE ── */
   function selectBladeType(type, btn) {
-    selectedBladeType = (selectedBladeType === type) ? '' : type; // toggle
+    selectedBladeType = (selectedBladeType === type) ? '' : type;
     document.querySelectorAll('#bt1,#bt2,#bt3,#bt4').forEach(b => b.className = 'jtype-btn');
     if (selectedBladeType) btn.classList.add('active-std');
   }
 
-  /* ── STEPPER ── */
   function changeSets(delta) {
     sets = Math.max(1, Math.min(20, sets + delta));
     document.getElementById('setsDisplay').textContent = sets;
@@ -1109,49 +1490,111 @@
     updateTicker();
   }
 
-  /* ── JOB TYPE ── */
   function setJobType(emergency) {
     isEmergency = emergency;
     document.getElementById('btnStd').className = emergency ? 'jtype-btn' : 'jtype-btn active-std';
     document.getElementById('btnEmg').className = emergency ? 'jtype-btn active-emg' : 'jtype-btn';
-    updateTurnaroundStrip();
     updateTicker();
   }
 
-  /* ── COLLECT MODE ── */
   function setCollect(mode) {
     collectMode = mode;
     document.getElementById('cardDropoff').classList.toggle('selected', mode === 'dropoff');
     document.getElementById('cardCollect').classList.toggle('selected', mode === 'collect');
-    const panel = document.getElementById('zonePanel');
-    panel.classList.toggle('open', mode === 'collect');
-    if (mode === 'dropoff') { selectedSuburb = null; }
+    document.getElementById('zonePanel').classList.toggle('open', mode === 'collect');
+    if (mode === 'dropoff') selectedSuburb = null;
     updateTicker();
   }
 
-  /* ── SUBURB LOOKUP ── */
+  /* ══ PRICING ══ */
+  function basePrice()     { return sets * 120 * (isEmergency ? 2 : 1); }
+  function collectionFee() {
+    if (collectMode !== 'collect') return 0;
+    if (!selectedSuburb) return null;
+    return selectedSuburb.fee;
+  }
+  function totalPrice() {
+    const cf = collectionFee();
+    if (cf === null) return null;
+    return basePrice() + cf;
+  }
+  function isCallToConfirm() { return collectMode === 'collect' && selectedSuburb && selectedSuburb.fee === null; }
+
+  function animatePrice(target) {
+    const el = document.getElementById('tickerAmount');
+    if (target === null) {
+      el.textContent = 'Call to confirm';
+      el.className = 'ticker-amount call-mode';
+      prevPrice = 0;
+      return;
+    }
+    if (typeof target === 'string') {
+      el.textContent = target;
+      el.className = 'ticker-amount quote-mode';
+      prevPrice = 0;
+      return;
+    }
+    el.className = 'ticker-amount';
+    const from = prevPrice;
+    const duration = 400;
+    const start = performance.now();
+    (function tick(now) {
+      const p = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = '$' + Math.round(from + (target - from) * eased);
+      if (p < 1) requestAnimationFrame(tick);
+      else prevPrice = target;
+    })(performance.now());
+  }
+
+  function updateTicker() {
+    if (!selectedServiceType || selectedServiceType !== 'blade-sharpening') {
+      const svcLabels = { 'landscaping': 'Landscaping', 'tree-work': 'Tree Work', 'vegetation-management': 'Vegetation Management' };
+      document.getElementById('tickerBreakdown').textContent = selectedServiceType ? svcLabels[selectedServiceType] || 'Service selected' : 'Select a service above';
+      animatePrice('Free Quote');
+      return;
+    }
+    // Blade sharpening pricing
+    const machineName = selectedMachine === 'Other' ? (otherMachineText || 'Other') : (selectedMachine || '—');
+    const tp = totalPrice();
+    animatePrice(tp);
+    let breakdown = sets + ' set' + (sets > 1 ? 's' : '') + ' · ' + machineName;
+    if (isEmergency) breakdown += ' · emergency';
+    if (collectMode === 'collect') {
+      if (!selectedSuburb) breakdown += ' · delivery (select suburb)';
+      else if (selectedSuburb.fee === null) breakdown += ' · delivery TBC';
+      else breakdown += ' · delivery $' + selectedSuburb.fee;
+    }
+    document.getElementById('tickerBreakdown').textContent = breakdown;
+  }
+
+  /* ══ SUBURB LOOKUP ══ */
+  const SUBURBS = {
+    'freshwater':10,'edge hill':10,'whitfield':10,'barron':10,'stratford':10,
+    'smithfield':10,'caravonica':10,'cairns north':10,'parramatta park':10,
+    'westcourt':10,'cairns':10,'cairns city':10,'cairns cbd':10,
+    'manunda':10,'mooroobool':10,'kanimbla':10,'manoora':10,'bungalow':10,
+    'aeroglen':10,'portsmith':10,
+    'woree':20,'earlville':20,'redlynch':20,'yorkeys knob':20,
+    'holloways beach':20,'trinity beach':20,'trinity park':20,
+    'mt sheridan':20,'mount sheridan':20,'edmonton':20,'bentley park':20,
+    'white rock':20,'gordonvale':20,'machans beach':20,
+    'kewarra beach':30,'clifton beach':30,'palm cove':30,
+    'ellis beach':40,'buchan point':40,
+    'port douglas':null,'mossman':null,'daintree':null,'cape tribulation':null,
+    'mareeba':null,'atherton':null,'innisfail':null,'kuranda':null,
+    'cardwell':null,'mission beach':null,'tully':null,'babinda':null,
+    'ravenshoe':null,'malanda':null,'yungaburra':null,
+  };
+
   function onSuburbInput() {
     const raw = document.getElementById('suburbInput').value.trim();
     const key = raw.toLowerCase();
     const sugEl = document.getElementById('suburbSuggestions');
     const resEl = document.getElementById('suburbResult');
     selectedSuburb = null;
-
-    if (key.length < 2) {
-      sugEl.innerHTML = '';
-      resEl.style.display = 'none';
-      updateTicker();
-      return;
-    }
-
-    // Exact match
-    if (SUBURBS.hasOwnProperty(key)) {
-      selectSuburbByKey(key, raw);
-      sugEl.innerHTML = '';
-      return;
-    }
-
-    // Partial matches
+    if (key.length < 2) { sugEl.innerHTML = ''; resEl.style.display = 'none'; updateTicker(); return; }
+    if (SUBURBS.hasOwnProperty(key)) { selectSuburbByKey(key, raw); sugEl.innerHTML = ''; return; }
     const matches = Object.keys(SUBURBS).filter(s => s.startsWith(key)).slice(0, 5);
     if (matches.length) {
       sugEl.innerHTML = matches.map(m =>
@@ -1166,17 +1609,14 @@
       resEl.textContent = 'Suburb not in our standard list — Sam will confirm delivery pricing';
       resEl.style.display = 'block';
       selectedSuburb = { name: raw, fee: null };
-    } else {
-      sugEl.innerHTML = '';
-      resEl.style.display = 'none';
-    }
+    } else { sugEl.innerHTML = ''; resEl.style.display = 'none'; }
     updateTicker();
   }
 
   function selectSuburbByKey(key, displayName) {
     const fee = SUBURBS[key];
     selectedSuburb = { name: displayName || key, fee };
-    document.getElementById('suburbInput').value = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+    document.getElementById('suburbInput').value = displayName.split(' ').map(function(w){return w.charAt(0).toUpperCase()+w.slice(1)}).join(' ');
     document.getElementById('suburbSuggestions').innerHTML = '';
     const resEl = document.getElementById('suburbResult');
     if (fee === null) {
@@ -1190,93 +1630,17 @@
     updateTicker();
   }
 
-  /* ── TURNAROUND STRIP ── */
-  function updateTurnaroundStrip() {
-    const strip = document.getElementById('turnaroundStrip');
-    if (!strip) return;
-    strip.classList.toggle('emergency', isEmergency);
-    document.getElementById('turnaroundText').textContent = isEmergency
-      ? 'Emergency: same-day turnaround if received before 10am'
-      : '1–2 business days · Emergency: same day if received before 10am';
-  }
-
-  /* ── HERO RECEDE ── */
-  let heroDone = false;
-  function heroRecede() {
-    if (heroDone) return;
-    heroDone = true;
-    document.getElementById('formHero').classList.add('receded');
-  }
-
-  /* ── PROGRESS ── */
-  function updateProgress(step) {
-    const pct = { 1: '0%', 2: '33.33%', 3: '66.66%' };
-    document.getElementById('progressFill').style.width = pct[step] || '0%';
-    for (let i = 1; i <= 3; i++) {
-      const dot = document.getElementById('pdot' + i);
-      if (i < step) { if (!dot.classList.contains('done')) { dot.classList.add('done'); } }
-      else dot.classList.remove('done');
-    }
-  }
-
-  /* ── STEP TRANSITION ── */
-  function goStep(to) {
-    if (to > currentStep && !validateStep(currentStep)) return;
-    const forward = to > currentStep;
-    const fromEl = document.getElementById('step' + currentStep);
-    const toEl   = document.getElementById('step' + to);
-
-    fromEl.classList.remove('active', 'from-right', 'from-left');
-    toEl.classList.add('active', forward ? 'from-right' : 'from-left');
-    setTimeout(() => toEl.classList.remove('from-right', 'from-left'), 400);
-
-    currentStep = to;
-    updateProgress(to);
-    heroRecede();
-    window.scrollTo({ top: 0, behavior: 'instant' });
-    if (to === 3) updateTurnaroundStrip();
-  }
-
-  /* ── VALIDATION ── */
-  function validateStep(step) {
-    if (step === 1) {
-      if (!selectedMachine) {
-        document.querySelectorAll('.machine-card').forEach(c => {
-          c.style.borderColor = 'rgba(224,82,82,0.5)';
-          setTimeout(() => c.style.borderColor = '', 1200);
-        });
-        return false;
-      }
-      if (selectedMachine === 'Other' && !otherMachineText) {
-        document.getElementById('otherMachineInput').focus();
-        document.getElementById('otherMachineInput').style.borderColor = 'var(--danger)';
-        setTimeout(() => document.getElementById('otherMachineInput').style.borderColor = '', 1200);
-        return false;
-      }
-      return true;
-    }
-    return true;
+  /* ══ FLOAT LABEL ══ */
+  function onInput(groupId, inputId) {
+    const g = document.getElementById(groupId);
+    const v = document.getElementById(inputId).value.trim();
+    g.classList.toggle('has-value', v.length > 0);
+    g.classList.remove('error');
   }
 
   function isValidAusPhone(p) {
     const digits = p.replace(/[\s\-().+]/g, '');
-    // Accept: 04XXXXXXXX, +614XXXXXXXX, 614XXXXXXXX
     return /^(04\d{8}|(\+?61)4\d{8})$/.test(digits);
-  }
-
-  function validateStep3() {
-    let ok = true;
-    const name    = document.getElementById('custName').value.trim();
-    const phone   = document.getElementById('custPhone').value.trim();
-    if (!name)    { shakeField('grpName');    ok = false; }
-    if (!phone || !isValidAusPhone(phone)) {
-      shakeField('grpPhone');
-      document.getElementById('phoneNote').style.display = 'block';
-      ok = false;
-    } else {
-      document.getElementById('phoneNote').style.display = 'none';
-    }
-    return ok;
   }
 
   function shakeField(groupId) {
@@ -1285,127 +1649,158 @@
     setTimeout(() => g.classList.remove('error'), 600);
   }
 
-  /* ── FLOAT LABEL LOGIC ── */
-  function onInput(groupId, inputId) {
-    const g = document.getElementById(groupId);
-    const v = document.getElementById(inputId).value.trim();
-    g.classList.toggle('has-value', v.length > 0);
-    g.classList.remove('error');
-  }
-
-  /* ── REFERENCE GENERATION ── */
+  /* ══ REFERENCE ══ */
   function generateRef() {
-    const now  = new Date();
+    const now = new Date();
     const yymm = String(now.getFullYear()).slice(2) + String(now.getMonth() + 1).padStart(2, '0');
     const rand = Math.floor(1000 + Math.random() * 9000);
     return 'SE-' + yymm + '-' + rand;
   }
 
-  /* ── SUBMIT ── */
+  /* ══ SUBMIT ══ */
   function submitQuote() {
-    if (!validateStep3()) return;
+    // Validate
+    let ok = true;
+    const name  = document.getElementById('custName').value.trim();
+    const phone = document.getElementById('custPhone').value.trim();
+    const email = document.getElementById('custEmail').value.trim();
+    const company = document.getElementById('custCompany').value.trim();
 
-    const name    = document.getElementById('custName').value.trim();
-    const phone   = document.getElementById('custPhone').value.trim();
-    const email   = document.getElementById('custEmail').value.trim();
-    const ref     = generateRef();
-    const bp      = basePrice();
-    const cf      = collectionFee();
-    const tp      = totalPrice();
-    const today   = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
-    const company     = document.getElementById('custCompany').value.trim();
-    const machineName = selectedMachine === 'Other' ? otherMachineText : selectedMachine;
-    const suburbName  = selectedSuburb ? selectedSuburb.name : null;
-    const callConfirm = isCallToConfirm();
-    const preferredDate = document.getElementById('custDate').value;
+    if (!name)  { shakeField('grpName'); ok = false; }
+    if (!phone || !isValidAusPhone(phone)) {
+      shakeField('grpPhone');
+      document.getElementById('phoneNote').style.display = 'block';
+      ok = false;
+    } else {
+      document.getElementById('phoneNote').style.display = 'none';
+    }
 
-    const payload = {
-      ref,
-      submittedAt: Date.now(),
-      status: 'pending',
-      customer: { name, company, phone, email },
-      quote: {
-        machineType: machineName,
-        bladeType: selectedBladeType || null,
-        sets,
-        isEmergency,
-        basePrice: bp,
-        collectionRequired: collectMode === 'collect',
-        suburb: suburbName,
-        collectionFee: cf || 0,
-        totalPrice: tp,
-        preferredDate: preferredDate || null
-      }
-    };
+    // Suburb required for non-blade services
+    if (selectedServiceType !== 'blade-sharpening') {
+      const suburb = document.getElementById('custSuburb').value.trim();
+      if (!suburb) { shakeField('grpSuburb'); ok = false; }
+    }
 
-    try {
-      const existing = JSON.parse(localStorage.getItem('se_pending_quotes') || '[]');
-      existing.push(payload);
-      localStorage.setItem('se_pending_quotes', JSON.stringify(existing));
-    } catch(e) { console.warn('se: could not write pending quote', e); }
+    if (!ok) return;
 
-    // Email notification via EmailJS
+    const ref = generateRef();
     const submittedAt = new Date().toLocaleString('en-AU', { timeZone: 'Australia/Brisbane' });
-    const msgLines = [
-      `Reference: ${ref}`,
-      `Name: ${name}`,
-      `Phone: ${phone}`,
-      `Email: ${email || 'Not provided'}`,
-      company ? `Company: ${company}` : null,
-      `Machine: ${machineName || 'Not specified'}`,
-      selectedBladeType ? `Blade Type: ${selectedBladeType}` : null,
-      `Sets: ${sets} set${sets !== 1 ? 's' : ''}`,
-      `Job Type: ${isEmergency ? 'Emergency' : 'Standard'}`,
-      `Delivery: ${collectMode === 'collect' ? `Collect & return${suburbName ? ' — ' + suburbName : ''}` : 'Customer drop-off'}`,
-      `Total: ${tp != null ? '$' + tp : 'Call to confirm'}`,
-      preferredDate ? `Preferred Date: ${preferredDate}` : null,
-      `Submitted: ${submittedAt}`,
-    ].filter(Boolean).join('\n');
+
+    // Build message based on service type
+    let msgLines = [];
+    msgLines.push('Reference: ' + ref);
+    msgLines.push('Service: ' + selectedServiceType);
+    msgLines.push('Name: ' + name);
+    msgLines.push('Phone: ' + phone);
+    if (email) msgLines.push('Email: ' + email);
+    if (company) msgLines.push('Company: ' + company);
+
+    if (selectedServiceType === 'blade-sharpening') {
+      const machineName = selectedMachine === 'Other' ? otherMachineText : selectedMachine;
+      const bp = basePrice();
+      const cf = collectionFee();
+      const tp = totalPrice();
+      msgLines.push('Machine: ' + machineName);
+      if (selectedBladeType) msgLines.push('Blade Type: ' + selectedBladeType);
+      msgLines.push('Sets: ' + sets);
+      msgLines.push('Job Type: ' + (isEmergency ? 'Emergency' : 'Standard'));
+      msgLines.push('Delivery: ' + (collectMode === 'collect' ? 'Collect & return' + (selectedSuburb ? ' — ' + selectedSuburb.name : '') : 'Customer drop-off'));
+      msgLines.push('Total: ' + (tp != null ? '$' + tp : 'Call to confirm'));
+    } else {
+      const suburb = document.getElementById('custSuburb').value.trim();
+      msgLines.push('Suburb: ' + suburb);
+
+      if (selectedServiceType === 'landscaping') {
+        const pills = document.querySelectorAll('#step1-landscaping .checkbox-pill.checked');
+        if (pills.length) msgLines.push('Services: ' + Array.from(pills).map(p => p.textContent.trim()).join(', '));
+        if (generalSize) msgLines.push('Property Size: ' + generalSize);
+        if (generalFreq) msgLines.push('Frequency: ' + generalFreq);
+        const notes = document.getElementById('landscapingNotes').value.trim();
+        if (notes) msgLines.push('Notes: ' + notes);
+      } else if (selectedServiceType === 'tree-work') {
+        const pills = document.querySelectorAll('#step1-tree-work .checkbox-pill.checked');
+        if (pills.length) msgLines.push('Services: ' + Array.from(pills).map(p => p.textContent.trim()).join(', '));
+        if (generalTreeHeight) msgLines.push('Tree Height: ' + generalTreeHeight);
+        if (generalNearStructures) msgLines.push('Near Structures: ' + generalNearStructures);
+        const notes = document.getElementById('treeNotes').value.trim();
+        if (notes) msgLines.push('Notes: ' + notes);
+      } else if (selectedServiceType === 'vegetation-management') {
+        const pills = document.querySelectorAll('#step1-vegetation-management .checkbox-pill.checked');
+        if (pills.length) msgLines.push('Services: ' + Array.from(pills).map(p => p.textContent.trim()).join(', '));
+        if (generalPropertyType) msgLines.push('Property Type: ' + generalPropertyType);
+        const notes = document.getElementById('vegNotes').value.trim();
+        if (notes) msgLines.push('Notes: ' + notes);
+      }
+    }
+
+    msgLines.push('Submitted: ' + submittedAt);
+
+    // Save to localStorage (always, as backup)
+    try {
+      var existing = JSON.parse(localStorage.getItem('se_pending_quotes') || '[]');
+      existing.push({ ref, service: selectedServiceType, submittedAt: Date.now(), name, phone, email, message: msgLines.join('\n') });
+      localStorage.setItem('se_pending_quotes', JSON.stringify(existing));
+    } catch(e) {}
+
+    // Send via EmailJS — show confirmation on success, error on failure
+    var submitBtn = document.getElementById('submitBtn');
+    submitBtn.textContent = 'Sending...';
+    submitBtn.classList.add('loading');
+
     emailjs.send('service_y2r7mrc', 'template_35cka0p', {
-      subject:       `New Website Enquiry — ${ref}`,
-      from_name:     name,
-      reply_to:      email || 'noreply@steadyeco.com',
-      message:       msgLines,
+      subject:   'New ' + selectedServiceType + ' Enquiry — ' + ref,
+      from_name: name,
+      reply_to:  email || 'noreply@steadyeco.com',
+      message:   msgLines.join('\n'),
     }, 'M3WdZeueeGKrVL5jZ')
-    .catch(err => console.warn('se: EmailJS failed', err));
-
-    smsCopyText   = buildSMS(name, ref, bp, cf, tp, suburbName, callConfirm, preferredDate);
-    emailCopyText = buildEmail(name, ref, bp, cf, tp, suburbName, callConfirm, today, preferredDate);
-
-    showConfirmation(ref, tp, bp, sets, callConfirm, suburbName, cf);
+    .then(function() {
+      showConfirmation(ref);
+    })
+    .catch(function(err) {
+      console.warn('se: EmailJS failed', err);
+      submitBtn.textContent = 'Request Your Quote';
+      submitBtn.classList.remove('loading');
+      // Still show confirmation — the quote is saved locally and they can call
+      showConfirmation(ref);
+    });
   }
 
-  /* ── CONFIRMATION ── */
-  function showConfirmation(ref, tp, bp, s, callConfirm, suburbName, cf) {
-    document.getElementById('step3').classList.remove('active');
+  function showConfirmation(ref) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
     document.getElementById('priceTicker').style.display = 'none';
 
-    const machineName = selectedMachine === 'Other' ? otherMachineText : selectedMachine;
     const priceEl = document.getElementById('confirmPrice');
     const breakEl = document.getElementById('confirmBreakdown');
 
-    if (callConfirm) {
-      priceEl.textContent = 'Call to confirm';
-      priceEl.className = 'confirm-price call-price';
-      breakEl.textContent = s + ' set' + (s > 1 ? 's' : '') + ' · ' + machineName + ' · Delivery: Sam will confirm';
+    if (selectedServiceType === 'blade-sharpening') {
+      const tp = totalPrice();
+      const machineName = selectedMachine === 'Other' ? otherMachineText : selectedMachine;
+      if (isCallToConfirm()) {
+        priceEl.textContent = 'Call to confirm';
+        priceEl.className = 'confirm-price call-price';
+        breakEl.textContent = sets + ' set' + (sets > 1 ? 's' : '') + ' · ' + machineName + ' · Delivery: Sam will confirm';
+      } else {
+        priceEl.textContent = '$' + tp;
+        priceEl.className = 'confirm-price';
+        const bp = basePrice();
+        const cf = collectionFee();
+        let bk = sets + ' set' + (sets > 1 ? 's' : '') + ' · ' + machineName + ' · $' + bp;
+        if (cf > 0 && selectedSuburb) bk += ' · Delivery ' + selectedSuburb.name + ' $' + cf;
+        breakEl.textContent = bk;
+      }
     } else {
-      priceEl.textContent = '$' + tp;
-      priceEl.className = 'confirm-price';
-      let bk = s + ' set' + (s > 1 ? 's' : '') + ' · ' + machineName + ' · $' + bp;
-      if (cf > 0 && suburbName) bk += ' · Delivery ' + suburbName + ' $' + cf;
-      breakEl.textContent = bk;
+      priceEl.textContent = 'Quote on the way';
+      priceEl.className = 'confirm-price call-price';
+      const labels = { 'landscaping': 'Landscaping', 'tree-work': 'Tree Work', 'vegetation-management': 'Vegetation Management' };
+      breakEl.textContent = labels[selectedServiceType] + ' enquiry submitted';
     }
 
-    // Show panel
     const panel = document.getElementById('confirmPanel');
     panel.classList.add('visible');
-    updateProgress(4);
     document.getElementById('progressFill').style.width = '100%';
-    document.getElementById('pdot3').classList.add('done');
+    document.querySelectorAll('.progress-dot').forEach(d => d.classList.add('done'));
 
-    // Reveal reference number
     setTimeout(() => revealRef(ref, document.getElementById('refDisplay')), 200);
-
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -1422,144 +1817,50 @@
     setTimeout(() => el.classList.add('underlined'), ref.length * 40 + 220);
   }
 
-  /* ── SMS & EMAIL BUILDERS ── */
-  function buildSMS(name, ref, bp, cf, tp, suburbName, callConfirm, preferredDate) {
-    const fn = name.split(' ')[0];
-    const machineName = selectedMachine === 'Other' ? otherMachineText : selectedMachine;
-    let msg = 'Hi ' + fn + ', thanks for reaching out to Steady Eco.\n\n';
-    msg += "Here's your quote:\n";
-    msg += '• ' + sets + ' set' + (sets > 1 ? 's' : '') + ' · ' + machineName;
-    if (isEmergency) msg += ' · emergency rate';
-    msg += ' · $' + bp + '\n';
-    if (selectedBladeType) msg += '• Blade type: ' + selectedBladeType + '\n';
-    if (collectMode === 'collect' && !callConfirm && cf > 0 && suburbName) {
-      msg += '• Delivery (' + suburbName + ') · $' + cf + '\n';
-    }
-    if (preferredDate) msg += '• Preferred date: ' + preferredDate + '\n';
-    msg += '\n';
-    if (callConfirm) {
-      msg += 'Total: Call to confirm (delivery pricing TBC)\n';
-    } else {
-      msg += 'Total: $' + tp + '\n';
-      msg += 'Payment due on pickup.\n';
-    }
-    msg += 'Ref: ' + ref + '\n\n';
-    msg += 'Reply to confirm. Cheers, Steady Eco';
-    return msg;
-  }
+  /* ══ MAP INIT (lazy — only for blade sharpening) ══ */
+  window._mapInit = false;
+  function initMap() {
+    if (window._mapInit) return;
+    window._mapInit = true;
+    var mapEl = document.getElementById('service-map');
+    if (!mapEl) return;
 
-  function buildEmail(name, ref, bp, cf, tp, suburbName, callConfirm, today, preferredDate) {
-    const machineName = selectedMachine === 'Other' ? otherMachineText : selectedMachine;
-    const line = '──────────────────────────────';
-    let msg = 'Subject: Quote ' + ref + ' — Woodchipper Blade Sharpening · Steady Eco\n\n';
-    msg += 'Hi ' + name + ',\n\n';
-    msg += 'Thank you for reaching out to Steady Eco. Your quote is below.\n\n';
-    msg += line + '\n';
-    msg += 'QUOTE ' + ref + ' · ' + today + '\n';
-    msg += line + '\n\n';
-    msg += 'Machine:          ' + machineName + '\n';
-    msg += 'Sets:             ' + sets + ' set' + (sets > 1 ? 's' : '') + '\n';
-    if (selectedBladeType) msg += 'Blade type:       ' + selectedBladeType + '\n';
-    if (isEmergency) msg += 'Rate:             Emergency (2×)\n';
-    if (preferredDate) msg += 'Preferred date:   ' + preferredDate + '\n';
-    msg += '\n';
-    msg += 'Blade sharpening: $' + bp + '\n';
-    if (collectMode === 'collect') {
-      if (callConfirm) {
-        msg += 'Delivery (' + (suburbName || 'your area') + '): TBC — Sam will confirm\n';
-      } else if (cf > 0 && suburbName) {
-        msg += 'Delivery (' + suburbName + '): $' + cf + '\n';
-      }
-    }
-    msg += '\n';
-    if (callConfirm) {
-      msg += 'TOTAL: Call to confirm\n\n';
-    } else {
-      msg += 'TOTAL: $' + tp + '\n\n';
-      msg += 'Payment terms: Due on pickup\n\n';
-    }
-    msg += line + '\n\n';
-    msg += 'To confirm, reply to this message or visit steadyeco.com\n';
-    msg += 'steadyeco.com · ABN 49 553 784 085\n\n';
-    msg += 'Thanks,\nSteady Eco — Cairns, Far North Queensland';
-    return msg;
-  }
-
-  /* ── COPY ── */
-  function copyText(type, btnId) {
-    const text = type === 'sms' ? smsCopyText : emailCopyText;
-    const btn  = document.getElementById(btnId);
-    navigator.clipboard.writeText(text).then(() => {
-      btn.textContent = 'Copied!';
-      btn.classList.add('copied');
-      setTimeout(() => {
-        btn.textContent = type === 'sms' ? 'Copy SMS Quote' : 'Copy Email Quote';
-        btn.classList.remove('copied');
-      }, 2500);
-    }).catch(() => {
-      // Fallback for Safari
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-      btn.textContent = 'Copied!';
-      setTimeout(() => { btn.textContent = type === 'sms' ? 'Copy SMS Quote' : 'Copy Email Quote'; }, 2500);
+    var map = L.map('service-map', { zoomControl: true, scrollWheelZoom: false }).setView([-16.9186, 145.7781], 8);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap &copy; CARTO',
+      subdomains: 'abcd',
+      maxZoom: 19
+    }).addTo(map);
+    L.circle([-16.9186, 145.7781], {
+      radius: 100000,
+      color: '#4a9e3f',
+      weight: 1.5,
+      dashArray: '6, 4',
+      fillColor: '#4a9e3f',
+      fillOpacity: 0.08
+    }).addTo(map);
+    var towns = [
+      { coords: [-16.9186, 145.7781], name: 'Cairns', hq: true },
+      { coords: [-16.4836, 145.4650], name: 'Port Douglas', hq: false },
+      { coords: [-17.2667, 145.4833], name: 'Atherton', hq: false },
+      { coords: [-17.5236, 146.0297], name: 'Innisfail', hq: false },
+      { coords: [-17.0000, 145.4167], name: 'Mareeba', hq: false }
+    ];
+    towns.forEach(function(t) {
+      L.circleMarker(t.coords, {
+        radius: t.hq ? 9 : 6,
+        fillColor: t.hq ? '#c8a84b' : '#4a9e3f',
+        color: t.hq ? '#c8a84b' : '#c8a84b',
+        weight: 1, opacity: 1, fillOpacity: 0.9
+      }).bindPopup('<b>' + t.name + '</b>').addTo(map);
     });
+    window.addEventListener('resize', function() { map.invalidateSize(); });
   }
 
-  /* ── INIT ── */
+  /* ══ INIT ══ */
   updateTicker();
-  // Set minimum date on preferred date input to today
-  (function() {
-    const dateInput = document.getElementById('custDate');
-    if (dateInput) dateInput.min = new Date().toISOString().split('T')[0];
-  })();
 </script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/sp0=" crossorigin=""></script>
-<script>
-(function() {
-  var map = L.map('service-map', { zoomControl: true, scrollWheelZoom: false }).setView([-16.9186, 145.7781], 8);
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    subdomains: 'abcd',
-    maxZoom: 19
-  }).addTo(map);
-
-  L.circle([-16.9186, 145.7781], {
-    radius: 100000,
-    color: '#4a9e3f',
-    weight: 1.5,
-    dashArray: '6, 4',
-    fillColor: '#4a9e3f',
-    fillOpacity: 0.08
-  }).addTo(map);
-
-  var towns = [
-    { coords: [-16.9186, 145.7781], name: 'Cairns', label: 'Headquarters', hq: true },
-    { coords: [-16.4836, 145.4650], name: 'Port Douglas', label: 'Service Area', hq: false },
-    { coords: [-17.2667, 145.4833], name: 'Atherton', label: 'Service Area', hq: false },
-    { coords: [-17.5236, 146.0297], name: 'Innisfail', label: 'Service Area', hq: false },
-    { coords: [-17.0000, 145.4167], name: 'Mareeba', label: 'Service Area', hq: false }
-  ];
-
-  towns.forEach(function(t) {
-    L.circleMarker(t.coords, {
-      radius: t.hq ? 9 : 6,
-      fillColor: t.hq ? '#c8a84b' : '#4a9e3f',
-      color: t.hq ? '#c8a84b' : '#c8a84b',
-      weight: 1,
-      opacity: 1,
-      fillOpacity: 0.9
-    }).bindPopup('<b>' + t.name + '</b><br>' + t.label).addTo(map);
-  });
-
-  window.addEventListener('resize', function() { map.invalidateSize(); });
-})();
-</script>
 </body>
 </html>

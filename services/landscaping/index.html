@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Landscaping Cairns | Mowing, Hedging & Garden Maintenance — Steady Eco</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#0a0f0a">
+  <meta name="description" content="Professional landscaping in Cairns and FNQ. Mowing, hedging, garden maintenance, mulching, and property clean-ups. Ride-on mower for acreage. 7 years experience. Call 0456 190 202." />
+  <link rel="canonical" href="https://steadyeco.com/services/landscaping/">
+  <meta property="og:title" content="Landscaping Cairns — Steady Eco" />
+  <meta property="og:description" content="Mowing, hedging, garden maintenance, mulching, and property clean-ups across Cairns and FNQ." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://steadyeco.com/services/landscaping/" />
+  <meta property="og:image" content="https://steadyeco.com/images/machinery-background.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Landscaping Cairns — Steady Eco" />
+  <meta name="twitter:image" content="https://steadyeco.com/images/machinery-background.jpg" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "Landscaping",
+    "description": "Professional landscaping services including mowing, hedging, garden maintenance, mulching, and property clean-ups in Cairns and Far North Queensland.",
+    "provider": {
+      "@type": "LocalBusiness",
+      "name": "Steady Eco",
+      "telephone": "+61456190202",
+      "address": { "@type": "PostalAddress", "addressLocality": "Cairns", "addressRegion": "QLD", "addressCountry": "AU" }
+    },
+    "areaServed": { "@type": "City", "name": "Cairns" }
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/brand.css" />
+
+  <style>
+    /* ── PREMIUM HERO ── */
+    .page-hero {
+      position: relative;
+      min-height: 70vh;
+      display: flex;
+      align-items: flex-end;
+      padding: 0 0 80px;
+      background: var(--bg);
+      overflow: hidden;
+    }
+    .page-hero-glow {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 15% 70%, rgba(26, 51, 24, 0.6) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 85% 30%, rgba(74, 158, 63, 0.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .page-hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(74,158,63,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(74,158,63,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .page-hero-ghost {
+      position: absolute;
+      bottom: -0.12em;
+      right: -0.02em;
+      font-family: var(--font-display);
+      font-size: 14vw;
+      font-weight: 300;
+      text-transform: uppercase;
+      color: var(--text);
+      opacity: 0.025;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      pointer-events: none;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .page-hero .container { position: relative; z-index: 2; padding-top: 160px; }
+    .page-hero h1 {
+      font-size: clamp(2.8rem, 6vw, 5.5rem);
+      margin-bottom: 24px;
+      letter-spacing: -0.01em;
+    }
+    .page-hero h1 .green { color: var(--green-accent); }
+    .page-hero h1 .dim { color: var(--muted-light); }
+    .page-hero-sub {
+      font-size: 0.95rem;
+      color: var(--muted-light);
+      max-width: 520px;
+      line-height: 1.85;
+      font-weight: 300;
+      margin-bottom: 36px;
+    }
+    .page-hero-ctas {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    /* ── INCLUDED GRID ── */
+    .included-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      background: var(--border);
+      margin-bottom: 60px;
+    }
+    .included-item {
+      background: var(--bg-alt);
+      padding: 36px 36px;
+      position: relative;
+      transition: background 0.3s ease;
+      overflow: hidden;
+    }
+    .included-item::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--green-accent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .included-item:hover { background: var(--card-hover); }
+    .included-item:hover::before { transform: scaleX(1); }
+    .included-num {
+      font-family: var(--font-display);
+      font-size: 2.4rem;
+      font-weight: 300;
+      color: var(--border-light);
+      opacity: 0.5;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+    .included-item h4 {
+      font-size: 0.92rem;
+      color: var(--text);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .included-item p {
+      font-size: 0.82rem;
+      color: var(--muted-light);
+      line-height: 1.75;
+      font-weight: 300;
+    }
+
+    /* ── PULL QUOTE ── */
+    .page-quote {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 80px 24px;
+      text-align: center;
+    }
+    .page-quote-rule {
+      width: 40px;
+      height: 1px;
+      background: var(--gold);
+      margin: 0 auto 32px;
+    }
+    .page-quote blockquote {
+      font-family: var(--font-display);
+      font-size: clamp(22px, 3vw, 30px);
+      font-style: italic;
+      font-weight: 300;
+      color: var(--gold);
+      line-height: 1.5;
+      letter-spacing: -0.01em;
+      margin: 0 0 32px;
+    }
+
+    /* ── CTA ── */
+    .cta-section {
+      position: relative;
+      padding: 100px 0;
+      text-align: center;
+      background: var(--bg-alt);
+      border-top: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .cta-glow {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 50% 60% at 50% 50%, rgba(74,158,63,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-section h2 {
+      font-size: clamp(2rem, 4.5vw, 3.5rem);
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .cta-section p {
+      color: var(--muted-light);
+      font-size: 0.9rem;
+      margin-bottom: 36px;
+      font-weight: 300;
+      position: relative;
+    }
+    .cta-section .btn { margin: 0 8px; position: relative; }
+    .cta-phone {
+      display: block;
+      margin-top: 24px;
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      color: var(--gold);
+      font-weight: 300;
+      letter-spacing: 0.02em;
+      transition: color 0.3s;
+      position: relative;
+    }
+    .cta-phone:hover { color: var(--text); }
+
+    @media (max-width: 768px) {
+      .included-grid { grid-template-columns: 1fr; }
+      .page-hero { min-height: auto; }
+      .page-hero .container { padding-top: 120px; }
+      .page-hero-ctas { flex-direction: column; }
+      .page-hero-ctas .btn { width: 100%; justify-content: center; }
+      .page-hero-ghost { font-size: 20vw; }
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" onerror="document.body.classList.add('js-ready','no-gsap')"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" onerror="document.body.classList.add('js-ready','no-gsap')"></script>
+</head>
+<body>
+
+  <!-- CUSTOM CURSOR -->
+  <div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
+  <div class="cursor-ring" id="cursorRing" aria-hidden="true"><span class="cursor-ring-label">View</span></div>
+
+  <!-- PRELOADER -->
+  <div id="preloader" aria-hidden="true">
+    <div class="pre-logo">Steady <span>Eco</span></div>
+    <div class="pre-bar"><div class="pre-fill" id="preFill"></div></div>
+  </div>
+
+  <!-- SCROLL PROGRESS -->
+  <div id="scroll-bar" style="position:fixed;top:0;left:0;height:2px;width:0%;background:linear-gradient(90deg,var(--green-accent),var(--gold));z-index:200;transition:width 0.1s linear;pointer-events:none;" aria-hidden="true"></div>
+
+  <!-- NAV -->
+  <nav id="navbar">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">Steady <span>Eco</span></a>
+      <ul class="nav-links">
+        <li class="nav-dropdown">
+          <a href="/#services">Services <span class="nav-dropdown-arrow"></span></a>
+          <div class="nav-dropdown-menu">
+            <a href="/services/landscaping/">Landscaping</a>
+            <a href="/services/tree-work/">Tree Work</a>
+            <a href="/services/blade-sharpening/">Blade Sharpening</a>
+            <a href="/services/vegetation-management/">Vegetation Mgmt</a>
+          </div>
+        </li>
+        <li><a href="/#about">About</a></li>
+        <li><a href="/#contact">Contact</a></li>
+        <li><a href="/quote" class="nav-cta">Get a Quote</a></li>
+      </ul>
+      <div class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <span class="mobile-menu-label">Services</span>
+      <div class="mobile-menu-sub">
+        <a href="/services/landscaping/" onclick="toggleMenu()">Landscaping</a>
+        <a href="/services/tree-work/" onclick="toggleMenu()">Tree Work</a>
+        <a href="/services/blade-sharpening/" onclick="toggleMenu()">Blade Sharpening</a>
+      </div>
+      <a href="/#about" onclick="toggleMenu()">About</a>
+      <a href="/#contact" onclick="toggleMenu()">Contact</a>
+      <a href="/quote" onclick="toggleMenu()" style="color:var(--green-accent);">Get a Quote</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="page-hero">
+    <div class="page-hero-glow"></div>
+    <div class="page-hero-grid"></div>
+    <div class="page-hero-ghost" aria-hidden="true">LANDSCAPE</div>
+    <div class="container">
+      <div class="section-tag fade-in">Landscaping Services</div>
+      <h1 class="fade-in">Cairns<br><span class="green">Landscaping</span></h1>
+      <p class="page-hero-sub fade-in">Mowing, hedging, garden maintenance, mulching, and property clean-ups for residential and commercial properties across Cairns and Far North Queensland. Fully equipped with ride-on mower, whipper snippers, and tipper truck.</p>
+      <div class="page-hero-ctas fade-in">
+        <a href="/quote?service=landscaping" class="btn btn-primary">Get a Free Quote</a>
+        <a href="tel:+61456190202" class="btn btn-outline">Call 0456 190 202</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHAT'S INCLUDED -->
+  <section id="services" class="section" style="background:var(--bg);">
+    <div class="container">
+      <div class="section-tag fade-in">What's Included</div>
+      <h2 class="section-title fade-in">Full Property <span class="dim">Care</span></h2>
+      <div class="included-grid">
+        <div class="included-item fade-in" data-cursor="view">
+          <div class="included-num">01</div>
+          <h4>Mowing</h4>
+          <p>Ride-on mower for large properties and acreage. Push mowing for smaller areas. Clean edges every time.</p>
+        </div>
+        <div class="included-item fade-in" data-cursor="view">
+          <div class="included-num">02</div>
+          <h4>Hedging &amp; Edging</h4>
+          <p>Hedge trimming, garden bed edging, and whipper snipping to keep your property sharp and presentable.</p>
+        </div>
+        <div class="included-item fade-in" data-cursor="view">
+          <div class="included-num">03</div>
+          <h4>Garden Maintenance</h4>
+          <p>Weeding, pruning, planting, and general garden upkeep. Regular fortnightly or weekly schedules available.</p>
+        </div>
+        <div class="included-item fade-in" data-cursor="view">
+          <div class="included-num">04</div>
+          <h4>Mulching</h4>
+          <p>On-site chipping and mulch spreading. We chip and reuse your green waste rather than sending it to landfill.</p>
+        </div>
+        <div class="included-item fade-in" data-cursor="view">
+          <div class="included-num">05</div>
+          <h4>Property Clean-Ups</h4>
+          <p>End-of-lease, pre-sale, or overgrown property clean-ups. Full green waste removal with our tipper truck.</p>
+        </div>
+        <div class="included-item fade-in" data-cursor="view">
+          <div class="included-num">06</div>
+          <h4>Green Waste Removal</h4>
+          <p>We take it with us. Tipper truck on-site means your property is left clean and clear after every job.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PULL QUOTE -->
+  <div class="page-quote fade-in">
+    <div class="page-quote-rule"></div>
+    <blockquote>"Your property maintained. Your green waste gone. One call."</blockquote>
+    <div class="page-quote-rule"></div>
+  </div>
+
+  <!-- PROCESS -->
+  <section class="section" style="background:var(--bg-alt);">
+    <div class="container">
+      <div class="section-tag fade-in">How It Works</div>
+      <h2 class="section-title fade-in">Simple <span class="dim">Process</span></h2>
+      <div class="process-grid">
+        <div class="process-step fade-in">
+          <div class="process-num">01</div>
+          <h3>Tell Us What You Need</h3>
+          <p>Use our online quote tool, call with photos. Tell us what needs doing and we'll get back to you within 1 business day.</p>
+        </div>
+        <div class="process-step fade-in fade-in-delay-1">
+          <div class="process-num">02</div>
+          <h3>We Quote &amp; Schedule</h3>
+          <p>Clear pricing, no surprises. Once confirmed, we lock in a date and show up on time with the right equipment.</p>
+        </div>
+        <div class="process-step fade-in fade-in-delay-2">
+          <div class="process-num">03</div>
+          <h3>Job Done Right</h3>
+          <p>Professional results, site left clean. Regular maintenance schedules available for ongoing care.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="section" style="background:var(--bg);">
+    <div class="container">
+      <div class="section-tag fade-in">Common Questions</div>
+      <h2 class="section-title fade-in">FAQ</h2>
+      <div class="faq-list">
+        <div class="faq-item fade-in">
+          <button class="faq-q" onclick="toggleFaq(this)">Do you do regular maintenance contracts?</button>
+          <div class="faq-a">Yes. We offer fortnightly and weekly maintenance for residential and commercial properties. Regular clients get priority scheduling.</div>
+        </div>
+        <div class="faq-item fade-in">
+          <button class="faq-q" onclick="toggleFaq(this)">Can you handle large acreage properties?</button>
+          <div class="faq-a">Yes. We have a ride-on mower and the equipment to handle large blocks, rural properties, and acreage. Get a quote and we'll scope it properly.</div>
+        </div>
+        <div class="faq-item fade-in">
+          <button class="faq-q" onclick="toggleFaq(this)">Do you take the green waste with you?</button>
+          <div class="faq-a">Yes. We have a tipper truck on every job. All green waste is removed unless you'd like us to mulch and spread it on-site instead.</div>
+        </div>
+        <div class="faq-item fade-in">
+          <button class="faq-q" onclick="toggleFaq(this)">What areas do you service?</button>
+          <div class="faq-a">We service Cairns and surrounding areas within a 100km radius including Atherton Tablelands, Mareeba, Port Douglas, Innisfail, and Kuranda.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-glow"></div>
+    <div class="container">
+      <h2 class="fade-in">Need Your Property <span style="color:var(--green-accent);">Sorted?</span></h2>
+      <p class="fade-in">Get a free quote — we respond within 1 business day.</p>
+      <div class="fade-in">
+        <a href="/quote?service=landscaping" class="btn btn-primary">Get a Free Quote</a>
+    </div>
+  </section>
+
+      <a href="/quote?service=landscaping" class="mobile-cta-btn mobile-cta-quote">Get Quote</a>
+    </div>
+  </div>
+
+
+  <script src="/js/premium.js"></script>
+</body>
+</html>
