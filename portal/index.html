@@ -1,580 +1,651 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Client Portal — Job &amp; Invoice Access | Steady Eco Land Regeneration FNQ</title>
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="manifest" href="/site.webmanifest">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
+  <title>Steady Eco — Client Portal</title>
   <meta name="theme-color" content="#0a0f0a">
-  <meta name="description" content="Access your restoration project status, invoices, and job history through the Steady Eco client portal. Request access for landholders, councils, and carbon farming clients." />
-  <meta property="og:title" content="Client Portal — Steady Eco Land Regeneration FNQ" />
-  <meta property="og:description" content="Access your restoration project status, invoices, and job history through the Steady Eco client portal. Request access for landholders, councils, and carbon farming clients." />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://steadyeco.com/portal" />
-  <meta property="og:locale" content="en_AU" />
-  <link rel="canonical" href="https://steadyeco.com/portal" />
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Steady Eco Client Portal","description":"Client portal for Steady Eco Land Regeneration. View project status, invoices, quote history, photo reports, and compliance documents. Available to landholders, councils, and carbon farming clients.","applicationCategory":"BusinessApplication","url":"https://steadyeco.com/portal","provider":{"@type":"LocalBusiness","name":"Steady Eco Land Regeneration","url":"https://steadyeco.com","telephone":"+61456190202","address":{"@type":"PostalAddress","addressLocality":"Cairns","addressRegion":"QLD","addressCountry":"AU"}},"areaServed":{"@type":"AdministrativeArea","name":"Far North Queensland"}}</script>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
-
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap">
+  <link rel="stylesheet" href="../steady-eco-platform/shared/css/tokens.css">
+  <link rel="stylesheet" href="../steady-eco-platform/shared/css/reset.css">
+  <link rel="stylesheet" href="../steady-eco-platform/shared/css/typography.css">
+  <link rel="stylesheet" href="../steady-eco-platform/shared/css/components.css">
+  <link rel="stylesheet" href="../steady-eco-platform/shared/css/utilities.css">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #0a0f0a; --bg-alt: #0f1a0f; --card: #111e11;
-      --green-accent: #4a9e3f; --gold: #c8a84b;
-      --text: #e8ede6; --muted: #7a8f76;
-      --border: rgba(74,158,63,0.12); --border-hover: rgba(74,158,63,0.4);
-      --font-display: 'Cormorant Garamond', Georgia, serif;
-      --font-body: 'DM Sans', system-ui, sans-serif;
+    body { background: var(--se-bg-base); }
+    .screen { display: none; }
+    .screen.is-active { display: block; }
+
+    /* Login */
+    #portal-login {
+      min-height: 100dvh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: var(--se-space-6); gap: var(--se-space-6);
     }
-    html { scroll-behavior: smooth; }
-    body { background: var(--bg); color: var(--muted); font-family: var(--font-body); font-size: 16px; line-height: 1.75; font-weight: 300; overflow-x: hidden; }
-    h1, h2, h3 { font-family: var(--font-display); font-weight: 300; color: var(--text); }
-    a { color: inherit; text-decoration: none; }
-    .container { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
-    section { padding: 120px 0; }
-    #scroll-bar { position: fixed; top: 0; left: 0; height: 2px; width: 0; background: var(--green-accent); z-index: 200; pointer-events: none; }
-
-    /* NAV */
-    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 24px 0; transition: background 0.5s ease, padding 0.4s ease, border-color 0.4s ease, transform 0.45s ease; border-bottom: 1px solid transparent; }
-    nav.scrolled { background: rgba(10,15,10,0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 16px 0; border-bottom-color: var(--border); }
-    nav.nav-hidden { transform: translateY(-100%); }
-    .nav-inner { display: flex; align-items: center; justify-content: space-between; }
-    .nav-logo { font-family: var(--font-display); font-size: 1.5rem; font-weight: 300; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text); }
-    .nav-logo .g { color: var(--green-accent); }
-    .nav-links { display: flex; align-items: center; gap: 40px; list-style: none; }
-    .nav-links a { font-family: var(--font-body); font-size: 11px; font-weight: 400; color: var(--muted); text-transform: uppercase; letter-spacing: 0.15em; transition: color 0.3s ease; position: relative; padding-bottom: 4px; }
-    .nav-links a::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 1px; background: var(--green-accent); transition: width 0.3s ease; }
-    .nav-links a:hover { color: var(--text); }
-    .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
-    .nav-links a.active { color: var(--green-accent); }
-    .nav-phone { color: var(--green-accent) !important; border: 1px solid rgba(74,158,63,0.3) !important; padding: 8px 20px !important; }
-    .nav-phone::after { display: none !important; }
-    .nav-phone:hover { background: rgba(74,158,63,0.08) !important; }
-    .hamburger { display: none; flex-direction: column; gap: 6px; cursor: pointer; padding: 12px; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; background: none; border: none; }
-    .hamburger span { display: block; width: 22px; height: 1px; background: var(--text); transition: 0.3s; }
-    .mobile-menu { display: none; flex-direction: column; background: var(--bg); border-top: 1px solid var(--border); padding: 40px; gap: 32px; }
-    .mobile-menu a { font-family: var(--font-display); font-size: 2rem; font-weight: 300; color: var(--muted); letter-spacing: 0.05em; transition: color 0.3s ease; }
-    .mobile-menu a.active, .mobile-menu a:hover { color: var(--text); }
-    .mobile-menu.open { display: flex; }
-
-    /* ANIMATIONS */
-    .fade { opacity: 0; transform: translateY(30px); transition: opacity 0.9s ease, transform 0.9s ease; }
-    .fade.in { opacity: 1; transform: translateY(0); }
-
-    /* BREADCRUMB */
-    .breadcrumb { padding: 120px 0 0; background: var(--bg); }
-    .bc-inner { display: flex; align-items: center; gap: 10px; font-family: var(--font-body); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
-    .bc-inner a { transition: color 0.3s ease; }
-    .bc-inner a:hover { color: var(--green-accent); }
-    .bc-inner .cur { color: var(--green-accent); }
-
-    /* PAGE HERO */
-    .page-hero { position: relative; padding: 48px 0 120px; overflow: hidden; background: var(--bg); }
-    .hero-ghost { position: absolute; bottom: -0.1em; left: -0.04em; font-family: var(--font-display); font-size: 14vw; font-weight: 300; text-transform: uppercase; color: var(--text); opacity: 0.028; letter-spacing: -0.02em; line-height: 1; pointer-events: none; user-select: none; white-space: nowrap; }
-    .page-eyebrow { font-family: var(--font-body); font-size: 11px; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green-accent); margin-bottom: 28px; display: flex; align-items: center; gap: 14px; }
-    .page-eyebrow::before { content: ''; display: block; width: 24px; height: 1px; background: var(--green-accent); }
-    .page-title { font-family: var(--font-display); font-size: clamp(48px, 7vw, 72px); letter-spacing: -0.02em; line-height: 1.05; color: var(--text); font-weight: 300; margin-bottom: 32px; }
-    .page-title .w { display: inline-block; opacity: 0; transform: translateY(16px); transition: opacity 0.7s ease, transform 0.7s ease; margin-right: 0.22em; }
-    .page-title .gold { color: var(--gold); }
-    .page-title .dim { color: var(--muted); }
-    .page-title .accent { color: var(--green-accent); }
-    .page-intro { font-size: 16px; line-height: 1.75; color: var(--muted); max-width: 580px; margin-bottom: 48px; opacity: 0; transform: translateY(12px); transition: opacity 0.8s ease 0.7s, transform 0.8s ease 0.7s; }
-    .page-intro.in { opacity: 1; transform: translateY(0); }
-    .hero-ctas { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; opacity: 0; transition: opacity 0.7s ease 0.9s; }
-    .hero-ctas.in { opacity: 1; }
-
-    /* BUTTONS */
-    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 16px 36px; font-family: var(--font-body); font-size: 11px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; border: 1px solid transparent; position: relative; overflow: hidden; transition: border-color 0.3s ease, color 0.3s ease; border-radius: 0; min-height: 48px; }
-    .btn-primary { background: var(--green-accent); color: #0a0f0a; border-color: var(--green-accent); }
-    .btn-primary::before { content: ''; position: absolute; left: -100%; top: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.12); transition: left 300ms ease; }
-    .btn-primary:hover::before { left: 0; }
-    .btn-outline { background: transparent; color: var(--text); border-color: rgba(74,158,63,0.3); }
-    .btn-outline:hover { border-color: var(--green-accent); color: var(--green-accent); }
-    .btn-gold { background: transparent; color: var(--gold); border-color: rgba(200,168,75,0.4); }
-    .btn-gold:hover { border-color: var(--gold); background: rgba(200,168,75,0.06); }
-
-    /* LABELS */
-    .label { font-family: var(--font-body); font-size: 11px; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green-accent); display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
-    .label::before { content: ''; display: block; width: 24px; height: 1px; background: var(--green-accent); }
-
-    /* SECTION HEADINGS */
-    .sh { font-family: var(--font-display); font-size: clamp(1.8rem, 3.5vw, 3rem); letter-spacing: -0.02em; line-height: 1.05; color: var(--text); font-weight: 300; margin-bottom: 56px; }
-    .sh .gold { color: var(--gold); }
-    .sh .accent { color: var(--green-accent); }
-
-    /* PULL QUOTE */
-    .pull-quote-section { padding: 80px 0; text-align: center; background: var(--bg); }
-    .pull-quote { font-family: var(--font-display); font-style: italic; font-size: 32px; color: var(--gold); line-height: 1.5; max-width: 800px; margin: 0 auto; }
-
-    /* FEATURE CARDS GRID */
-    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .feature-card { background: var(--card); border: 1px solid rgba(74,158,63,0.15); border-radius: 2px; padding: 40px 36px; transition: border-color 300ms ease, transform 300ms ease; }
-    .feature-card:hover { border-color: rgba(74,158,63,0.4); transform: translateY(-6px); }
-    .feature-card h3 { font-family: var(--font-display); font-size: 1.4rem; font-weight: 300; color: var(--text); margin-bottom: 14px; line-height: 1.1; }
-    .feature-card p { font-size: 14px; line-height: 1.75; color: var(--muted); }
-    .feature-icon { font-family: var(--font-body); font-size: 11px; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green-accent); opacity: 0.7; margin-bottom: 20px; }
-
-    /* ACCESS TIER CARDS */
-    .tier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .tier-card { background: var(--card); border: 1px solid rgba(74,158,63,0.15); border-radius: 2px; padding: 48px 40px; transition: border-color 300ms ease, transform 300ms ease; }
-    .tier-card:hover { border-color: rgba(74,158,63,0.4); transform: translateY(-6px); }
-    .tier-card h3 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 300; color: var(--text); margin-bottom: 14px; line-height: 1.1; }
-    .tier-card p { font-size: 14px; line-height: 1.75; color: var(--muted); }
-    .tier-label { font-family: var(--font-body); font-size: 10px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green-accent); border: 1px solid rgba(74,158,63,0.25); padding: 5px 12px; display: inline-block; margin-bottom: 24px; }
-
-    /* STEPS GRID */
-    .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .step-card { background: var(--card); border: 1px solid rgba(74,158,63,0.15); border-radius: 2px; padding: 40px 32px; transition: border-color 300ms ease, transform 300ms ease; position: relative; }
-    .step-card:hover { border-color: rgba(74,158,63,0.4); transform: translateY(-6px); }
-    .step-num { font-family: var(--font-display); font-size: 2.5rem; font-weight: 300; color: var(--gold); opacity: 0.8; margin-bottom: 20px; line-height: 1; letter-spacing: -0.02em; }
-    .step-card h3 { font-family: var(--font-display); font-size: 1.3rem; font-weight: 300; color: var(--text); margin-bottom: 12px; }
-    .step-card p { font-size: 14px; color: var(--muted); line-height: 1.7; }
-
-    /* FORM */
-    .form-wrap { max-width: 760px; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
-    .form-grid .form-group { margin-bottom: 28px; }
-    .form-group { margin-bottom: 28px; }
-    .form-label { display: block; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; font-weight: 400; }
-    .form-input, .form-select, .form-textarea {
-      width: 100%; background: var(--card); border: 1px solid rgba(74,158,63,0.2);
-      border-radius: 2px; padding: 16px 20px; color: var(--text);
-      font-family: var(--font-body); font-size: 16px; font-weight: 300; line-height: 1.5;
-      transition: border-color 0.3s ease; outline: none; -webkit-appearance: none;
+    .portal-login__brand {
+      text-align: center;
+      opacity: 0; animation: pfade 600ms var(--se-ease-out) forwards;
     }
-    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--green-accent); }
-    .form-textarea { resize: vertical; }
-    .form-select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234a9e3f' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 18px center; padding-right: 44px; }
-    .form-select option { background: var(--card); color: var(--text); }
-    .honeypot { display: none; }
-    .form-note { font-size: 13px; color: var(--muted); line-height: 1.7; margin-top: 20px; opacity: 0.75; }
-    .form-note strong { color: var(--text); font-weight: 400; }
-
-    /* CTA BAND */
-    .band { border: 1px solid rgba(74,158,63,0.2); padding: 72px 64px; position: relative; overflow: hidden; display: grid; grid-template-columns: 1fr auto; gap: 64px; align-items: center; }
-    .band::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--green-accent), transparent); }
-    .band h2 { font-family: var(--font-display); font-size: clamp(1.8rem, 3vw, 2.8rem); font-weight: 300; margin-bottom: 12px; }
-    .band p { font-size: 15px; color: var(--muted); line-height: 1.75; max-width: 480px; }
-    .band-actions { display: flex; flex-direction: column; gap: 12px; align-items: flex-end; min-width: 220px; }
-
-    /* RELATED SERVICES */
-    .related-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .related-card { background: var(--card); border: 1px solid rgba(74,158,63,0.15); border-radius: 2px; padding: 40px 36px; transition: border-color 300ms ease, transform 300ms ease; }
-    .related-card:hover { border-color: rgba(74,158,63,0.4); transform: translateY(-4px); }
-    .related-card h3 { font-family: var(--font-display); font-size: 1.2rem; font-weight: 300; color: var(--text); margin-bottom: 10px; }
-    .related-card p { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 20px; }
-    .card-link { font-family: var(--font-body); font-size: 11px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--green-accent); display: inline-flex; align-items: center; gap: 8px; transition: gap 0.3s ease; }
-    .card-link:hover { gap: 16px; }
-    .card-link::after { content: '→'; }
-
-    /* FOOTER */
-    footer { border-top: 1px solid var(--border); padding: 80px 0 56px; background: var(--bg); }
-    .footer-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 56px; }
-    .footer-logo { font-family: var(--font-display); font-size: 1.5rem; font-weight: 300; letter-spacing: 0.12em; text-transform: uppercase; display: block; margin-bottom: 16px; color: var(--text); }
-    .footer-logo .g { color: var(--green-accent); }
-    .footer-tagline { font-size: 14px; line-height: 1.7; color: var(--muted); max-width: 260px; }
-    .footer-col h4 { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; font-weight: 400; }
-    .footer-col a { display: block; font-size: 14px; color: var(--muted); margin-bottom: 10px; transition: color 0.3s ease; }
-    .footer-col a:hover { color: var(--green-accent); }
-    .footer-contact { text-align: right; }
-    .footer-contact a { color: var(--text); }
-    .footer-bottom { border-top: 1px solid var(--border); padding-top: 32px; margin-top: 56px; display: flex; justify-content: space-between; align-items: center; }
-    .footer-bottom p { font-size: 12px; color: rgba(122,143,118,0.4); letter-spacing: 0.05em; }
-
-    /* RESPONSIVE */
-    @media (max-width: 1024px) {
-      .features-grid { grid-template-columns: repeat(2, 1fr); }
-      .tier-grid { grid-template-columns: 1fr; }
-      .steps-grid { grid-template-columns: 1fr; }
-      .related-grid { grid-template-columns: repeat(2, 1fr); }
+    .portal-login__title {
+      font-family: var(--se-font-display);
+      font-size: var(--se-text-display-sm); font-weight: 300;
+      color: var(--se-text-primary); margin-bottom: var(--se-space-2);
     }
-    @media (max-width: 768px) {
-      section { padding: 80px 0; }
-      .container { padding: 0 24px; }
-      .nav-links { display: none; }
-      .hamburger { display: flex; }
-      .features-grid { grid-template-columns: 1fr; }
-      .tier-grid { grid-template-columns: 1fr; }
-      .steps-grid { grid-template-columns: 1fr; }
-      .related-grid { grid-template-columns: 1fr; }
-      .form-grid { grid-template-columns: 1fr; }
-      .band { grid-template-columns: 1fr; gap: 40px; padding: 48px 24px; }
-      .band-actions { align-items: flex-start; }
-      .footer-grid { grid-template-columns: 1fr; gap: 40px; }
-      .footer-contact { text-align: left; }
-      .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
-      .page-title { font-size: 48px !important; }
-      .pull-quote { font-size: 24px; }
-      .hero-ctas { flex-direction: column; align-items: flex-start; }
-      .hero-ctas .btn-primary { width: 100%; justify-content: center; }
+    .portal-login__sub { font-size: var(--se-text-xs); color: var(--se-text-muted); }
+    .portal-login__form {
+      width: 100%; max-width: 380px;
+      opacity: 0; animation: pfade 600ms var(--se-ease-out) 200ms forwards;
     }
-    @media (prefers-reduced-motion: reduce) {
-      .fade, .page-title .w, .page-intro, .hero-ctas { transition: none !important; opacity: 1 !important; transform: none !important; }
+    @keyframes pfade { to { opacity: 1; } }
+
+    /* OTP Screen */
+    #otp-screen {
+      position: fixed; inset: 0; z-index: 100;
+      background: var(--se-bg-base);
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: var(--se-space-6); gap: var(--se-space-6);
     }
+    #otp-screen.is-visible { display: flex; }
+
+    /* Portal header */
+    .portal-header {
+      padding: var(--se-space-5) var(--se-space-6);
+      padding-top: calc(var(--se-space-5) + env(safe-area-inset-top));
+      background: var(--se-bg-surface);
+      border-bottom: 1px solid var(--se-border-subtle);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .portal-header__brand {
+      font-family: var(--se-font-ui); font-size: var(--se-text-xs);
+      font-weight: 500; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--se-text-muted);
+    }
+
+    /* Portal nav */
+    .portal-nav {
+      display: flex; gap: var(--se-space-1);
+      padding: var(--se-space-3) var(--se-space-6);
+      border-bottom: 1px solid var(--se-border-subtle);
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+    }
+    .portal-nav__item {
+      padding: var(--se-space-3) var(--se-space-4);
+      font-size: var(--se-text-sm); color: var(--se-text-muted);
+      border-radius: var(--se-radius-md); border: none;
+      background: none; cursor: pointer; white-space: nowrap;
+      font-family: var(--se-font-ui); min-height: 44px;
+      display: inline-flex; align-items: center;
+      transition: all var(--se-duration-fast) var(--se-ease-out);
+    }
+    .portal-nav__item:hover { color: var(--se-text-secondary); background: var(--se-green-050); }
+    .portal-nav__item:focus-visible { outline: 2px solid var(--se-border-focus); outline-offset: 2px; }
+    .portal-nav__item--active { color: var(--se-green-400); background: var(--se-green-100); }
+
+    /* Compliance */
+    .compliance-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--se-space-4) 0; border-bottom: 1px solid var(--se-border-subtle);
+    }
+    .compliance-item__label { font-size: var(--se-text-sm); color: var(--se-text-secondary); }
+    .compliance-item__status {
+      display: flex; align-items: center; gap: var(--se-space-2);
+      font-size: var(--se-text-xs); font-weight: 500;
+    }
+    .compliance-item__status--ok { color: var(--se-success); }
+    .compliance-check {
+      width: 16px; height: 16px; border-radius: var(--se-radius-full);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .compliance-check--ok { background: var(--se-success-bg); color: var(--se-success); }
+
+    /* Invoice card */
+    .invoice-card {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--se-space-4) var(--se-space-5);
+      background: var(--se-bg-surface); border: 1px solid var(--se-border-subtle);
+      border-radius: var(--se-radius-lg);
+      transition: border-color var(--se-duration-base) var(--se-ease-out);
+    }
+    .invoice-card:hover { border-color: var(--se-border-default); }
+    .pay-btn {
+      padding: var(--se-space-2) var(--se-space-5);
+      background: var(--se-green-600); color: var(--se-text-inverse);
+      font-size: var(--se-text-xs); font-weight: 500;
+      border: none; border-radius: var(--se-radius-full);
+      cursor: pointer; min-height: 44px;
+      transition: background var(--se-duration-fast) var(--se-ease-out);
+    }
+    .pay-btn:hover { background: var(--se-green-500); }
+    .pay-btn:focus-visible { outline: 2px solid var(--se-border-focus); outline-offset: 2px; }
+    .pay-btn:active { background: var(--se-green-700); }
+
+    /* Doc grid */
+    .doc-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--se-space-4);
+    }
+    .doc-card {
+      padding: var(--se-space-5); background: var(--se-bg-surface);
+      border: 1px solid var(--se-border-subtle); border-radius: var(--se-radius-lg);
+      cursor: pointer; transition: all var(--se-duration-base) var(--se-ease-out);
+    }
+    .doc-card:hover { border-color: var(--se-border-default); background: var(--se-bg-elevated); }
+    .doc-card:focus-visible { outline: 2px solid var(--se-border-focus); outline-offset: 2px; }
+    .doc-card__icon { width: 32px; height: 32px; color: var(--se-green-600); margin-bottom: var(--se-space-3); }
+    .doc-card__name { font-size: var(--se-text-sm); font-weight: 500; color: var(--se-text-primary); }
+    .doc-card__meta { font-size: var(--se-text-3xs); color: var(--se-text-faint); margin-top: var(--se-space-1); }
   </style>
 </head>
 <body>
 
-  <div id="scroll-bar" aria-hidden="true"></div>
+<!-- ══ LOGIN (email only — no client list exposed) ══ -->
 
-  <nav id="nav">
-    <div class="container nav-inner">
-      <a href="/" class="nav-logo">Steady <span class="g">Eco</span></a>
-      <ul class="nav-links">
-        <li><a href="/">Blade Sharpening</a></li>
-        <li><a href="/land-regeneration" class="active">Land Regeneration</a></li>
-        <li><a href="/land-regeneration/government-contracts">Government</a></li>
-        <li><a href="/about">About</a></li>
-        <li><a href="/land-regeneration/contact">Enquire</a></li>
-      </ul>
-      <button class="hamburger" onclick="toggleMenu()" aria-label="Open menu"><span></span><span></span><span></span></button>
+<div id="portal-login">
+  <div class="portal-login__brand">
+    <div class="label" style="margin-bottom:var(--se-space-4)">Steady Eco</div>
+    <h1 class="portal-login__title">Client Portal</h1>
+    <p class="portal-login__sub">Enter your email address to access your portal</p>
+  </div>
+  <div class="portal-login__form">
+    <div class="form-group">
+      <label class="form-label" for="login-email">Email Address</label>
+      <input class="form-input" id="login-email" type="email" placeholder="your@email.com" autocomplete="email">
     </div>
-    <div class="mobile-menu" id="mobileMenu">
-      <a href="/">Blade Sharpening</a>
-      <a href="/land-regeneration" class="active">Land Regeneration</a>
-      <a href="/land-regeneration/government-contracts">Government</a>
-      <a href="/about">About</a>
-      <a href="/land-regeneration/contact">Enquire</a>
-    </div>
-  </nav>
+    <button class="btn btn-primary w-full mt-4" onclick="Portal.emailLogin()" style="min-height:48px">Send Login Code</button>
+    <p class="text-xs text-faint text-center mt-4">A verification code will be sent to your email</p>
+  </div>
+</div>
 
-  <div class="breadcrumb">
-    <div class="container">
-      <div class="bc-inner">
-        <a href="/">Home</a>
-        <span>›</span>
-        <span class="cur">Client Portal</span>
-      </div>
+<!-- ══ OTP VERIFICATION SCREEN ══ -->
+
+<div id="otp-screen">
+  <button class="btn btn-ghost btn-sm" onclick="Portal.backToLogin()" style="position:absolute;top:var(--se-space-6);left:var(--se-space-6)" aria-label="Back to login">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 4l-6 6 6 6"/></svg>
+    Back
+  </button>
+  <h2 class="text-display-sm" style="font-family:var(--se-font-display);text-align:center">Enter verification code</h2>
+  <p class="text-sm text-muted text-center" id="otp-email-display">Sent to your@email.com</p>
+  <div class="pin-dots" id="otp-dots">
+    <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+    <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+  </div>
+  <div class="pin-pad" id="otp-pad">
+    <button class="pin-key" data-key="1">1</button>
+    <button class="pin-key" data-key="2">2</button>
+    <button class="pin-key" data-key="3">3</button>
+    <button class="pin-key" data-key="4">4</button>
+    <button class="pin-key" data-key="5">5</button>
+    <button class="pin-key" data-key="6">6</button>
+    <button class="pin-key" data-key="7">7</button>
+    <button class="pin-key" data-key="8">8</button>
+    <button class="pin-key" data-key="9">9</button>
+    <button class="pin-key pin-key--action" aria-label="Clear code" data-key="clear">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 4l12 12M16 4L4 16"/></svg>
+    </button>
+    <button class="pin-key" data-key="0">0</button>
+    <button class="pin-key pin-key--action" aria-label="Delete last digit" data-key="delete">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M18 5H7l-4 5 4 5h11V5z"/><path d="M11 8l4 4M15 8l-4 4"/></svg>
+    </button>
+  </div>
+  <p class="text-xs text-faint mt-4">For demo: enter any 6 digits</p>
+</div>
+
+<!-- ══ PORTAL APP ══ -->
+
+<div id="portal-app" style="display:none">
+  <div class="portal-header">
+    <div>
+      <div class="portal-header__brand">Steady Eco</div>
+      <div class="text-md font-medium mt-1" id="portal-client-name">—</div>
     </div>
+    <button class="btn btn-ghost btn-sm" onclick="Portal.logout()">Log Out</button>
   </div>
 
-  <div class="page-hero">
-    <div class="hero-ghost" aria-hidden="true">PORTAL</div>
-    <div class="container">
-      <div class="page-eyebrow">Client Access</div>
-      <h1 class="page-title">
-        <span data-line data-cls="dim">Your Projects.</span><br>
-        <span data-line>Your Invoices.</span><br>
-        <span data-line data-cls="accent">One Place.</span>
-      </h1>
-      <p class="page-intro">The Steady Eco client portal gives you direct visibility over your restoration projects, invoices, and job progress — without waiting for a phone call or email.</p>
-      <div class="hero-ctas">
-        <a href="#access-form" class="btn btn-primary">Request Portal Access</a>
-        <a href="#features" class="btn btn-outline">Learn What's Inside</a>
-      </div>
-    </div>
-  </div>
+  <nav class="portal-nav" id="portal-nav" aria-label="Portal navigation" role="tablist"></nav>
 
-  <!-- FEATURES -->
-  <section id="features" style="background: var(--bg-alt);" class="observe">
-    <div class="container">
-      <div class="label fade">Portal Features</div>
-      <h2 class="sh fade">What You'll Have <span class="accent">Access To</span></h2>
-      <div class="features-grid">
-        <div class="feature-card fade">
-          <div class="feature-icon">Live Status</div>
-          <h3>Live Job Status</h3>
-          <p>See exactly where your project is: Booked, On Site, Complete, or Paid. Updated in real time as work progresses.</p>
+  <main>
+    <!-- Dashboard -->
+    <div class="screen is-active" id="screen-portal-dashboard" role="tabpanel" aria-hidden="false">
+      <div class="p-6">
+        <h2 class="text-display-md mb-2" style="font-family:var(--se-font-display);font-weight:300" id="portal-greeting" tabindex="-1">Welcome back</h2>
+        <p class="text-sm text-muted mb-8" id="portal-address"></p>
+        <div class="mb-8">
+          <h3 class="label mb-4">Active Jobs</h3>
+          <ul class="flex flex-col gap-3" id="portal-jobs" role="list"></ul>
         </div>
-        <div class="feature-card fade">
-          <div class="feature-icon">Financials</div>
-          <h3>Invoice History</h3>
-          <p>Access all your invoices — current, paid, and overdue. Download or print any invoice directly from the portal.</p>
+        <div class="mb-8">
+          <h3 class="label mb-4">Recent Invoices</h3>
+          <ul class="flex flex-col gap-3" id="portal-invoices" role="list"></ul>
         </div>
-        <div class="feature-card fade">
-          <div class="feature-icon">History</div>
-          <h3>Project Timeline</h3>
-          <p>A full history of every job we've completed on your property or site. Filter by date, service type, or status.</p>
-        </div>
-        <div class="feature-card fade">
-          <div class="feature-icon">Quotes</div>
-          <h3>Quote Status</h3>
-          <p>Track outstanding quotes and approve or decline work directly through the portal.</p>
-        </div>
-        <div class="feature-card fade">
-          <div class="feature-icon">Site Records</div>
-          <h3>Photo Reports</h3>
-          <p>Before-and-after site photos uploaded directly to your job record by our crew.</p>
-        </div>
-        <div class="feature-card fade">
-          <div class="feature-icon">Compliance</div>
-          <h3>Document Library</h3>
-          <p>Compliance documents, SWMS, insurance certificates, and project reports — stored and accessible.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- PULL QUOTE -->
-  <div class="pull-quote-section observe">
-    <p class="pull-quote fade">"You should never have to call to find out where your project stands."</p>
-  </div>
-
-  <!-- ACCESS TIERS -->
-  <section style="background: var(--bg-alt);" class="observe">
-    <div class="container">
-      <div class="label fade">Access Tiers</div>
-      <h2 class="sh fade">Three Types of <span class="gold">Client Access</span></h2>
-      <div class="tier-grid">
-        <div class="tier-card fade">
-          <div class="tier-label">Landholder</div>
-          <h3>Landholder Access</h3>
-          <p>Individual property owners. View jobs, invoices, and project photos for your property. Read-only access.</p>
-        </div>
-        <div class="tier-card fade">
-          <div class="tier-label">Council / Government</div>
-          <h3>Council / Government Access</h3>
-          <p>Designated procurement officers and project managers. View all active contracts, compliance documents, and invoices. Shared-team access available.</p>
-        </div>
-        <div class="tier-card fade">
-          <div class="tier-label">Carbon Farming</div>
-          <h3>Carbon Farming Client</h3>
-          <p>ACCU project participants. View ERF project progress, MERI reports, planting records, and carbon estimation updates.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- REQUEST ACCESS FORM -->
-  <section id="access-form" style="background: var(--bg);" class="observe">
-    <div class="container">
-      <div class="label fade">Request Access</div>
-      <h2 class="sh fade">Join the Portal</h2>
-      <div class="form-wrap fade">
-        <form action="https://formspree.io/f/xvzwlpko" method="POST">
-          <input type="hidden" name="_subject" value="Steady Eco Portal Access Request" />
-          <input type="hidden" name="_next" value="https://steadyeco.com/portal#access-form" />
-          <div class="honeypot">
-            <label>Leave this blank <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" /></label>
-          </div>
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label" for="full-name">Full Name <span style="color:var(--green-accent);">*</span></label>
-              <input class="form-input" type="text" id="full-name" name="full_name" required placeholder="Your full name" />
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="organisation">Organisation / Property</label>
-              <input class="form-input" type="text" id="organisation" name="organisation" placeholder="Optional" />
-            </div>
-          </div>
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label" for="email">Email <span style="color:var(--green-accent);">*</span></label>
-              <input class="form-input" type="email" id="email" name="email" required placeholder="your@email.com" />
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="phone">Phone <span style="color:var(--green-accent);">*</span></label>
-              <input class="form-input" type="tel" id="phone" name="phone" required placeholder="0400 000 000" />
-            </div>
-          </div>
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label" for="access-type">Access Type <span style="color:var(--green-accent);">*</span></label>
-              <select class="form-select" id="access-type" name="access_type" required>
-                <option value="" disabled selected>Select access type</option>
-                <option value="Landholder">Landholder</option>
-                <option value="Council or Government">Council or Government</option>
-                <option value="Carbon Farming Client">Carbon Farming Client</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="existing-client">Existing Client? <span style="color:var(--green-accent);">*</span></label>
-              <select class="form-select" id="existing-client" name="existing_client" required>
-                <option value="" disabled selected>Select one</option>
-                <option value="Yes, I have an active project">Yes, I have an active project</option>
-                <option value="Yes, I have a completed project">Yes, I have a completed project</option>
-                <option value="No, I'm a new client">No, I'm a new client</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="message">Additional Context</label>
-            <textarea class="form-textarea" id="message" name="message" rows="4" placeholder="Any additional context about your project or access needs."></textarea>
-          </div>
-          <button type="submit" class="btn btn-primary">Request Access →</button>
-        </form>
-        <p class="form-note">Access requests are reviewed within <strong>1 business day</strong>. Existing clients with active projects will be given priority.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- HOW IT WORKS -->
-  <section style="background: var(--bg-alt);" class="observe">
-    <div class="container">
-      <div class="label fade">Access Process</div>
-      <h2 class="sh fade">Getting You <span class="accent">Set Up</span></h2>
-      <div class="steps-grid">
-        <div class="step-card fade">
-          <div class="step-num">01.</div>
-          <h3>Request Access</h3>
-          <p>Fill out the form above. Tell us your name, organisation, and whether you're an existing client.</p>
-        </div>
-        <div class="step-card fade">
-          <div class="step-num">02.</div>
-          <h3>We Verify &amp; Set Up</h3>
-          <p>We match your request to your project records. For new clients, we'll set up your account before your first job begins.</p>
-        </div>
-        <div class="step-card fade">
-          <div class="step-num">03.</div>
-          <h3>You're In</h3>
-          <p>You'll receive a direct link and login details within 1 business day. Access the portal from any device.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA BAND -->
-  <section style="background: var(--bg);" class="observe">
-    <div class="container">
-      <div class="band fade">
         <div>
-          <h2>Already Have a Project?</h2>
-          <p style="margin-top:12px;">If you're an existing client with an active or completed project, you're eligible for portal access now. Request it above, or call Sam directly.</p>
-        </div>
-        <div class="band-actions">
-          <a href="#access-form" class="btn btn-primary">Request Access</a>
-          <a href="/land-regeneration/contact" class="btn btn-outline">Send Enquiry</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- RELATED -->
-  <section style="background: var(--bg-alt);" class="observe">
-    <div class="container">
-      <div class="label fade">Related</div>
-      <div class="related-grid" style="margin-top:8px;">
-        <div class="related-card fade">
-          <h3>Land Regeneration Hub</h3>
-          <p>The full range of Steady Eco restoration services — vegetation management, revegetation, weed control, and more.</p>
-          <a href="/land-regeneration" class="card-link">View Services</a>
-        </div>
-        <div class="related-card fade">
-          <h3>Government Contracts</h3>
-          <p>Procurement information for councils and government agencies working with Steady Eco on restoration projects.</p>
-          <a href="/land-regeneration/government-contracts" class="card-link">View Page</a>
-        </div>
-        <div class="related-card fade">
-          <h3>Contact</h3>
-          <p>Speak directly with Sam about your project, access needs, or anything else. Enquiry form and phone available.</p>
-          <a href="/land-regeneration/contact" class="card-link">Get in Touch</a>
+          <h3 class="label mb-4">Quick Actions</h3>
+          <div class="grid grid-cols-2 gap-3" style="max-width:400px">
+            <a href="tel:+61456190202" class="btn btn-secondary" style="min-height:48px">Call Sam</a>
+            <button class="btn btn-primary" onclick="Portal.showTab('invoices')" style="min-height:48px">View Invoices</button>
+          </div>
         </div>
       </div>
     </div>
-  </section>
 
-  <footer>
-    <div class="container">
-      <div class="footer-grid">
-        <div>
-          <span class="footer-logo">Steady <span class="g">Eco</span></span>
-          <p class="footer-tagline">Land Regeneration — FNQ's first dedicated ecological restoration contractor. Cairns, Queensland.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Services</h4>
-          <a href="/land-regeneration/vegetation-management">Vegetation Management</a>
-          <a href="/land-regeneration/revegetation">Revegetation</a>
-          <a href="/land-regeneration/weed-control">Weed Control</a>
-          <a href="/land-regeneration/erosion-control">Erosion Control</a>
-          <a href="/land-regeneration/carbon-farming">Carbon Farming</a>
-          <a href="/land-regeneration/government-contracts">Government Contracts</a>
-        </div>
-        <div class="footer-col footer-contact">
-          <h4>Contact</h4>
-          <a href="tel:+61456190202">0456 190 202</a>
-          <a href="/land-regeneration/contact">Send Enquiry</a>
-          <a href="/portal">Client Portal</a>
-          <a href="/land-regeneration">← Land Regeneration</a>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>© <span id="footer-year"></span> Steady Eco Land Regeneration — Cairns, Far North Queensland</p>
-        <p><a href="/">Also: Chipper Blade Sharpening →</a></p>
+    <!-- Jobs -->
+    <div class="screen" id="screen-portal-jobs" role="tabpanel" aria-hidden="true">
+      <div class="p-6">
+        <h2 class="text-display-xs mb-6" style="font-family:var(--se-font-display)" tabindex="-1">My Jobs</h2>
+        <ul class="flex flex-col gap-3" id="portal-all-jobs" role="list"></ul>
       </div>
     </div>
-  </footer>
 
-  <script>
-    // 1. Scroll progress bar
-    const scrollBar = document.getElementById('scroll-bar');
-    window.addEventListener('scroll', () => {
-      scrollBar.style.width = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight) * 100) + '%';
-    }, { passive: true });
+    <!-- Invoices -->
+    <div class="screen" id="screen-portal-invoices" role="tabpanel" aria-hidden="true">
+      <div class="p-6">
+        <h2 class="text-display-xs mb-6" style="font-family:var(--se-font-display)" tabindex="-1">Invoices</h2>
+        <ul class="flex flex-col gap-3" id="portal-all-invoices" role="list"></ul>
+      </div>
+    </div>
 
-    // 2. Nav scroll/hide + mobile menu
-    const nav = document.getElementById('nav');
-    let lastY = 0;
-    window.addEventListener('scroll', () => {
-      const y = window.scrollY;
-      nav.classList.toggle('scrolled', y > 40);
-      nav.classList.toggle('nav-hidden', y > 120 && y > lastY);
-      lastY = y;
-    }, { passive: true });
+    <!-- Documents (Gov) -->
+    <div class="screen" id="screen-portal-documents" role="tabpanel" aria-hidden="true">
+      <div class="p-6">
+        <h2 class="text-display-xs mb-6" style="font-family:var(--se-font-display)" tabindex="-1">Documents &amp; Compliance</h2>
+        <div class="card p-5 mb-8">
+          <h3 class="label mb-4">Compliance Status</h3>
+          <div id="portal-compliance"></div>
+        </div>
+        <h3 class="label mb-4">Document Library</h3>
+        <div class="doc-grid" id="portal-docs"></div>
+      </div>
+    </div>
 
-    function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
+    <!-- Contracts (Gov) -->
+    <div class="screen" id="screen-portal-contracts" role="tabpanel" aria-hidden="true">
+      <div class="p-6">
+        <h2 class="text-display-xs mb-6" style="font-family:var(--se-font-display)" tabindex="-1">Contracts</h2>
+        <div class="grid grid-cols-2 gap-4 mb-8" style="max-width:600px" id="portal-gov-metrics"></div>
+        <div class="data-table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>Contract</th><th>Period</th><th>Value</th><th>Status</th></tr></thead>
+            <tbody id="portal-contracts-body"></tbody>
+          </table>
+        </div>
+        <h3 class="label mb-4 mt-8">Recent Completed Jobs</h3>
+        <ul class="flex flex-col gap-3" id="portal-gov-jobs" role="list"></ul>
+      </div>
+    </div>
+  </main>
+</div>
 
-    // 3. IntersectionObserver — 60ms stagger on .observe containers
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
-        const ch = [...entry.target.querySelectorAll('.fade')];
-        if (ch.length) {
-          ch.forEach((c, i) => setTimeout(() => c.classList.add('in'), i * 60));
-        } else {
-          entry.target.classList.add('in');
+<!-- Toast -->
+<div class="toast-container" aria-live="polite"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  const Portal = {
+    client: null,
+    _pendingClientId: null,
+    _otpCode: '',
+    _cache: {},
+
+    init() {
+      this.setupOtpPad()
+      if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {})
+    },
+
+    /* ── XSS SANITIZER ─────────────────────────────── */
+
+    esc(str) {
+      if (!str) return ''
+      const d = document.createElement('div')
+      d.textContent = String(str)
+      return d.innerHTML
+    },
+
+    /* ── CACHED STORE ──────────────────────────────── */
+
+    getStore(key) {
+      if (!this._cache[key]) {
+        try { this._cache[key] = JSON.parse(localStorage.getItem('se_' + key)) || [] }
+        catch { this._cache[key] = [] }
+      }
+      return this._cache[key]
+    },
+
+    invalidateCache(key) { delete this._cache[key] },
+
+    /* ── LOGIN (email only — no client list) ─────── */
+
+    emailLogin() {
+      const email = document.getElementById('login-email').value.trim()
+      if (!email) { this.toast('Enter your email address', 'error'); return }
+
+      const client = this.getStore('clients').find(c => c.email && c.email.toLowerCase() === email.toLowerCase())
+      if (!client) { this.toast('No account found for that email', 'error'); return }
+
+      // Show OTP screen (simulated for PWA phase)
+      this._pendingClientId = client.id
+      document.getElementById('otp-email-display').textContent = `Code sent to ${this.esc(email)}`
+      document.getElementById('otp-screen').classList.add('is-visible')
+      this._otpCode = ''
+      this.updateOtpDots()
+    },
+
+    backToLogin() {
+      document.getElementById('otp-screen').classList.remove('is-visible')
+      this._otpCode = ''
+      this._pendingClientId = null
+    },
+
+    /* ── OTP PAD ───────────────────────────────────── */
+
+    setupOtpPad() {
+      document.getElementById('otp-pad').addEventListener('click', (e) => {
+        const key = e.target.closest('[data-key]')
+        if (!key) return
+        const val = key.dataset.key
+
+        if (val === 'delete') { this._otpCode = this._otpCode.slice(0, -1); this.updateOtpDots(); return }
+        if (val === 'clear') { this._otpCode = ''; this.updateOtpDots(); return }
+        if (this._otpCode.length >= 6) return
+
+        this._otpCode += val
+        this.updateOtpDots()
+
+        if (this._otpCode.length === 6) {
+          setTimeout(() => this.verifyOtp(), 150)
         }
-        io.unobserve(entry.target);
-      });
-    }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
-    document.querySelectorAll('.observe').forEach(el => io.observe(el));
+      })
+    },
 
-    // 4. initHero() — word-by-word reveal
-    function initHero() {
-      const h1 = document.querySelector('.page-title');
-      if (!h1) return;
-      h1.querySelectorAll('[data-line]').forEach(line => {
-        const cls = line.dataset.cls || '';
-        const words = line.textContent.trim().split(/\s+/);
-        line.innerHTML = words.map(w => `<span class="w ${cls}">${w}</span>`).join(' ');
-        line.removeAttribute('data-line');
-        line.removeAttribute('data-cls');
-        line.removeAttribute('class');
-      });
-      let idx = 0;
-      document.querySelectorAll('.page-title .w').forEach(w => {
-        const d = 100 + idx++ * 80;
-        setTimeout(() => { w.style.opacity = '1'; w.style.transform = 'translateY(0)'; }, d);
-      });
-      setTimeout(() => document.querySelector('.page-intro')?.classList.add('in'), 100 + idx * 80);
-      setTimeout(() => document.querySelector('.hero-ctas')?.classList.add('in'), 200 + idx * 80);
-    }
-    window.addEventListener('load', initHero);
+    updateOtpDots() {
+      document.querySelectorAll('#otp-dots .pin-dot').forEach((dot, i) => {
+        dot.classList.toggle('pin-dot--filled', i < this._otpCode.length)
+        dot.classList.remove('pin-dot--error')
+      })
+    },
 
-    // 5. Formspree AJAX submit
-    document.querySelectorAll('form[action*="formspree"]').forEach(form => {
-      form.addEventListener('submit', async e => {
-        e.preventDefault();
-        const btn = form.querySelector('[type="submit"]');
-        const orig = btn.textContent; btn.textContent = 'Sending…'; btn.disabled = true;
-        try {
-          const r = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
-          if (r.ok) {
-            form.innerHTML = '<div style="padding:64px 48px;text-align:center;"><div style="font-family:var(--font-display);font-size:3.5rem;color:var(--green-accent);margin-bottom:20px;">&#10003;</div><div style="font-family:var(--font-display);font-size:2rem;font-weight:300;color:var(--text);margin-bottom:16px;">Request Received</div><p style="color:var(--muted);font-family:var(--font-body);font-size:15px;line-height:1.75;">We\'ll review your access request within one business day.</p></div>';
-          } else {
-            btn.textContent = orig; btn.disabled = false;
-          }
-        } catch {
-          btn.textContent = orig; btn.disabled = false;
-        }
-      });
-    });
-  </script>
-<script>document.getElementById('footer-year').textContent = new Date().getFullYear();</script>
+    verifyOtp() {
+      // For PWA phase: accept any 6-digit code
+      // When backend exists: verify against server-generated OTP
+      if (this._pendingClientId) {
+        document.getElementById('otp-screen').classList.remove('is-visible')
+        this.selectClient(this._pendingClientId)
+        this._pendingClientId = null
+        this._otpCode = ''
+      }
+    },
+
+    selectClient(id) {
+      const client = this.getStore('clients').find(c => c.id === id)
+      if (!client) return
+
+      this.client = client
+      document.getElementById('portal-login').style.display = 'none'
+      document.getElementById('portal-app').style.display = ''
+      document.getElementById('portal-client-name').textContent = this.esc(client.name)
+
+      this.buildNav(client.type === 'government')
+      this.renderDashboard()
+    },
+
+    buildNav(isGov) {
+      const nav = document.getElementById('portal-nav')
+      const tabs = isGov
+        ? [['dashboard','Overview'],['contracts','Contracts'],['jobs','Jobs'],['invoices','Invoices'],['documents','Documents']]
+        : [['dashboard','Overview'],['jobs','My Jobs'],['invoices','Invoices']]
+
+      nav.innerHTML = tabs.map(([id, label], i) =>
+        `<button class="portal-nav__item ${i === 0 ? 'portal-nav__item--active' : ''}" role="tab" aria-selected="${i === 0}" data-tab="${id}" onclick="Portal.showTab('${id}')">${label}</button>`
+      ).join('')
+    },
+
+    showTab(tab) {
+      document.querySelectorAll('.screen').forEach(s => { s.classList.remove('is-active'); s.setAttribute('aria-hidden', 'true') })
+      const target = document.getElementById(`screen-portal-${tab}`)
+      if (target) { target.classList.add('is-active'); target.setAttribute('aria-hidden', 'false') }
+
+      document.querySelectorAll('.portal-nav__item').forEach(n => {
+        const active = n.dataset.tab === tab
+        n.classList.toggle('portal-nav__item--active', active)
+        n.setAttribute('aria-selected', active)
+      })
+
+      // Focus management
+      const heading = target?.querySelector('[tabindex="-1"]')
+      if (heading) heading.focus({ preventScroll: false })
+
+      this.renderTab(tab)
+    },
+
+    renderTab(tab) {
+      switch(tab) {
+        case 'dashboard': this.renderDashboard(); break
+        case 'jobs': this.renderJobs(); break
+        case 'invoices': this.renderInvoices(); break
+        case 'contracts': this.renderContracts(); break
+        case 'documents': this.renderDocuments(); break
+      }
+    },
+
+    /* ── DASHBOARD ─────────────────────────────────── */
+
+    renderDashboard() {
+      if (!this.client) return
+      const isGov = this.client.type === 'government'
+      const hour = new Date().getHours()
+      const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+      const firstName = this.esc(this.client.name.split(' ')[0])
+
+      document.getElementById('portal-greeting').textContent = isGov
+        ? `${this.client.name} — Contract Portal`
+        : `${greeting}, ${firstName}`
+
+      document.getElementById('portal-address').textContent = this.client.address
+        ? `${this.client.address.line1 || ''} ${this.client.address.suburb || ''}`
+        : ''
+
+      const jobs = this.getStore('jobs').filter(j => j.clientId === this.client.id)
+      const active = jobs.filter(j => !['paid', 'cancelled'].includes(j.status))
+      const container = document.getElementById('portal-jobs')
+
+      if (!active.length) {
+        container.innerHTML = `<li class="card p-5 text-center"><p class="text-sm text-secondary">No active jobs</p><p class="text-xs text-muted mt-1">When Sam schedules work for you, it'll appear here.</p></li>`
+      } else {
+        container.innerHTML = active.map(j => `<li>${this.jobCard(j)}</li>`).join('')
+      }
+
+      const invoices = this.getStore('invoices').filter(i => i.clientId === this.client.id).slice(-3).reverse()
+      const invContainer = document.getElementById('portal-invoices')
+
+      if (!invoices.length) {
+        invContainer.innerHTML = `<li class="card p-5 text-center"><p class="text-sm text-secondary">No invoices yet</p></li>`
+      } else {
+        invContainer.innerHTML = invoices.map(i => `<li>${this.invoiceCard(i)}</li>`).join('')
+      }
+    },
+
+    /* ── JOBS ──────────────────────────────────────── */
+
+    renderJobs() {
+      const jobs = this.getStore('jobs').filter(j => j.clientId === this.client.id).reverse()
+      const container = document.getElementById('portal-all-jobs')
+
+      if (!jobs.length) {
+        container.innerHTML = `<li class="empty-state"><p class="empty-state__title">No jobs yet</p><p class="empty-state__description">When Steady Eco schedules work for your property, jobs will appear here.</p></li>`
+        return
+      }
+      container.innerHTML = jobs.map(j => `<li>${this.jobCard(j)}</li>`).join('')
+    },
+
+    jobCard(job) {
+      const svc = this.esc((job.serviceTypes?.[0] || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()))
+      const date = job.scheduledStart ? new Date(job.scheduledStart).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : 'TBC'
+      const desc = job.description ? this.esc(job.description.length > 100 ? job.description.slice(0, 100) + '...' : job.description) : ''
+      return `
+        <div class="card p-5">
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="text-md font-medium">${svc}</div>
+              <div class="text-xs text-muted mt-1">${this.esc(job.reference || '')} · ${date}</div>
+              ${desc ? `<p class="text-sm text-secondary mt-2">${desc}</p>` : ''}
+            </div>
+            <span class="badge badge-${this.esc(job.status)}">${this.esc(job.status)}</span>
+          </div>
+        </div>
+      `
+    },
+
+    /* ── INVOICES ──────────────────────────────────── */
+
+    renderInvoices() {
+      const invoices = this.getStore('invoices').filter(i => i.clientId === this.client.id).reverse()
+      const container = document.getElementById('portal-all-invoices')
+
+      if (!invoices.length) {
+        container.innerHTML = `<li class="empty-state"><p class="empty-state__title">No invoices yet</p><p class="empty-state__description">Invoices will appear here once work is completed.</p></li>`
+        return
+      }
+      container.innerHTML = invoices.map(i => `<li>${this.invoiceCard(i)}</li>`).join('')
+    },
+
+    invoiceCard(inv) {
+      const isPaid = inv.status === 'paid'
+      const isOverdue = inv.status === 'overdue'
+      const due = inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : ''
+      return `
+        <div class="invoice-card">
+          <div>
+            <div class="text-md font-medium">${this.esc(inv.reference || 'Invoice')}</div>
+            <div class="text-xs text-muted mt-1">${isPaid ? 'Paid' : isOverdue ? 'Overdue' : due ? 'Due ' + due : ''}</div>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="text-md font-medium">${this.formatCurrency(inv.total || 0)}</div>
+            ${!isPaid ? `<button class="pay-btn" onclick="Portal.toast('Payment integration coming soon','info')">Pay Now</button>` : `<span class="badge badge-paid">Paid</span>`}
+          </div>
+        </div>
+      `
+    },
+
+    /* ── GOVERNMENT: CONTRACTS ─────────────────────── */
+
+    renderContracts() {
+      const jobs = this.getStore('jobs').filter(j => j.clientId === this.client.id)
+      const invoices = this.getStore('invoices').filter(i => i.clientId === this.client.id)
+      const completed = jobs.filter(j => ['complete', 'paid', 'invoiced'].includes(j.status))
+      const totalValue = invoices.reduce((s, i) => s + (i.total || 0), 0)
+      const contractCount = totalValue > 0 ? 1 : 0
+
+      document.getElementById('portal-gov-metrics').innerHTML = `
+        <div class="card-stat"><span class="card-stat__label">Active Contracts</span><span class="card-stat__value">${contractCount}</span></div>
+        <div class="card-stat"><span class="card-stat__label">Jobs Completed</span><span class="card-stat__value">${completed.length}</span></div>
+        <div class="card-stat"><span class="card-stat__label">Compliance</span><span class="card-stat__value" style="color:var(--se-success)">Current</span></div>
+        <div class="card-stat"><span class="card-stat__label">Contract Value</span><span class="card-stat__value">${this.formatCurrency(totalValue)}</span></div>
+      `
+
+      const tbody = document.getElementById('portal-contracts-body')
+      if (contractCount === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-8">No active contracts</td></tr>`
+      } else {
+        const prefix = this.client.name.includes('Council') ? 'CRC' : 'CON'
+        tbody.innerHTML = `<tr><td class="font-medium">${prefix}-2026-001</td><td>Jan 2026 — Dec 2026</td><td>${this.formatCurrency(totalValue)}</td><td><span class="badge badge-active">Active</span></td></tr>`
+      }
+
+      const govJobs = document.getElementById('portal-gov-jobs')
+      if (!completed.length) {
+        govJobs.innerHTML = `<li class="text-sm text-muted">No completed jobs yet.</li>`
+      } else {
+        govJobs.innerHTML = completed.slice(-5).reverse().map(j => `<li>${this.jobCard(j)}</li>`).join('')
+      }
+    },
+
+    /* ── GOVERNMENT: DOCUMENTS ─────────────────────── */
+
+    renderDocuments() {
+      const checkSvg = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M2 5l2.5 2.5L8 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+
+      // Dynamic compliance from stored data (fallback to defaults)
+      const compliance = this.getStore('compliance')
+      const items = [
+        { label: 'Public Liability Insurance', status: 'Current — exp. Dec 2026' },
+        { label: 'Workers Compensation', status: 'Current' },
+        { label: 'SWMS Library', status: '3 documents current' },
+        { label: 'ABN', status: '49 553 784 085 — Active' },
+        { label: 'Business Registration', status: 'Active' },
+      ]
+
+      document.getElementById('portal-compliance').innerHTML = items.map((item, i) => `
+        <div class="compliance-item" ${i === items.length - 1 ? 'style="border:none"' : ''}>
+          <span class="compliance-item__label">${this.esc(item.label)}</span>
+          <span class="compliance-item__status compliance-item__status--ok">
+            <span class="compliance-check compliance-check--ok">${checkSvg}</span>
+            ${this.esc(item.status)}
+          </span>
+        </div>
+      `).join('')
+
+      const docIcon = '<svg class="doc-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 4h10l4 4v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z"/><path d="M14 4v4h4"/></svg>'
+      const docs = [
+        { name: 'Public Liability Certificate', cat: 'Insurance', date: 'Jan 2026' },
+        { name: 'Workers Comp Certificate', cat: 'Insurance', date: 'Jan 2026' },
+        { name: 'Tree Removal SWMS', cat: 'SWMS', date: 'Mar 2026' },
+        { name: 'Mowing & Landscaping SWMS', cat: 'SWMS', date: 'Mar 2026' },
+        { name: 'Vegetation Management SWMS', cat: 'SWMS', date: 'Mar 2026' },
+        { name: 'ABN Registration', cat: 'Company', date: 'Nov 2023' },
+      ]
+
+      document.getElementById('portal-docs').innerHTML = docs.map(d => `
+        <div class="doc-card" role="button" tabindex="0" onclick="Portal.toast('Document viewer coming soon','info')" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
+          ${docIcon}
+          <div class="doc-card__name">${this.esc(d.name)}</div>
+          <div class="doc-card__meta">${this.esc(d.cat)} · ${d.date}</div>
+        </div>
+      `).join('')
+    },
+
+    logout() {
+      this.client = null
+      this._cache = {}
+      document.getElementById('login-email').value = ''
+      document.getElementById('portal-app').style.display = 'none'
+      document.getElementById('portal-login').style.display = ''
+    },
+
+    /* ── HELPERS ────────────────────────────────────── */
+
+    initials(name) {
+      return (name || '').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+    },
+
+    formatCurrency(amount) {
+      return (parseFloat(amount) || 0).toLocaleString('en-AU', { style: 'currency', currency: 'AUD', minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    },
+
+    toast(message, type = 'info') {
+      const container = document.querySelector('.toast-container')
+      const el = document.createElement('div')
+      el.className = `toast toast--${type}`
+      const msgSpan = document.createElement('span')
+      msgSpan.className = 'toast__message'
+      msgSpan.textContent = message // textContent = XSS safe
+      el.appendChild(msgSpan)
+      container.appendChild(el)
+      requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('is-visible')))
+      setTimeout(() => { el.classList.remove('is-visible'); setTimeout(() => el.remove(), 400) }, 4000)
+    },
+  }
+
+  window.Portal = Portal
+  Portal.init()
+})()
+</script>
 </body>
 </html>
