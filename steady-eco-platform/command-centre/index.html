@@ -925,8 +925,65 @@
 
     <!-- ══ EMPLOYEES SCREEN ══ -->
     <div class="screen" id="screen-employees">
-      <header class="page-header"><h1 class="page-header__title">Employees</h1></header>
+      <header class="page-header">
+        <h1 class="page-header__title" tabindex="-1">Employees</h1>
+        <div class="page-header__actions">
+          <button class="btn btn-primary btn-sm" onclick="App.navigate('new-employee')">Add Employee</button>
+        </div>
+      </header>
       <div class="p-6"><div id="employees-list" class="flex flex-col gap-3"></div></div>
+    </div>
+
+    <!-- ══ NEW EMPLOYEE SCREEN ══ -->
+    <div class="screen" id="screen-new-employee">
+      <header class="page-header">
+        <h1 class="page-header__title">New Employee</h1>
+        <div class="page-header__actions">
+          <button class="btn btn-ghost btn-sm" onclick="App.navigate('employees')">Cancel</button>
+        </div>
+      </header>
+      <div class="p-6">
+        <div class="form-screen">
+          <div class="flex flex-col gap-5">
+            <div class="form-group">
+              <label class="form-label" for="ne-name">Full Name *</label>
+              <input class="form-input" id="ne-name" type="text" placeholder="e.g. Josh Miller">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ne-role">Role</label>
+              <select class="form-input form-select" id="ne-role">
+                <option value="employee">Employee</option>
+                <option value="subcontractor">Subcontractor</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ne-phone">Phone</label>
+              <input class="form-input" id="ne-phone" type="tel" placeholder="0412 345 678">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ne-email">Email</label>
+              <input class="form-input" id="ne-email" type="email" placeholder="josh@steadyeco.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ne-pin">6-Digit PIN (for Crew Portal login)</label>
+              <input class="form-input" id="ne-pin" type="password" maxlength="6" placeholder="Enter 6-digit PIN">
+              <p class="form-hint mt-1">This PIN is used to log into the Crew Portal on their phone.</p>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ne-emergency-name">Emergency Contact Name</label>
+              <input class="form-input" id="ne-emergency-name" type="text" placeholder="Contact name">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ne-emergency-phone">Emergency Contact Phone</label>
+              <input class="form-input" id="ne-emergency-phone" type="tel" placeholder="Contact phone">
+            </div>
+            <div class="flex gap-3 mt-4">
+              <button class="btn btn-primary" onclick="App.saveEmployee()">Save Employee</button>
+              <button class="btn btn-ghost" onclick="App.navigate('employees')">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ══ INVOICES SCREEN ══ -->
@@ -1209,7 +1266,13 @@
               </div>
             </div>
             <div class="form-group">
-              <label class="form-label">Internal Notes</label>
+              <label class="form-label" for="nj-assign">Assign Crew</label>
+              <select class="form-input form-select" id="nj-assign" multiple style="min-height:80px">
+              </select>
+              <p class="form-hint mt-1">Hold Ctrl/Cmd to select multiple crew members</p>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="nj-notes">Internal Notes</label>
               <textarea class="form-input form-textarea" id="nj-notes" placeholder="Notes visible only to you..." rows="2"></textarea>
             </div>
             <div class="flex gap-3 mt-4">
@@ -1685,6 +1748,7 @@
         case 'quotes': this.renderQuotes(); break
         case 'clients': this.renderClients(); break
         case 'employees': this.renderEmployees(); break
+        case 'new-employee': break
         case 'invoices': this.renderInvoices(); break
         case 'new-job': this.renderNewJob(); break
         case 'new-quote': this.renderNewQuote(); break
@@ -1808,7 +1872,9 @@
         container.innerHTML = `<div class="empty-state" style="padding:var(--se-space-12)"><p class="empty-state__title">No clients yet</p><p class="empty-state__description">Add your first client to start building your network.</p><div class="empty-state__action"><button class="btn btn-primary btn-sm" onclick="App.navigate('new-client')">Add Client</button></div></div>`
         return
       }
-      container.innerHTML = clients.map(c => `
+      // Portal link
+      container.insertAdjacentHTML('beforeend', '')
+      container.innerHTML = `<div class="mb-4 p-4 bg-surface rounded-lg border-subtle text-center"><p class="text-xs text-muted mb-2">Clients access their portal at</p><p class="text-sm"><a href="../client-portal/" target="_blank" style="color:var(--se-green-400)">Open Client Portal →</a></p></div>` + clients.map(c => `
         <div class="card-client">
           <div class="card-client__avatar">${this.esc(this.initials(c.name))}</div>
           <div>
@@ -1823,18 +1889,28 @@
       const employees = this.getStore('employees')
       const container = document.getElementById('employees-list')
       if (!employees.length) {
-        container.innerHTML = `<div class="empty-state" style="padding:var(--se-space-12)"><p class="empty-state__title">No employees yet</p><p class="empty-state__description">Add your crew so they can clock in and manage jobs from their phones.</p></div>`
+        container.innerHTML = `<div class="empty-state" style="padding:var(--se-space-12)"><p class="empty-state__title">No employees yet</p><p class="empty-state__description">Add your crew so they can clock in and manage jobs from their phones.</p><div class="empty-state__action"><button class="btn btn-primary btn-sm" onclick="App.navigate('new-employee')">Add Employee</button></div></div>`
         return
       }
-      container.innerHTML = employees.map(e => `
-        <div class="card-client">
-          <div class="card-client__avatar">${this.esc(this.initials(e.name))}</div>
-          <div>
-            <div class="card-client__name">${this.esc(e.name)}</div>
-            <div class="card-client__detail">${this.esc(e.role || 'Employee')} · ${e.isActive ? 'Active' : 'Inactive'}</div>
+      const jobs = this.getStore('jobs')
+      container.innerHTML = employees.map(e => {
+        const assignedJobs = jobs.filter(j => j.assignedEmployees?.includes(e.id) && !['paid','cancelled'].includes(j.status)).length
+        const hasPIN = e.pinHash ? 'PIN set' : 'No PIN'
+        return `
+          <div class="card-client" style="cursor:default">
+            <div class="card-client__avatar">${this.esc(this.initials(e.name))}</div>
+            <div style="flex:1">
+              <div class="card-client__name">${this.esc(e.name)}</div>
+              <div class="card-client__detail">${this.esc(e.role || 'Employee')} · ${e.isActive !== false ? 'Active' : 'Inactive'} · ${hasPIN} · ${assignedJobs} active job${assignedJobs !== 1 ? 's' : ''}</div>
+              ${e.phone ? `<div class="card-client__detail mt-1">${this.esc(e.phone)}</div>` : ''}
+            </div>
+            <span class="badge ${e.isActive !== false ? 'badge-active' : 'badge-cancelled'}">${e.isActive !== false ? 'Active' : 'Inactive'}</span>
           </div>
-        </div>
-      `).join('')
+        `
+      }).join('')
+
+      // Portal link
+      container.innerHTML += `<div class="mt-6 p-4 bg-surface rounded-lg border-subtle text-center"><p class="text-xs text-muted mb-2">Employees log in at the Crew Portal</p><p class="text-sm"><a href="../crew-portal/" target="_blank" class="text-green" style="color:var(--se-green-400)">Open Crew Portal →</a></p></div>`
     },
 
     renderInvoices() {
@@ -2649,6 +2725,10 @@
       select.innerHTML = '<option value="">Select a client...</option>' + clients.map(c => `<option value="${c.id}">${this.esc(c.name)}</option>`).join('')
       // Default date to today
       document.getElementById('nj-date').value = new Date().toISOString().split('T')[0]
+      // Populate employee assignment
+      const empSelect = document.getElementById('nj-assign')
+      const employees = this.getStore('employees').filter(e => e.isActive !== false)
+      empSelect.innerHTML = employees.map(e => `<option value="${e.id}">${this.esc(e.name)}</option>`).join('')
     },
 
     saveJob() {
@@ -2675,7 +2755,7 @@
         },
         scheduledStart: document.getElementById('nj-date').value,
         scheduledDuration: parseInt(document.getElementById('nj-duration').value),
-        assignedEmployees: [],
+        assignedEmployees: Array.from(document.getElementById('nj-assign').selectedOptions).map(o => o.value),
         quoteId: null,
         invoiceId: null,
         photos: [],
@@ -2692,6 +2772,61 @@
 
       this.toast(`Job ${reference} created`, 'success')
       this.navigate('jobs')
+    },
+
+    /* ── SAVE EMPLOYEE ──────────────────────────────── */
+
+    async saveEmployee() {
+      const name = document.getElementById('ne-name').value.trim()
+      if (!name) { this.toast('Employee name is required', 'error'); return }
+
+      const pin = document.getElementById('ne-pin').value.trim()
+      let pinHash = null
+
+      if (pin) {
+        if (pin.length !== 6 || !/^\d{6}$/.test(pin)) {
+          this.toast('PIN must be exactly 6 digits', 'error')
+          return
+        }
+        // Hash the PIN (same method as crew portal)
+        const encoder = new TextEncoder()
+        const salt = 'steady-eco-crew-v1'
+        const data = encoder.encode(salt + pin)
+        const buffer = await crypto.subtle.digest('SHA-256', data)
+        pinHash = Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('')
+      }
+
+      const employee = {
+        id: crypto.randomUUID(),
+        name,
+        role: document.getElementById('ne-role').value,
+        phone: document.getElementById('ne-phone').value.trim(),
+        email: document.getElementById('ne-email').value.trim(),
+        pinHash,
+        isActive: true,
+        emergencyContact: {
+          name: document.getElementById('ne-emergency-name').value.trim(),
+          phone: document.getElementById('ne-emergency-phone').value.trim(),
+        },
+        startDate: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+
+      const employees = this.getStore('employees')
+      employees.push(employee)
+      localStorage.setItem('se_employees', JSON.stringify(employees))
+      this.invalidateCache('employees')
+      this.addAudit('Employee created', name)
+
+      // Clear form
+      document.querySelectorAll('#screen-new-employee input, #screen-new-employee select').forEach(el => {
+        if (el.tagName === 'SELECT') el.selectedIndex = 0
+        else el.value = ''
+      })
+
+      this.toast(`${this.esc(name)} added to crew`, 'success')
+      this.navigate('employees')
     },
 
     /* ── QUOTE BUILDER ─────────────────────────────── */
