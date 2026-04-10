@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
+  <title>Steady Eco — Crew</title>
+  <meta name="theme-color" content="#0a0f0a">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap">
+  <link rel="stylesheet" href="../steady-eco-platform/shared/css/tokens.css">
+  <link rel="stylesheet" href="../steady-eco-platform/shared/css/reset.css">
+  <link rel="stylesheet" href="../steady-eco-platform/shared/css/typography.css">
+  <link rel="stylesheet" href="../steady-eco-platform/shared/css/components.css">
+  <link rel="stylesheet" href="../steady-eco-platform/shared/css/utilities.css">
+  <style>
+    body { background: var(--se-bg-base); }
+    .screen { display: none; }
+    .screen.is-active { display: flex; flex-direction: column; min-height: 100dvh; }
+
+    #login-screen { position: fixed; inset: 0; z-index: 1000; background: var(--se-bg-base); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: var(--se-space-6); gap: var(--se-space-8); }
+    #login-screen.is-hidden { display: none; }
+    .crew-brand { text-align: center; opacity: 0; animation: cfade 600ms var(--se-ease-out) forwards; }
+    .crew-brand__mark { font-family: var(--se-font-ui); font-size: var(--se-text-xs); font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; color: var(--se-gold-500); }
+    .crew-brand__sub { font-size: var(--se-text-3xs); letter-spacing: 0.15em; text-transform: uppercase; color: var(--se-text-faint); margin-top: var(--se-space-1); }
+    @keyframes cfade { to { opacity: 1; } }
+    .employee-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--se-space-4); width: 100%; max-width: 480px; opacity: 0; animation: cfade 600ms var(--se-ease-out) 200ms forwards; }
+    .employee-card { display: flex; flex-direction: column; align-items: center; gap: var(--se-space-3); padding: var(--se-space-6) var(--se-space-4); background: var(--se-bg-surface); border: 1px solid var(--se-border-subtle); border-radius: var(--se-radius-lg); cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; transition: all var(--se-duration-base) var(--se-ease-out); min-height: 72px; }
+    .employee-card:hover { border-color: var(--se-border-default); background: var(--se-bg-elevated); }
+    .employee-card:active { transform: scale(0.96); border-color: var(--se-gold-500); }
+    .employee-card:focus-visible { outline: 2px solid var(--se-border-focus); outline-offset: 2px; }
+    .employee-card__avatar { width: 56px; height: 56px; border-radius: var(--se-radius-full); background: var(--se-green-900); color: var(--se-gold-500); display: flex; align-items: center; justify-content: center; font-family: var(--se-font-ui); font-size: var(--se-text-lg); font-weight: 600; }
+    .employee-card__name { font-size: var(--se-text-sm); font-weight: 500; color: var(--se-text-primary); text-align: center; }
+    .employee-card__role { font-size: var(--se-text-3xs); color: var(--se-text-faint); text-transform: uppercase; letter-spacing: 0.1em; }
+
+    #crew-pin-screen { position: fixed; inset: 0; z-index: 1001; background: var(--se-bg-base); display: none; flex-direction: column; align-items: center; justify-content: center; gap: var(--se-space-6); padding: var(--se-space-6); }
+    #crew-pin-screen.is-visible { display: flex; }
+    .crew-pin-greeting { font-family: var(--se-font-display); font-size: var(--se-text-display-sm); font-weight: 400; color: var(--se-text-primary); text-align: center; }
+    .crew-pin-back { position: absolute; top: var(--se-space-6); left: var(--se-space-6); color: var(--se-text-muted); font-size: var(--se-text-sm); cursor: pointer; padding: var(--se-space-3); min-height: 44px; display: flex; align-items: center; gap: var(--se-space-2); }
+
+    .crew-header { display: flex; align-items: center; justify-content: space-between; padding: var(--se-space-4) var(--se-space-5); padding-top: calc(var(--se-space-4) + env(safe-area-inset-top)); background: var(--se-bg-surface); border-bottom: 1px solid var(--se-border-subtle); }
+    .crew-header__name { font-size: var(--se-text-md); font-weight: 500; color: var(--se-text-primary); }
+
+    .clock-section { display: flex; flex-direction: column; align-items: center; gap: var(--se-space-4); padding: var(--se-space-8) var(--se-space-6); }
+    .clock-time { font-family: var(--se-font-display); font-size: var(--se-text-display-3xl); font-weight: 300; color: var(--se-text-primary); line-height: 1; letter-spacing: -0.02em; }
+    .clock-date { font-size: var(--se-text-sm); color: var(--se-text-muted); }
+    .clock-btn { width: 100%; max-width: 320px; height: 80px; display: flex; align-items: center; justify-content: center; gap: var(--se-space-3); font-family: var(--se-font-ui); font-size: var(--se-text-lg); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; border: none; border-radius: var(--se-radius-xl); cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; transition: all var(--se-duration-base) var(--se-ease-out); }
+    .clock-btn:focus-visible { outline: 2px solid var(--se-border-focus); outline-offset: 2px; }
+    .clock-btn--in { background: var(--se-green-600); color: var(--se-text-inverse); box-shadow: var(--se-shadow-glow-lg); }
+    .clock-btn--in:active { transform: scale(0.97); background: var(--se-green-700); }
+    .clock-btn--out { background: var(--se-error); color: var(--se-text-primary); box-shadow: var(--se-shadow-error); }
+    .clock-btn--out:active { transform: scale(0.97); background: var(--se-error-700); }
+    .clock-info { font-size: var(--se-text-xs); color: var(--se-text-muted); text-align: center; }
+    .clock-info__elapsed { font-family: var(--se-font-display); font-size: var(--se-text-display-sm); color: var(--se-green-400); margin-top: var(--se-space-1); }
+
+    .crew-nav { position: fixed; bottom: 0; left: 0; right: 0; height: var(--se-mobile-nav-h); background: var(--se-bg-surface); border-top: 1px solid var(--se-border-subtle); display: flex; align-items: center; justify-content: space-around; padding-bottom: env(safe-area-inset-bottom); z-index: var(--se-z-sticky); }
+    .crew-nav__item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: var(--se-space-2) var(--se-space-3); color: var(--se-text-muted); font-size: var(--se-text-3xs); min-width: 56px; min-height: 44px; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; border: none; background: none; font-family: var(--se-font-ui); transition: color var(--se-duration-fast) var(--se-ease-out); }
+    .crew-nav__item:active, .crew-nav__item--active { color: var(--se-gold-500); }
+    .crew-nav__item:focus-visible { outline: 2px solid var(--se-border-focus); outline-offset: -2px; }
+    .crew-nav__icon { width: 24px; height: 24px; }
+
+    .crew-content { flex: 1; padding-bottom: calc(var(--se-mobile-nav-h) + env(safe-area-inset-bottom) + var(--se-space-4)); overflow-y: auto; }
+    .crew-job-card { display: flex; align-items: center; gap: var(--se-space-4); padding: var(--se-space-5); background: var(--se-bg-surface); border: 1px solid var(--se-border-subtle); border-radius: var(--se-radius-lg); cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; min-height: 72px; transition: background var(--se-duration-fast) var(--se-ease-out); }
+    .crew-job-card:active { background: var(--se-bg-elevated); }
+    .crew-job-card:focus-visible { outline: 2px solid var(--se-border-focus); outline-offset: 2px; }
+    .crew-job-card__icon { width: 40px; height: 40px; border-radius: var(--se-radius-md); background: var(--se-green-100); color: var(--se-green-600); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .crew-job-card__client { font-size: var(--se-text-md); font-weight: 500; color: var(--se-text-primary); }
+    .crew-job-card__service { font-size: var(--se-text-xs); color: var(--se-text-secondary); margin-top: 2px; }
+    .crew-job-card__time { font-size: var(--se-text-3xs); color: var(--se-text-faint); margin-top: var(--se-space-1); }
+
+    .crew-detail-header { padding: var(--se-space-5); padding-top: calc(var(--se-space-5) + env(safe-area-inset-top)); background: var(--se-bg-surface); border-bottom: 1px solid var(--se-border-subtle); }
+    .crew-detail-section { padding: var(--se-space-5); border-bottom: 1px solid var(--se-border-subtle); }
+    .crew-detail-section__label { font-size: var(--se-text-2xs); font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--se-text-faint); margin-bottom: var(--se-space-2); }
+    .crew-action-btn { width: 100%; height: 72px; display: flex; align-items: center; justify-content: center; gap: var(--se-space-3); font-family: var(--se-font-ui); font-size: var(--se-text-md); font-weight: 600; border: none; border-radius: var(--se-radius-lg); cursor: pointer; transition: all var(--se-duration-base) var(--se-ease-out); }
+    .crew-action-btn:focus-visible { outline: 2px solid var(--se-border-focus); outline-offset: 2px; }
+    .crew-action-btn--primary { background: var(--se-green-600); color: var(--se-text-inverse); }
+    .crew-action-btn--primary:active { transform: scale(0.97); background: var(--se-green-700); }
+
+    .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--se-space-3); }
+    .photo-thumb { aspect-ratio: 1; border-radius: var(--se-radius-md); overflow: hidden; background: var(--se-bg-surface); border: 1px solid var(--se-border-subtle); }
+    .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .photo-capture-btn { width: 100%; height: 72px; display: flex; align-items: center; justify-content: center; gap: var(--se-space-3); background: var(--se-bg-surface); border: 2px dashed var(--se-border-default); border-radius: var(--se-radius-lg); color: var(--se-text-secondary); font-size: var(--se-text-sm); font-weight: 500; cursor: pointer; transition: all var(--se-duration-base) var(--se-ease-out); }
+    .photo-capture-btn:active { background: var(--se-bg-elevated); border-color: var(--se-green-600); }
+    .photo-capture-btn:focus-visible { outline: 2px solid var(--se-border-focus); outline-offset: 2px; }
+    .photo-tags { display: flex; gap: var(--se-space-2); margin-top: var(--se-space-3); }
+    .photo-tag { padding: var(--se-space-2) var(--se-space-4); font-size: var(--se-text-xs); font-weight: 500; border: 1px solid var(--se-border-default); border-radius: var(--se-radius-full); color: var(--se-text-muted); cursor: pointer; background: none; font-family: var(--se-font-ui); min-height: 44px; display: inline-flex; align-items: center; transition: all var(--se-duration-fast) var(--se-ease-out); }
+    .photo-tag:focus-visible { outline: 2px solid var(--se-border-focus); outline-offset: 2px; }
+    .photo-tag.is-active { background: var(--se-green-100); border-color: var(--se-green-600); color: var(--se-green-400); }
+
+    .swms-doc { background: var(--se-bg-surface); border: 1px solid var(--se-border-subtle); border-radius: var(--se-radius-lg); padding: var(--se-space-5); margin-bottom: var(--se-space-4); }
+    .swms-hazard { padding: var(--se-space-4) 0; border-bottom: 1px solid var(--se-border-subtle); }
+    .swms-hazard:last-child { border: none; }
+    .swms-hazard__title { font-size: var(--se-text-sm); font-weight: 500; color: var(--se-text-primary); margin-bottom: var(--se-space-2); }
+    .swms-hazard__risk { display: inline-flex; padding: 2px var(--se-space-2); font-size: var(--se-text-3xs); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; border-radius: var(--se-radius-sm); }
+    .swms-hazard__risk--high { background: var(--se-error-bg); color: var(--se-error); }
+    .swms-hazard__risk--medium { background: var(--se-warning-bg); color: var(--se-warning); }
+    .swms-hazard__risk--low { background: var(--se-success-bg); color: var(--se-success); }
+    .swms-hazard__control { font-size: var(--se-text-xs); color: var(--se-text-secondary); margin-top: var(--se-space-2); }
+    .sig-pad-wrap { background: var(--se-bg-input); border: 1px solid var(--se-border-default); border-radius: var(--se-radius-lg); overflow: hidden; touch-action: none; }
+    .sig-pad-wrap canvas { width: 100%; height: 160px; display: block; }
+    .sig-meta { display: flex; justify-content: space-between; font-size: var(--se-text-3xs); color: var(--se-text-faint); margin-top: var(--se-space-2); }
+
+    .profile-header { display: flex; flex-direction: column; align-items: center; gap: var(--se-space-4); padding: var(--se-space-8) var(--se-space-6); }
+    .profile-avatar { width: 80px; height: 80px; border-radius: var(--se-radius-full); background: var(--se-green-900); color: var(--se-gold-500); display: flex; align-items: center; justify-content: center; font-family: var(--se-font-ui); font-size: var(--se-text-display-sm); font-weight: 600; }
+    .profile-name { font-family: var(--se-font-display); font-size: var(--se-text-display-sm); color: var(--se-text-primary); }
+    .profile-role { font-size: var(--se-text-xs); color: var(--se-text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+  </style>
+</head>
+<body>
+
+<!-- ══ EMPLOYEE SELECTOR ══ -->
+<div id="login-screen">
+  <div class="crew-brand">
+    <div class="crew-brand__mark">Steady Eco Crew</div>
+    <div class="crew-brand__sub">Far North Queensland</div>
+  </div>
+  <div class="employee-grid" id="employee-grid" role="list" aria-label="Select your name to clock in"></div>
+  <p class="text-xs text-faint" style="text-align:center;max-width:280px;opacity:0;animation:cfade 600ms var(--se-ease-out) 400ms forwards">Select your name to clock in</p>
+</div>
+
+<!-- ══ PIN ENTRY ══ -->
+<div id="crew-pin-screen">
+  <button class="crew-pin-back" onclick="Crew.backToSelector()" aria-label="Back to employee list">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 4l-6 6 6 6"/></svg>
+    Back
+  </button>
+  <h2 class="crew-pin-greeting" id="crew-pin-greeting" tabindex="-1">Welcome</h2>
+  <div class="pin-dots" id="crew-pin-dots" aria-label="PIN entry">
+    <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+    <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+  </div>
+  <div class="pin-pad" id="crew-pin-pad">
+    <button class="pin-key" data-key="1">1</button>
+    <button class="pin-key" data-key="2">2</button>
+    <button class="pin-key" data-key="3">3</button>
+    <button class="pin-key" data-key="4">4</button>
+    <button class="pin-key" data-key="5">5</button>
+    <button class="pin-key" data-key="6">6</button>
+    <button class="pin-key" data-key="7">7</button>
+    <button class="pin-key" data-key="8">8</button>
+    <button class="pin-key" data-key="9">9</button>
+    <button class="pin-key pin-key--action" data-key="biometric" aria-label="Use biometric login">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M12 16v1M7 12a5 5 0 0110 0v1M4 10a8 8 0 0116 0v2M12 12v4"/></svg>
+    </button>
+    <button class="pin-key" data-key="0">0</button>
+    <button class="pin-key pin-key--action" data-key="delete" aria-label="Delete last digit">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M21 6H8l-5 6 5 6h13V6z"/><path d="M14 10l4 4M18 10l-4 4"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="crew-app" style="display:none">
+  <main>
+
+  <!-- HOME -->
+  <div class="screen is-active" id="screen-home">
+    <div class="crew-header">
+      <div class="crew-header__name" id="crew-name">—</div>
+      <div style="display:flex;align-items:center;gap:var(--se-space-2)">
+        <span class="connectivity-dot"></span>
+        <span class="connectivity-label text-3xs text-faint">Online</span>
+      </div>
+    </div>
+    <div class="crew-content">
+      <div class="clock-section">
+        <div class="clock-time" id="crew-clock">00:00</div>
+        <div class="clock-date" id="crew-date">—</div>
+        <div id="clock-btn-wrap"></div>
+        <div class="clock-info" id="clock-info"></div>
+      </div>
+      <div class="px-6">
+        <h3 class="label mb-3">Today's Jobs</h3>
+        <ul class="flex flex-col gap-3" id="crew-today-jobs" role="list"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- MY JOBS -->
+  <div class="screen" id="screen-my-jobs">
+    <div class="crew-header"><div class="crew-header__name" tabindex="-1">My Jobs</div><div></div></div>
+    <div class="crew-content px-5 py-4">
+      <ul class="flex flex-col gap-3" id="crew-all-jobs" role="list"></ul>
+    </div>
+  </div>
+
+  <!-- JOB DETAIL -->
+  <div class="screen" id="screen-crew-job">
+    <div class="crew-detail-header" id="cj-header"></div>
+    <div class="crew-content"><div id="cj-body"></div></div>
+  </div>
+
+  <!-- CAMERA -->
+  <div class="screen" id="screen-camera">
+    <div class="crew-header"><div class="crew-header__name" tabindex="-1">Job Photos</div><div></div></div>
+    <div class="crew-content px-5 py-4">
+      <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none" onchange="Crew.handlePhoto(this)" aria-hidden="true">
+      <div class="photo-tags mb-4" role="radiogroup" aria-label="Photo type">
+        <button class="photo-tag is-active" data-tag="before" onclick="Crew.setPhotoTag(this)" role="radio" aria-checked="true">Before</button>
+        <button class="photo-tag" data-tag="during" onclick="Crew.setPhotoTag(this)" role="radio" aria-checked="false">During</button>
+        <button class="photo-tag" data-tag="after" onclick="Crew.setPhotoTag(this)" role="radio" aria-checked="false">After</button>
+      </div>
+      <button class="photo-capture-btn mb-6" onclick="document.getElementById('camera-input').click()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Take Photo
+      </button>
+      <div class="photo-grid" id="photo-grid"></div>
+    </div>
+  </div>
+
+  <!-- SWMS -->
+  <div class="screen" id="screen-swms">
+    <div class="crew-header"><div class="crew-header__name" tabindex="-1">SWMS</div><div></div></div>
+    <div class="crew-content px-5 py-4"><div id="swms-list"></div></div>
+  </div>
+
+  <!-- SWMS SIGNING -->
+  <div class="screen" id="screen-swms-sign">
+    <div class="crew-header">
+      <div class="crew-header__name">Sign SWMS</div>
+      <div><button class="btn btn-ghost btn-sm" onclick="Crew.showScreen('swms')">Back</button></div>
+    </div>
+    <div class="crew-content px-5 py-4">
+      <div id="swms-doc-content"></div>
+      <div class="mt-6 p-5 bg-surface rounded-lg border-subtle">
+        <p class="text-xs text-secondary mb-4">By signing below, I confirm I have read and understood this SWMS and will comply with all control measures.</p>
+        <div class="sig-pad-wrap mb-3"><canvas id="sig-canvas" width="600" height="320"></canvas></div>
+        <div class="flex justify-between items-center mb-4">
+          <button class="btn btn-ghost btn-sm" onclick="Crew.clearSignature()">Clear</button>
+          <div class="sig-meta"><span id="sig-location">Location: detecting...</span></div>
+        </div>
+        <button class="crew-action-btn crew-action-btn--primary" onclick="Crew.submitSwmsSignature()">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 10l3 3 5-6"/></svg>
+          SIGN SWMS
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="screen" id="screen-profile">
+    <div class="crew-content">
+      <div class="profile-header">
+        <div class="profile-avatar" id="profile-avatar">—</div>
+        <div class="profile-name" id="profile-name" tabindex="-1">—</div>
+        <div class="profile-role" id="profile-role">—</div>
+      </div>
+      <div class="px-5">
+        <button class="btn btn-secondary w-full mb-3" onclick="Crew.logout()" style="height:56px">Log Out</button>
+      </div>
+    </div>
+  </div>
+
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav class="crew-nav" aria-label="Crew navigation">
+    <button class="crew-nav__item crew-nav__item--active" data-screen="home" onclick="Crew.showScreen('home')">
+      <svg class="crew-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg>
+      Home
+    </button>
+    <button class="crew-nav__item" data-screen="my-jobs" onclick="Crew.showScreen('my-jobs')">
+      <svg class="crew-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h8M8 12h5M8 16h6"/></svg>
+      Jobs
+    </button>
+    <button class="crew-nav__item" data-screen="camera" onclick="Crew.showScreen('camera')">
+      <svg class="crew-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      Camera
+    </button>
+    <button class="crew-nav__item" data-screen="swms" onclick="Crew.showScreen('swms')">
+      <svg class="crew-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 12l2 2 4-4"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+      SWMS
+    </button>
+    <button class="crew-nav__item" data-screen="profile" onclick="Crew.showScreen('profile')">
+      <svg class="crew-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Profile
+    </button>
+  </nav>
+</div>
+
+<div class="toast-container" aria-live="polite"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  const Crew = {
+    currentEmployee: null,
+    currentJobId: null,
+    pin: '',
+    clockedIn: false,
+    clockInTime: null,
+    photoTag: 'before',
+    photos: [],
+    sigDrawing: false,
+    _cache: {},
+
+    init() {
+      this.renderEmployeeSelector()
+      this.setupPinPad()
+      this.startClock()
+      this.setupSignaturePad()
+      window.addEventListener('online', () => this.updateConnectivity(true))
+      window.addEventListener('offline', () => this.updateConnectivity(false))
+      this.updateConnectivity(navigator.onLine)
+      if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {})
+    },
+
+    esc(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = String(str); return d.innerHTML },
+
+    getStore(key) {
+      if (!this._cache[key]) {
+        try { this._cache[key] = JSON.parse(localStorage.getItem('se_' + key)) || [] }
+        catch { this._cache[key] = [] }
+      }
+      return this._cache[key]
+    },
+    invalidateCache(key) { delete this._cache[key] },
+
+    /* ── EMPLOYEE SELECTOR ─────────────────────────── */
+
+    renderEmployeeSelector() {
+      const employees = this.getStore('employees').filter(e => e.isActive !== false)
+      const grid = document.getElementById('employee-grid')
+      if (!employees.length) {
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:var(--se-space-8)" role="listitem"><p class="text-secondary text-sm mb-3">No employees set up yet</p><p class="text-xs text-muted">Add employees in the Command Centre first.</p><button class="btn btn-primary btn-sm mt-4" onclick="Crew.addDemoEmployee()">Add Demo Employee</button></div>`
+        return
+      }
+      grid.innerHTML = employees.map(e => `
+        <div class="employee-card" role="button" tabindex="0" onclick="Crew.selectEmployee('${e.id}')" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
+          <div class="employee-card__avatar">${this.esc(this.initials(e.name))}</div>
+          <div class="employee-card__name">${this.esc(e.name)}</div>
+          <div class="employee-card__role">${this.esc(e.role || 'Employee')}</div>
+        </div>
+      `).join('')
+    },
+
+    addDemoEmployee() {
+      const employees = this.getStore('employees')
+      employees.push({ id: crypto.randomUUID(), name: 'Josh Miller', role: 'employee', phone: '0412 345 678', isActive: true, pinHash: null, clockedIn: false, createdAt: new Date().toISOString() })
+      localStorage.setItem('se_employees', JSON.stringify(employees))
+      this.invalidateCache('employees')
+      this.renderEmployeeSelector()
+    },
+
+    selectEmployee(id) {
+      const emp = this.getStore('employees').find(e => e.id === id)
+      if (!emp) return
+      this.currentEmployee = emp
+
+      if (!emp.pinHash) {
+        this.toast('No PIN set — ask Sam to set one in Settings', 'warning')
+        this.enterApp()
+        return
+      }
+
+      document.getElementById('crew-pin-greeting').textContent = `Welcome, ${this.esc(emp.name.split(' ')[0])}`
+      document.getElementById('crew-pin-screen').classList.add('is-visible')
+      document.getElementById('crew-pin-greeting').focus()
+    },
+
+    backToSelector() {
+      document.getElementById('crew-pin-screen').classList.remove('is-visible')
+      this.pin = ''
+      this.updatePinDots()
+    },
+
+    /* ── PIN PAD ───────────────────────────────────── */
+
+    setupPinPad() {
+      document.getElementById('crew-pin-pad').addEventListener('click', (e) => {
+        const key = e.target.closest('[data-key]')
+        if (!key) return
+        const val = key.dataset.key
+        if (val === 'delete') { this.pin = this.pin.slice(0, -1); this.updatePinDots(); return }
+        if (val === 'biometric') return
+        if (this.pin.length >= 6) return
+        this.pin += val
+        this.updatePinDots()
+        if (this.pin.length === 6) setTimeout(() => this.verifyPin(), 150)
+      })
+    },
+
+    updatePinDots() {
+      document.querySelectorAll('#crew-pin-dots .pin-dot').forEach((dot, i) => {
+        dot.classList.toggle('pin-dot--filled', i < this.pin.length)
+        dot.classList.remove('pin-dot--error')
+      })
+    },
+
+    async verifyPin() {
+      // Hash entered PIN and compare to stored hash
+      const emp = this.currentEmployee
+      if (!emp || !emp.pinHash) { this.enterApp(); return }
+
+      const encoder = new TextEncoder()
+      const salt = 'steady-eco-crew-v1'
+      const data = encoder.encode(salt + this.pin)
+      const buffer = await crypto.subtle.digest('SHA-256', data)
+      const hash = Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('')
+
+      if (hash === emp.pinHash) {
+        this.enterApp()
+      } else {
+        // Wrong PIN — shake dots
+        document.querySelectorAll('#crew-pin-dots .pin-dot').forEach(d => d.classList.add('pin-dot--error'))
+        if (navigator.vibrate) navigator.vibrate(100)
+        setTimeout(() => { this.pin = ''; this.updatePinDots() }, 600)
+      }
+    },
+
+    enterApp() {
+      document.getElementById('login-screen').classList.add('is-hidden')
+      document.getElementById('crew-pin-screen').classList.remove('is-visible')
+      document.getElementById('crew-app').style.display = ''
+
+      document.getElementById('crew-name').textContent = this.esc(this.currentEmployee.name)
+      document.getElementById('profile-avatar').textContent = this.initials(this.currentEmployee.name)
+      document.getElementById('profile-name').textContent = this.esc(this.currentEmployee.name)
+      document.getElementById('profile-role').textContent = this.esc(this.currentEmployee.role || 'Employee')
+
+      // Restore clock state
+      const stored = localStorage.getItem(`se_clockin_${this.currentEmployee.id}`)
+      if (stored) { this.clockedIn = true; this.clockInTime = new Date(stored) }
+
+      // Restore photos
+      try { this.photos = JSON.parse(localStorage.getItem(`se_photos_${this.currentEmployee.id}`)) || [] } catch { this.photos = [] }
+
+      this.renderClockButton()
+      this.renderTodayJobs()
+      this.renderSwmsList()
+    },
+
+    /* ── CLOCK ─────────────────────────────────────── */
+
+    startClock() {
+      const update = () => {
+        const now = new Date()
+        const h12 = now.getHours() % 12 || 12
+        const m = String(now.getMinutes()).padStart(2, '0')
+        document.getElementById('crew-clock').textContent = `${h12}:${m}`
+        document.getElementById('crew-date').textContent = now.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })
+        if (this.clockedIn && this.clockInTime) {
+          const elapsed = Date.now() - this.clockInTime.getTime()
+          const hrs = Math.floor(elapsed / 3600000)
+          const mins = Math.floor((elapsed % 3600000) / 60000)
+          const el = document.getElementById('clock-info')
+          if (el) el.innerHTML = `<div class="text-xs text-muted">Clocked in at ${this.clockInTime.toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' })}</div><div class="clock-info__elapsed">${hrs}h ${mins}m</div>`
+        }
+      }
+      update()
+      setInterval(update, 1000) // Fixed: 1 second updates
+    },
+
+    renderClockButton() {
+      const wrap = document.getElementById('clock-btn-wrap')
+      if (this.clockedIn) {
+        wrap.innerHTML = `<button class="clock-btn clock-btn--out" onclick="Crew.clockOut()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>Clock Out</button>`
+      } else {
+        wrap.innerHTML = `<button class="clock-btn clock-btn--in" onclick="Crew.clockIn()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="6,4 20,12 6,20"/></svg>Clock In</button>`
+        document.getElementById('clock-info').innerHTML = ''
+      }
+    },
+
+    clockIn() {
+      this.clockedIn = true
+      this.clockInTime = new Date()
+      localStorage.setItem(`se_clockin_${this.currentEmployee.id}`, this.clockInTime.toISOString())
+
+      // Save timesheet FIRST (outside GPS callback) — Bug fix: GPS failure no longer drops record
+      const tsEntry = {
+        id: crypto.randomUUID(),
+        employeeId: this.currentEmployee.id,
+        type: 'clock-in',
+        time: this.clockInTime.toISOString(),
+        date: new Date().toISOString().split('T')[0],
+        lat: null, lng: null,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      }
+      const timesheets = this.getStore('timesheets')
+      timesheets.push(tsEntry)
+      localStorage.setItem('se_timesheets', JSON.stringify(timesheets))
+      this.invalidateCache('timesheets')
+
+      // Enrich with GPS if available (re-read to avoid race condition)
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          const fresh = JSON.parse(localStorage.getItem('se_timesheets') || '[]')
+          const entry = fresh.find(t => t.id === tsEntry.id)
+          if (entry) { entry.lat = pos.coords.latitude; entry.lng = pos.coords.longitude; localStorage.setItem('se_timesheets', JSON.stringify(fresh)) }
+        }, () => {})
+      }
+
+      if (navigator.vibrate) navigator.vibrate(50)
+      this.renderClockButton()
+      this.toast('Clocked in', 'success')
+    },
+
+    clockOut() {
+      const elapsed = this.clockInTime ? Date.now() - this.clockInTime.getTime() : 0
+      const hrs = Math.floor(elapsed / 3600000)
+      const mins = Math.floor((elapsed % 3600000) / 60000)
+
+      // Save clock-out timesheet entry — Bug fix: was missing
+      const tsEntry = {
+        id: crypto.randomUUID(),
+        employeeId: this.currentEmployee.id,
+        type: 'clock-out',
+        time: new Date().toISOString(),
+        date: new Date().toISOString().split('T')[0],
+        duration: Math.round(elapsed / 60000),
+        lat: null, lng: null,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      }
+      const timesheets = this.getStore('timesheets')
+      timesheets.push(tsEntry)
+      localStorage.setItem('se_timesheets', JSON.stringify(timesheets))
+      this.invalidateCache('timesheets')
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          const fresh = JSON.parse(localStorage.getItem('se_timesheets') || '[]')
+          const entry = fresh.find(t => t.id === tsEntry.id)
+          if (entry) { entry.lat = pos.coords.latitude; entry.lng = pos.coords.longitude; localStorage.setItem('se_timesheets', JSON.stringify(fresh)) }
+        }, () => {})
+      }
+
+      this.clockedIn = false
+      this.clockInTime = null
+      localStorage.removeItem(`se_clockin_${this.currentEmployee.id}`)
+
+      if (navigator.vibrate) navigator.vibrate([50, 50, 50])
+      this.renderClockButton()
+      this.toast(`Clocked out — ${hrs}h ${mins}m`, 'success')
+    },
+
+    /* ── JOBS ──────────────────────────────────────── */
+
+    renderTodayJobs() {
+      const jobs = this.getStore('jobs')
+      const today = new Date().toISOString().split('T')[0]
+      const myJobs = jobs.filter(j =>
+        j.scheduledStart?.startsWith(today) &&
+        (j.assignedEmployees?.includes(this.currentEmployee?.id) || j.assignedEmployees?.length === 0)
+      )
+      const container = document.getElementById('crew-today-jobs')
+      if (!myJobs.length) {
+        container.innerHTML = `<li class="text-center py-8"><p class="text-secondary text-sm">No jobs scheduled today</p></li>`
+        return
+      }
+      container.innerHTML = myJobs.map(j => `<li>${this.crewJobCard(j)}</li>`).join('')
+    },
+
+    crewJobCard(job) {
+      const client = this.esc(this.getClientName(job.clientId))
+      const svc = this.esc((job.serviceTypes?.[0] || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()))
+      return `
+        <div class="crew-job-card" role="button" tabindex="0" onclick="Crew.openJob('${job.id}')" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
+          <div class="crew-job-card__icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M7 7h6M7 10h4"/></svg></div>
+          <div style="flex:1"><div class="crew-job-card__client">${client}</div><div class="crew-job-card__service">${svc}</div><div class="crew-job-card__time">${this.esc(job.siteAddress?.line1 || 'No address')}</div></div>
+          <span class="badge badge-${this.esc(job.status || 'new')}">${this.esc(job.status || 'New')}</span>
+        </div>
+      `
+    },
+
+    openJob(jobId) {
+      this.currentJobId = jobId
+      const job = this.getStore('jobs').find(j => j.id === jobId)
+      if (!job) return
+      const client = this.getStore('clients').find(c => c.id === job.clientId)
+      const svc = this.esc((job.serviceTypes?.[0] || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()))
+
+      document.getElementById('cj-header').innerHTML = `
+        <div class="flex items-center justify-between">
+          <button class="btn btn-ghost btn-sm" onclick="Crew.showScreen('home')" aria-label="Back to home"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 4l-6 6 6 6"/></svg> Back</button>
+          <span class="badge badge-${this.esc(job.status)}">${this.esc(job.status)}</span>
+        </div>
+        <h2 class="text-display-sm mt-3" style="font-family:var(--se-font-display)" tabindex="-1">${this.esc(client?.name || 'Job')}</h2>
+        <p class="text-sm text-secondary mt-1">${svc} · ${this.esc(job.reference || '')}</p>
+      `
+
+      document.getElementById('cj-body').innerHTML = `
+        <div class="crew-detail-section">
+          <div class="crew-detail-section__label">Location</div>
+          <p class="text-md">${this.esc(job.siteAddress?.line1 || 'No address provided')}</p>
+          ${job.siteAddress?.line1 ? `<a href="https://maps.google.com/maps?q=${encodeURIComponent(job.siteAddress.line1)}" target="_blank" rel="noopener" class="crew-action-btn crew-action-btn--primary mt-4" style="height:56px;text-decoration:none"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M10 2C6.7 2 4 4.7 4 8c0 5 6 10 6 10s6-5 6-10c0-3.3-2.7-6-6-6z"/><circle cx="10" cy="8" r="2"/></svg> Get Directions</a>` : ''}
+        </div>
+        <div class="crew-detail-section">
+          <div class="crew-detail-section__label">Scope of Work</div>
+          <p class="text-sm text-secondary">${this.esc(job.description || 'No description provided')}</p>
+        </div>
+        ${job.notes ? `<div class="crew-detail-section"><div class="crew-detail-section__label">Notes from Sam</div><p class="text-sm text-secondary">${this.esc(job.notes)}</p></div>` : ''}
+        <div class="crew-detail-section">
+          <div class="crew-detail-section__label">Voice Note</div>
+          <button id="voice-btn" class="crew-action-btn crew-action-btn--primary mt-2" style="height:56px" onclick="Crew._voiceRecording ? Crew.stopVoiceNote() : Crew.startVoiceNote()">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="7" y="2" width="6" height="10" rx="3"/><path d="M4 10a6 6 0 0012 0"/><path d="M10 16v2"/></svg>
+            Voice Note
+          </button>
+          <p id="voice-output" class="text-sm text-secondary mt-3" style="min-height:24px"></p>
+        </div>
+        <div class="crew-detail-section">
+          <div class="crew-detail-section__label">Update Status</div>
+          ${job.status === 'active' ? `<button class="crew-action-btn crew-action-btn--primary mt-2" onclick="Crew.completeJob('${job.id}')"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 10l3 3 5-6"/></svg> Mark Job Complete</button>` : `<p class="text-xs text-muted">Status: ${this.esc(job.status)}. ${job.status === 'booked' ? 'Sam will start this job.' : ''}</p>`}
+        </div>
+      `
+      this.showScreen('crew-job')
+    },
+
+    completeJob(jobId) {
+      const jobs = this.getStore('jobs')
+      const job = jobs.find(j => j.id === jobId)
+      if (!job) return
+      job.status = 'complete'
+      job.updatedAt = new Date().toISOString()
+      localStorage.setItem('se_jobs', JSON.stringify(jobs))
+      this.invalidateCache('jobs')
+      this.toast(`Job ${this.esc(job.reference)} completed`, 'success')
+      this.showScreen('home')
+    },
+
+    /* ── PHOTOS (persisted to localStorage) ────────── */
+
+    setPhotoTag(el) {
+      document.querySelectorAll('.photo-tag').forEach(t => { t.classList.remove('is-active'); t.setAttribute('aria-checked', 'false') })
+      el.classList.add('is-active')
+      el.setAttribute('aria-checked', 'true')
+      this.photoTag = el.dataset.tag
+    },
+
+    handlePhoto(input) {
+      const file = input.files[0]
+      if (!file) return
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const img = new Image()
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          const maxW = 1200
+          const scale = Math.min(1, maxW / img.width)
+          canvas.width = img.width * scale
+          canvas.height = img.height * scale
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
+          const compressed = canvas.toDataURL('image/jpeg', 0.7)
+          this.photos.push({
+            id: crypto.randomUUID(), data: compressed, tag: this.photoTag,
+            jobId: this.currentJobId, timestamp: new Date().toISOString()
+          })
+          // Persist photos — Bug fix
+          localStorage.setItem(`se_photos_${this.currentEmployee.id}`, JSON.stringify(this.photos))
+          this.renderPhotos()
+          this.toast(`${this.photoTag} photo captured`, 'success')
+        }
+        img.src = e.target.result
+      }
+      reader.readAsDataURL(file)
+      input.value = ''
+    },
+
+    renderPhotos() {
+      const grid = document.getElementById('photo-grid')
+      grid.innerHTML = this.photos.map(p => `<div class="photo-thumb"><img src="${p.data}" alt="${this.esc(p.tag)} photo"></div>`).join('')
+    },
+
+    /* ── SWMS ──────────────────────────────────────── */
+
+    renderSwmsList() {
+      const swmsTemplates = [
+        { id: 'tree-removal', name: 'Tree Removal SWMS', hazards: [
+          { title: 'Falling branches', risk: 'high', control: 'Exclusion zone 1.5x tree height. Hard hat, safety glasses, steel-cap boots mandatory.' },
+          { title: 'Chainsaw kickback', risk: 'high', control: 'Only trained operators. Two-hand grip. Chain brake engaged when not cutting.' },
+          { title: 'Working at heights', risk: 'high', control: 'Harness and rope system for cuts above 3m. Ground crew maintains anchor points.' },
+          { title: 'Manual handling', risk: 'medium', control: 'Team lift for logs >20kg. Use chipper for branches. Tipper for heavy loads.' },
+          { title: 'Traffic/pedestrians', risk: 'medium', control: 'Cones and signage on road-adjacent jobs. Spotter for vehicle movements.' },
+        ]},
+        { id: 'mowing', name: 'Mowing & Landscaping SWMS', hazards: [
+          { title: 'Flying debris', risk: 'medium', control: 'Safety glasses and enclosed footwear. Check area for debris before mowing.' },
+          { title: 'Noise exposure', risk: 'medium', control: 'Hearing protection for all mowing and chipping operations.' },
+          { title: 'Heat stress', risk: 'high', control: 'Water every 20 minutes. Rest in shade every hour. Start early in summer.' },
+          { title: 'Snakes/wildlife', risk: 'medium', control: 'Visual check of work area. Wear boots. Do not reach into long grass.' },
+        ]},
+        { id: 'vegetation', name: 'Vegetation Management SWMS', hazards: [
+          { title: 'Uneven terrain', risk: 'medium', control: 'Assess ground conditions before work. Ankle-support boots mandatory.' },
+          { title: 'Chipper operation', risk: 'high', control: 'Minimum 2m feed distance. No loose clothing. Emergency stop accessible.' },
+          { title: 'Chemical exposure', risk: 'medium', control: 'PPE for herbicide application. Read MSDS. No spraying in wind >15km/h.' },
+          { title: 'Fatigue', risk: 'medium', control: 'Maximum 8-hour days for clearing work. Mandatory breaks.' },
+        ]},
+      ]
+      const signed = JSON.parse(localStorage.getItem('se_swms_signed') || '[]')
+      const container = document.getElementById('swms-list')
+      container.innerHTML = swmsTemplates.map(sw => {
+        const isSigned = signed.some(s => s.swmsId === sw.id && s.employeeId === this.currentEmployee?.id && s.date === new Date().toISOString().split('T')[0])
+        return `<div class="card card-interactive p-5 mb-3 flex justify-between items-center" role="button" tabindex="0" onclick="Crew.openSwms('${sw.id}')" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()"><div><div class="text-md font-medium">${this.esc(sw.name)}</div><div class="text-xs text-muted mt-1">${sw.hazards.length} hazards</div></div>${isSigned ? '<span class="badge badge-complete">Signed</span>' : '<span class="badge badge-quoted">Not Signed</span>'}</div>`
+      }).join('')
+      this._swmsTemplates = swmsTemplates
+    },
+
+    openSwms(swmsId) {
+      const template = this._swmsTemplates?.find(s => s.id === swmsId)
+      if (!template) return
+      document.getElementById('swms-doc-content').innerHTML = `
+        <div class="swms-doc"><div class="flex items-center justify-between mb-4"><div><div class="text-md font-medium">${this.esc(template.name)}</div><div class="text-xs text-muted">Steady Eco — ABN 49 553 784 085 — WHS Act 2011 (QLD)</div></div><div class="text-xs text-faint">${new Date().toLocaleDateString('en-AU')}</div></div>
+        ${template.hazards.map(h => `<div class="swms-hazard"><div class="flex items-center gap-3"><span class="swms-hazard__title">${this.esc(h.title)}</span><span class="swms-hazard__risk swms-hazard__risk--${h.risk}">${h.risk}</span></div><div class="swms-hazard__control">${this.esc(h.control)}</div></div>`).join('')}</div>`
+      this._currentSwms = template
+      this.showScreen('swms-sign')
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => { document.getElementById('sig-location').textContent = `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}` }, () => { document.getElementById('sig-location').textContent = 'Location unavailable' })
+      }
+    },
+
+    setupSignaturePad() {
+      const canvas = document.getElementById('sig-canvas')
+      if (!canvas) return
+      const ctx = canvas.getContext('2d')
+      const sigColor = getComputedStyle(document.documentElement).getPropertyValue('--se-text-primary').trim() || '#e8ede6'
+      const getPos = (e) => { const rect = canvas.getBoundingClientRect(); const sx = canvas.width / rect.width; const sy = canvas.height / rect.height; const t = e.touches ? e.touches[0] : e; return { x: (t.clientX - rect.left) * sx, y: (t.clientY - rect.top) * sy } }
+      const start = (e) => { e.preventDefault(); this.sigDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y) }
+      const draw = (e) => { if (!this.sigDrawing) return; e.preventDefault(); const p = getPos(e); ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.strokeStyle = sigColor; ctx.lineTo(p.x, p.y); ctx.stroke() }
+      const stop = () => { this.sigDrawing = false }
+      canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', draw); canvas.addEventListener('mouseup', stop)
+      canvas.addEventListener('touchstart', start, { passive: false }); canvas.addEventListener('touchmove', draw, { passive: false }); canvas.addEventListener('touchend', stop)
+    },
+
+    clearSignature() { document.getElementById('sig-canvas').getContext('2d').clearRect(0, 0, 600, 320) },
+
+    submitSwmsSignature() {
+      const canvas = document.getElementById('sig-canvas')
+      const pixels = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data
+      let hasDrawing = false
+      for (let i = 3; i < pixels.length; i += 4) { if (pixels[i] > 0) { hasDrawing = true; break } }
+      if (!hasDrawing) { this.toast('Please sign before submitting', 'error'); return }
+
+      const signed = JSON.parse(localStorage.getItem('se_swms_signed') || '[]')
+      signed.push({ id: crypto.randomUUID(), swmsId: this._currentSwms.id, swmsName: this._currentSwms.name, employeeId: this.currentEmployee.id, employeeName: this.currentEmployee.name, signature: canvas.toDataURL('image/png'), date: new Date().toISOString().split('T')[0], timestamp: new Date().toISOString(), location: document.getElementById('sig-location').textContent })
+      localStorage.setItem('se_swms_signed', JSON.stringify(signed))
+      this.clearSignature()
+      this.toast('SWMS signed successfully', 'success')
+      this.showScreen('swms')
+    },
+
+    /* ── VOICE-TO-NOTE ─────────────────────────────── */
+
+    _voiceRecording: false,
+    _recognition: null,
+
+    startVoiceNote() {
+      if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+        this.toast('Voice not supported on this device', 'error')
+        return
+      }
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+      this._recognition = new SpeechRecognition()
+      this._recognition.continuous = true
+      this._recognition.interimResults = true
+      this._recognition.lang = 'en-AU'
+
+      let transcript = ''
+      const output = document.getElementById('voice-output')
+
+      this._recognition.onresult = (e) => {
+        transcript = ''
+        for (let i = 0; i < e.results.length; i++) {
+          transcript += e.results[i][0].transcript
+        }
+        if (output) output.textContent = transcript
+      }
+
+      this._recognition.onerror = () => {
+        this.toast('Voice recognition error', 'error')
+        this.stopVoiceNote()
+      }
+
+      this._recognition.onend = () => {
+        if (this._voiceRecording) this._recognition.start() // Keep going if still recording
+      }
+
+      this._recognition.start()
+      this._voiceRecording = true
+      this.toast('Listening... speak your note', 'info')
+
+      const btn = document.getElementById('voice-btn')
+      if (btn) { btn.textContent = 'Stop Recording'; btn.classList.add('clock-btn--out'); btn.classList.remove('crew-action-btn--primary') }
+    },
+
+    stopVoiceNote() {
+      if (this._recognition) this._recognition.stop()
+      this._voiceRecording = false
+
+      const output = document.getElementById('voice-output')
+      const note = output?.textContent?.trim()
+
+      if (note && this.currentJobId) {
+        // Save note to job
+        const jobs = JSON.parse(localStorage.getItem('se_jobs') || '[]')
+        const job = jobs.find(j => j.id === this.currentJobId)
+        if (job) {
+          job.notes = (job.notes ? job.notes + '\n' : '') + `[Voice ${new Date().toLocaleTimeString('en-AU', {hour:'numeric',minute:'2-digit'})}] ${note}`
+          localStorage.setItem('se_jobs', JSON.stringify(jobs))
+          this.invalidateCache('jobs')
+          this.toast('Voice note saved to job', 'success')
+        }
+      } else if (note) {
+        this.toast('Voice note: ' + note.slice(0, 50), 'success')
+      }
+
+      const btn = document.getElementById('voice-btn')
+      if (btn) { btn.textContent = 'Voice Note'; btn.classList.remove('clock-btn--out'); btn.classList.add('crew-action-btn--primary') }
+    },
+
+    /* ── NAVIGATION ────────────────────────────────── */
+
+    showScreen(screen) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('is-active'))
+      const target = document.getElementById(`screen-${screen}`)
+      if (target) target.classList.add('is-active')
+      document.querySelectorAll('.crew-nav__item').forEach(n => n.classList.toggle('crew-nav__item--active', n.dataset.screen === screen))
+
+      // Focus management
+      const heading = target?.querySelector('[tabindex="-1"]')
+      if (heading) heading.focus({ preventScroll: false })
+
+      if (screen === 'home') this.renderTodayJobs()
+      if (screen === 'my-jobs') this.renderAllJobs()
+      if (screen === 'swms') this.renderSwmsList()
+      if (screen === 'camera') this.renderPhotos()
+    },
+
+    renderAllJobs() {
+      // Fixed: filter by assigned employee
+      const jobs = this.getStore('jobs').filter(j =>
+        j.assignedEmployees?.includes(this.currentEmployee?.id) || j.assignedEmployees?.length === 0
+      )
+      const container = document.getElementById('crew-all-jobs')
+      if (!jobs.length) { container.innerHTML = '<li class="text-center py-8"><p class="text-secondary text-sm">No jobs assigned</p></li>'; return }
+      container.innerHTML = jobs.map(j => `<li>${this.crewJobCard(j)}</li>`).join('')
+    },
+
+    logout() {
+      // Fixed: clear ALL state
+      this.currentEmployee = null
+      this.currentJobId = null
+      this.pin = ''
+      this.clockedIn = false
+      this.clockInTime = null
+      this.photos = []
+      this._cache = {}
+      document.getElementById('crew-app').style.display = 'none'
+      document.getElementById('login-screen').classList.remove('is-hidden')
+      this.renderEmployeeSelector()
+    },
+
+    /* ── HELPERS ────────────────────────────────────── */
+
+    getClientName(id) { if (!id) return 'No client'; return this.getStore('clients').find(c => c.id === id)?.name || 'Unknown' },
+    initials(name) { return (name || '').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() },
+
+    updateConnectivity(online) {
+      document.querySelectorAll('.connectivity-dot').forEach(d => d.classList.toggle('connectivity-dot--offline', !online))
+      document.querySelectorAll('.connectivity-label').forEach(l => { l.textContent = online ? 'Online' : 'Offline' })
+    },
+
+    toast(message, type = 'info') {
+      const icons = { success: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M6 10l3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>', error: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M7 7l6 6M13 7l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>', warning: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L1 18h18L10 2z" stroke="currentColor" stroke-width="1.5"/><path d="M10 8v4M10 14.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>', info: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M10 9v5M10 6.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>' }
+      const container = document.querySelector('.toast-container')
+      const el = document.createElement('div')
+      el.className = `toast toast--${type}`
+      const iconSpan = document.createElement('span'); iconSpan.className = 'toast__icon'; iconSpan.innerHTML = icons[type] || icons.info
+      const msgSpan = document.createElement('span'); msgSpan.className = 'toast__message'; msgSpan.textContent = message
+      el.appendChild(iconSpan); el.appendChild(msgSpan)
+      container.appendChild(el)
+      requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('is-visible')))
+      setTimeout(() => { el.classList.remove('is-visible'); setTimeout(() => el.remove(), 400) }, 4000)
+    },
+  }
+
+  window.Crew = Crew
+  Crew.init()
+})()
+</script>
+</body>
+</html>
