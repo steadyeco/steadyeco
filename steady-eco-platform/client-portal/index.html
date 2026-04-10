@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
+  <title>Steady Eco — Client Portal</title>
+  <meta name="theme-color" content="#0a0f0a">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap">
+  <link rel="stylesheet" href="../shared/css/tokens.css">
+  <link rel="stylesheet" href="../shared/css/reset.css">
+  <link rel="stylesheet" href="../shared/css/typography.css">
+  <link rel="stylesheet" href="../shared/css/components.css">
+  <link rel="stylesheet" href="../shared/css/utilities.css">
+  <style>
+    body { background: var(--se-bg-base); }
+    .screen { display: none; }
+    .screen.is-active { display: block; }
+
+    /* Login */
+    #portal-login {
+      min-height: 100dvh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: var(--se-space-6); gap: var(--se-space-6);
+    }
+    .portal-login__brand {
+      text-align: center;
+      opacity: 0; animation: pfade 600ms var(--se-ease-out) forwards;
+    }
+    .portal-login__title {
+      font-family: var(--se-font-display);
+      font-size: var(--se-text-display-sm); font-weight: 300;
+      color: var(--se-text-primary); margin-bottom: var(--se-space-2);
+    }
+    .portal-login__sub { font-size: var(--se-text-xs); color: var(--se-text-muted); }
+    .portal-login__form {
+      width: 100%; max-width: 380px;
+      opacity: 0; animation: pfade 600ms var(--se-ease-out) 200ms forwards;
+    }
+    @keyframes pfade { to { opacity: 1; } }
+
+    /* OTP Screen */
+    #otp-screen {
+      position: fixed; inset: 0; z-index: 100;
+      background: var(--se-bg-base);
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: var(--se-space-6); gap: var(--se-space-6);
+    }
+    #otp-screen.is-visible { display: flex; }
+
+    /* Portal header */
+    .portal-header {
+      padding: var(--se-space-5) var(--se-space-6);
+      padding-top: calc(var(--se-space-5) + env(safe-area-inset-top));
+      background: var(--se-bg-surface);
+      border-bottom: 1px solid var(--se-border-subtle);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .portal-header__brand {
+      font-family: var(--se-font-ui); font-size: var(--se-text-xs);
+      font-weight: 500; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--se-text-muted);
+    }
+
+    /* Portal nav */
+    .portal-nav {
+      display: flex; gap: var(--se-space-1);
+      padding: var(--se-space-3) var(--se-space-6);
+      border-bottom: 1px solid var(--se-border-subtle);
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+    }
+    .portal-nav__item {
+      padding: var(--se-space-3) var(--se-space-4);
+      font-size: var(--se-text-sm); color: var(--se-text-muted);
+      border-radius: var(--se-radius-md); border: none;
+      background: none; cursor: pointer; white-space: nowrap;
+      font-family: var(--se-font-ui); min-height: 44px;
+      display: inline-flex; align-items: center;
+      transition: all var(--se-duration-fast) var(--se-ease-out);
+    }
+    .portal-nav__item:hover { color: var(--se-text-secondary); background: var(--se-green-050); }
+    .portal-nav__item:focus-visible { outline: 2px solid var(--se-border-focus); outline-offset: 2px; }
+    .portal-nav__item--active { color: var(--se-green-400); background: var(--se-green-100); }
+
+    /* Compliance */
+    .compliance-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--se-space-4) 0; border-bottom: 1px solid var(--se-border-subtle);
+    }
+    .compliance-item__label { font-size: var(--se-text-sm); color: var(--se-text-secondary); }
+    .compliance-item__status {
+      display: flex; align-items: center; gap: var(--se-space-2);
+      font-size: var(--se-text-xs); font-weight: 500;
+    }
+    .compliance-item__status--ok { color: var(--se-success); }
+    .compliance-check {
+      width: 16px; height: 16px; border-radius: var(--se-radius-full);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .compliance-check--ok { background: var(--se-success-bg); color: var(--se-success); }
+
+    /* Invoice card */
+    .invoice-card {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--se-space-4) var(--se-space-5);
+      background: var(--se-bg-surface); border: 1px solid var(--se-border-subtle);
+      border-radius: var(--se-radius-lg);
+      transition: border-color var(--se-duration-base) var(--se-ease-out);
+    }
+    .invoice-card:hover { border-color: var(--se-border-default); }
+    .pay-btn {
+      padding: var(--se-space-2) var(--se-space-5);
+      background: var(--se-green-600); color: var(--se-text-inverse);
+      font-size: var(--se-text-xs); font-weight: 500;
+      border: none; border-radius: var(--se-radius-full);
+      cursor: pointer; min-height: 44px;
+      transition: background var(--se-duration-fast) var(--se-ease-out);
+    }
+    .pay-btn:hover { background: var(--se-green-500); }
+    .pay-btn:focus-visible { outline: 2px solid var(--se-border-focus); outline-offset: 2px; }
+    .pay-btn:active { background: var(--se-green-700); }
+
+    /* Doc grid */
+    .doc-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--se-space-4);
+    }
+    .doc-card {
+      padding: var(--se-space-5); background: var(--se-bg-surface);
+      border: 1px solid var(--se-border-subtle); border-radius: var(--se-radius-lg);
+      cursor: pointer; transition: all var(--se-duration-base) var(--se-ease-out);
+    }
+    .doc-card:hover { border-color: var(--se-border-default); background: var(--se-bg-elevated); }
+    .doc-card:focus-visible { outline: 2px solid var(--se-border-focus); outline-offset: 2px; }
+    .doc-card__icon { width: 32px; height: 32px; color: var(--se-green-600); margin-bottom: var(--se-space-3); }
+    .doc-card__name { font-size: var(--se-text-sm); font-weight: 500; color: var(--se-text-primary); }
+    .doc-card__meta { font-size: var(--se-text-3xs); color: var(--se-text-faint); margin-top: var(--se-space-1); }
+  </style>
+</head>
+<body>
+
+<!-- ══ LOGIN (email only — no client list exposed) ══ -->
+
+<div id="portal-login">
+  <div class="portal-login__brand">
+    <div class="label" style="margin-bottom:var(--se-space-4)">Steady Eco</div>
+    <h1 class="portal-login__title">Client Portal</h1>
+    <p class="portal-login__sub">Enter your email address to access your portal</p>
+  </div>
+  <div class="portal-login__form">
+    <div class="form-group">
+      <label class="form-label" for="login-email">Email Address</label>
+      <input class="form-input" id="login-email" type="email" placeholder="your@email.com" autocomplete="email">
+    </div>
+    <button class="btn btn-primary w-full mt-4" onclick="Portal.emailLogin()" style="min-height:48px">Send Login Code</button>
+    <p class="text-xs text-faint text-center mt-4">A verification code will be sent to your email</p>
+  </div>
+</div>
+
+<!-- ══ OTP VERIFICATION SCREEN ══ -->
+
+<div id="otp-screen">
+  <button class="btn btn-ghost btn-sm" onclick="Portal.backToLogin()" style="position:absolute;top:var(--se-space-6);left:var(--se-space-6)" aria-label="Back to login">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 4l-6 6 6 6"/></svg>
+    Back
+  </button>
+  <h2 class="text-display-sm" style="font-family:var(--se-font-display);text-align:center">Enter verification code</h2>
+  <p class="text-sm text-muted text-center" id="otp-email-display">Sent to your@email.com</p>
+  <div class="pin-dots" id="otp-dots">
+    <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+    <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+  </div>
+  <div class="pin-pad" id="otp-pad">
+    <button class="pin-key" data-key="1">1</button>
+    <button class="pin-key" data-key="2">2</button>
+    <button class="pin-key" data-key="3">3</button>
+    <button class="pin-key" data-key="4">4</button>
+    <button class="pin-key" data-key="5">5</button>
+    <button class="pin-key" data-key="6">6</button>
+    <button class="pin-key" data-key="7">7</button>
+    <button class="pin-key" data-key="8">8</button>
+    <button class="pin-key" data-key="9">9</button>
+    <button class="pin-key pin-key--action" aria-label="Clear code" data-key="clear">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 4l12 12M16 4L4 16"/></svg>
+    </button>
+    <button class="pin-key" data-key="0">0</button>
+    <button class="pin-key pin-key--action" aria-label="Delete last digit" data-key="delete">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M18 5H7l-4 5 4 5h11V5z"/><path d="M11 8l4 4M15 8l-4 4"/></svg>
+    </button>
+  </div>
+  <p class="text-xs text-faint mt-4">For demo: enter any 6 digits</p>
+</div>
+
+<!-- ══ PORTAL APP ══ -->
+
+<div id="portal-app" style="display:none">
+  <div class="portal-header">
+    <div>
+      <div class="portal-header__brand">Steady Eco</div>
+      <div class="text-md font-medium mt-1" id="portal-client-name">—</div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="Portal.logout()">Log Out</button>
+  </div>
+
+  <nav class="portal-nav" id="portal-nav" aria-label="Portal navigation" role="tablist"></nav>
+
+  <main>
+    <!-- Dashboard -->
+    <div class="screen is-active" id="screen-portal-dashboard" role="tabpanel" aria-hidden="false">
+      <div class="p-6">
+        <h2 class="text-display-md mb-2" style="font-family:var(--se-font-display);font-weight:300" id="portal-greeting" tabindex="-1">Welcome back</h2>
+        <p class="text-sm text-muted mb-8" id="portal-address"></p>
+        <div class="mb-8">
+          <h3 class="label mb-4">Active Jobs</h3>
+          <ul class="flex flex-col gap-3" id="portal-jobs" role="list"></ul>
+        </div>
+        <div class="mb-8">
+          <h3 class="label mb-4">Recent Invoices</h3>
+          <ul class="flex flex-col gap-3" id="portal-invoices" role="list"></ul>
+        </div>
+        <div>
+          <h3 class="label mb-4">Quick Actions</h3>
+          <div class="grid grid-cols-2 gap-3" style="max-width:400px">
+            <a href="tel:+61456190202" class="btn btn-secondary" style="min-height:48px">Call Sam</a>
+            <button class="btn btn-primary" onclick="Portal.showTab('invoices')" style="min-height:48px">View Invoices</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Jobs -->
+    <div class="screen" id="screen-portal-jobs" role="tabpanel" aria-hidden="true">
+      <div class="p-6">
+        <h2 class="text-display-xs mb-6" style="font-family:var(--se-font-display)" tabindex="-1">My Jobs</h2>
+        <ul class="flex flex-col gap-3" id="portal-all-jobs" role="list"></ul>
+      </div>
+    </div>
+
+    <!-- Invoices -->
+    <div class="screen" id="screen-portal-invoices" role="tabpanel" aria-hidden="true">
+      <div class="p-6">
+        <h2 class="text-display-xs mb-6" style="font-family:var(--se-font-display)" tabindex="-1">Invoices</h2>
+        <ul class="flex flex-col gap-3" id="portal-all-invoices" role="list"></ul>
+      </div>
+    </div>
+
+    <!-- Documents (Gov) -->
+    <div class="screen" id="screen-portal-documents" role="tabpanel" aria-hidden="true">
+      <div class="p-6">
+        <h2 class="text-display-xs mb-6" style="font-family:var(--se-font-display)" tabindex="-1">Documents &amp; Compliance</h2>
+        <div class="card p-5 mb-8">
+          <h3 class="label mb-4">Compliance Status</h3>
+          <div id="portal-compliance"></div>
+        </div>
+        <h3 class="label mb-4">Document Library</h3>
+        <div class="doc-grid" id="portal-docs"></div>
+      </div>
+    </div>
+
+    <!-- Contracts (Gov) -->
+    <div class="screen" id="screen-portal-contracts" role="tabpanel" aria-hidden="true">
+      <div class="p-6">
+        <h2 class="text-display-xs mb-6" style="font-family:var(--se-font-display)" tabindex="-1">Contracts</h2>
+        <div class="grid grid-cols-2 gap-4 mb-8" style="max-width:600px" id="portal-gov-metrics"></div>
+        <div class="data-table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>Contract</th><th>Period</th><th>Value</th><th>Status</th></tr></thead>
+            <tbody id="portal-contracts-body"></tbody>
+          </table>
+        </div>
+        <h3 class="label mb-4 mt-8">Recent Completed Jobs</h3>
+        <ul class="flex flex-col gap-3" id="portal-gov-jobs" role="list"></ul>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Toast -->
+<div class="toast-container" aria-live="polite"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  const Portal = {
+    client: null,
+    _pendingClientId: null,
+    _otpCode: '',
+    _cache: {},
+
+    init() {
+      this.setupOtpPad()
+      if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {})
+    },
+
+    /* ── XSS SANITIZER ─────────────────────────────── */
+
+    esc(str) {
+      if (!str) return ''
+      const d = document.createElement('div')
+      d.textContent = String(str)
+      return d.innerHTML
+    },
+
+    /* ── CACHED STORE ──────────────────────────────── */
+
+    getStore(key) {
+      if (!this._cache[key]) {
+        try { this._cache[key] = JSON.parse(localStorage.getItem('se_' + key)) || [] }
+        catch { this._cache[key] = [] }
+      }
+      return this._cache[key]
+    },
+
+    invalidateCache(key) { delete this._cache[key] },
+
+    /* ── LOGIN (email only — no client list) ─────── */
+
+    emailLogin() {
+      const email = document.getElementById('login-email').value.trim()
+      if (!email) { this.toast('Enter your email address', 'error'); return }
+
+      const client = this.getStore('clients').find(c => c.email && c.email.toLowerCase() === email.toLowerCase())
+      if (!client) { this.toast('No account found for that email', 'error'); return }
+
+      // Show OTP screen (simulated for PWA phase)
+      this._pendingClientId = client.id
+      document.getElementById('otp-email-display').textContent = `Code sent to ${this.esc(email)}`
+      document.getElementById('otp-screen').classList.add('is-visible')
+      this._otpCode = ''
+      this.updateOtpDots()
+    },
+
+    backToLogin() {
+      document.getElementById('otp-screen').classList.remove('is-visible')
+      this._otpCode = ''
+      this._pendingClientId = null
+    },
+
+    /* ── OTP PAD ───────────────────────────────────── */
+
+    setupOtpPad() {
+      document.getElementById('otp-pad').addEventListener('click', (e) => {
+        const key = e.target.closest('[data-key]')
+        if (!key) return
+        const val = key.dataset.key
+
+        if (val === 'delete') { this._otpCode = this._otpCode.slice(0, -1); this.updateOtpDots(); return }
+        if (val === 'clear') { this._otpCode = ''; this.updateOtpDots(); return }
+        if (this._otpCode.length >= 6) return
+
+        this._otpCode += val
+        this.updateOtpDots()
+
+        if (this._otpCode.length === 6) {
+          setTimeout(() => this.verifyOtp(), 150)
+        }
+      })
+    },
+
+    updateOtpDots() {
+      document.querySelectorAll('#otp-dots .pin-dot').forEach((dot, i) => {
+        dot.classList.toggle('pin-dot--filled', i < this._otpCode.length)
+        dot.classList.remove('pin-dot--error')
+      })
+    },
+
+    verifyOtp() {
+      // For PWA phase: accept any 6-digit code
+      // When backend exists: verify against server-generated OTP
+      if (this._pendingClientId) {
+        document.getElementById('otp-screen').classList.remove('is-visible')
+        this.selectClient(this._pendingClientId)
+        this._pendingClientId = null
+        this._otpCode = ''
+      }
+    },
+
+    selectClient(id) {
+      const client = this.getStore('clients').find(c => c.id === id)
+      if (!client) return
+
+      this.client = client
+      document.getElementById('portal-login').style.display = 'none'
+      document.getElementById('portal-app').style.display = ''
+      document.getElementById('portal-client-name').textContent = this.esc(client.name)
+
+      this.buildNav(client.type === 'government')
+      this.renderDashboard()
+    },
+
+    buildNav(isGov) {
+      const nav = document.getElementById('portal-nav')
+      const tabs = isGov
+        ? [['dashboard','Overview'],['contracts','Contracts'],['jobs','Jobs'],['invoices','Invoices'],['documents','Documents']]
+        : [['dashboard','Overview'],['jobs','My Jobs'],['invoices','Invoices']]
+
+      nav.innerHTML = tabs.map(([id, label], i) =>
+        `<button class="portal-nav__item ${i === 0 ? 'portal-nav__item--active' : ''}" role="tab" aria-selected="${i === 0}" data-tab="${id}" onclick="Portal.showTab('${id}')">${label}</button>`
+      ).join('')
+    },
+
+    showTab(tab) {
+      document.querySelectorAll('.screen').forEach(s => { s.classList.remove('is-active'); s.setAttribute('aria-hidden', 'true') })
+      const target = document.getElementById(`screen-portal-${tab}`)
+      if (target) { target.classList.add('is-active'); target.setAttribute('aria-hidden', 'false') }
+
+      document.querySelectorAll('.portal-nav__item').forEach(n => {
+        const active = n.dataset.tab === tab
+        n.classList.toggle('portal-nav__item--active', active)
+        n.setAttribute('aria-selected', active)
+      })
+
+      // Focus management
+      const heading = target?.querySelector('[tabindex="-1"]')
+      if (heading) heading.focus({ preventScroll: false })
+
+      this.renderTab(tab)
+    },
+
+    renderTab(tab) {
+      switch(tab) {
+        case 'dashboard': this.renderDashboard(); break
+        case 'jobs': this.renderJobs(); break
+        case 'invoices': this.renderInvoices(); break
+        case 'contracts': this.renderContracts(); break
+        case 'documents': this.renderDocuments(); break
+      }
+    },
+
+    /* ── DASHBOARD ─────────────────────────────────── */
+
+    renderDashboard() {
+      if (!this.client) return
+      const isGov = this.client.type === 'government'
+      const hour = new Date().getHours()
+      const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+      const firstName = this.esc(this.client.name.split(' ')[0])
+
+      document.getElementById('portal-greeting').textContent = isGov
+        ? `${this.client.name} — Contract Portal`
+        : `${greeting}, ${firstName}`
+
+      document.getElementById('portal-address').textContent = this.client.address
+        ? `${this.client.address.line1 || ''} ${this.client.address.suburb || ''}`
+        : ''
+
+      const jobs = this.getStore('jobs').filter(j => j.clientId === this.client.id)
+      const active = jobs.filter(j => !['paid', 'cancelled'].includes(j.status))
+      const container = document.getElementById('portal-jobs')
+
+      if (!active.length) {
+        container.innerHTML = `<li class="card p-5 text-center"><p class="text-sm text-secondary">No active jobs</p><p class="text-xs text-muted mt-1">When Sam schedules work for you, it'll appear here.</p></li>`
+      } else {
+        container.innerHTML = active.map(j => `<li>${this.jobCard(j)}</li>`).join('')
+      }
+
+      const invoices = this.getStore('invoices').filter(i => i.clientId === this.client.id).slice(-3).reverse()
+      const invContainer = document.getElementById('portal-invoices')
+
+      if (!invoices.length) {
+        invContainer.innerHTML = `<li class="card p-5 text-center"><p class="text-sm text-secondary">No invoices yet</p></li>`
+      } else {
+        invContainer.innerHTML = invoices.map(i => `<li>${this.invoiceCard(i)}</li>`).join('')
+      }
+    },
+
+    /* ── JOBS ──────────────────────────────────────── */
+
+    renderJobs() {
+      const jobs = this.getStore('jobs').filter(j => j.clientId === this.client.id).reverse()
+      const container = document.getElementById('portal-all-jobs')
+
+      if (!jobs.length) {
+        container.innerHTML = `<li class="empty-state"><p class="empty-state__title">No jobs yet</p><p class="empty-state__description">When Steady Eco schedules work for your property, jobs will appear here.</p></li>`
+        return
+      }
+      container.innerHTML = jobs.map(j => `<li>${this.jobCard(j)}</li>`).join('')
+    },
+
+    jobCard(job) {
+      const svc = this.esc((job.serviceTypes?.[0] || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()))
+      const date = job.scheduledStart ? new Date(job.scheduledStart).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : 'TBC'
+      const desc = job.description ? this.esc(job.description.length > 100 ? job.description.slice(0, 100) + '...' : job.description) : ''
+      return `
+        <div class="card p-5">
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="text-md font-medium">${svc}</div>
+              <div class="text-xs text-muted mt-1">${this.esc(job.reference || '')} · ${date}</div>
+              ${desc ? `<p class="text-sm text-secondary mt-2">${desc}</p>` : ''}
+            </div>
+            <span class="badge badge-${this.esc(job.status)}">${this.esc(job.status)}</span>
+          </div>
+        </div>
+      `
+    },
+
+    /* ── INVOICES ──────────────────────────────────── */
+
+    renderInvoices() {
+      const invoices = this.getStore('invoices').filter(i => i.clientId === this.client.id).reverse()
+      const container = document.getElementById('portal-all-invoices')
+
+      if (!invoices.length) {
+        container.innerHTML = `<li class="empty-state"><p class="empty-state__title">No invoices yet</p><p class="empty-state__description">Invoices will appear here once work is completed.</p></li>`
+        return
+      }
+      container.innerHTML = invoices.map(i => `<li>${this.invoiceCard(i)}</li>`).join('')
+    },
+
+    invoiceCard(inv) {
+      const isPaid = inv.status === 'paid'
+      const isOverdue = inv.status === 'overdue'
+      const due = inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : ''
+      return `
+        <div class="invoice-card">
+          <div>
+            <div class="text-md font-medium">${this.esc(inv.reference || 'Invoice')}</div>
+            <div class="text-xs text-muted mt-1">${isPaid ? 'Paid' : isOverdue ? 'Overdue' : due ? 'Due ' + due : ''}</div>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="text-md font-medium">${this.formatCurrency(inv.total || 0)}</div>
+            ${!isPaid ? `<button class="pay-btn" onclick="Portal.toast('Payment integration coming soon','info')">Pay Now</button>` : `<span class="badge badge-paid">Paid</span>`}
+          </div>
+        </div>
+      `
+    },
+
+    /* ── GOVERNMENT: CONTRACTS ─────────────────────── */
+
+    renderContracts() {
+      const jobs = this.getStore('jobs').filter(j => j.clientId === this.client.id)
+      const invoices = this.getStore('invoices').filter(i => i.clientId === this.client.id)
+      const completed = jobs.filter(j => ['complete', 'paid', 'invoiced'].includes(j.status))
+      const totalValue = invoices.reduce((s, i) => s + (i.total || 0), 0)
+      const contractCount = totalValue > 0 ? 1 : 0
+
+      document.getElementById('portal-gov-metrics').innerHTML = `
+        <div class="card-stat"><span class="card-stat__label">Active Contracts</span><span class="card-stat__value">${contractCount}</span></div>
+        <div class="card-stat"><span class="card-stat__label">Jobs Completed</span><span class="card-stat__value">${completed.length}</span></div>
+        <div class="card-stat"><span class="card-stat__label">Compliance</span><span class="card-stat__value" style="color:var(--se-success)">Current</span></div>
+        <div class="card-stat"><span class="card-stat__label">Contract Value</span><span class="card-stat__value">${this.formatCurrency(totalValue)}</span></div>
+      `
+
+      const tbody = document.getElementById('portal-contracts-body')
+      if (contractCount === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-8">No active contracts</td></tr>`
+      } else {
+        const prefix = this.client.name.includes('Council') ? 'CRC' : 'CON'
+        tbody.innerHTML = `<tr><td class="font-medium">${prefix}-2026-001</td><td>Jan 2026 — Dec 2026</td><td>${this.formatCurrency(totalValue)}</td><td><span class="badge badge-active">Active</span></td></tr>`
+      }
+
+      const govJobs = document.getElementById('portal-gov-jobs')
+      if (!completed.length) {
+        govJobs.innerHTML = `<li class="text-sm text-muted">No completed jobs yet.</li>`
+      } else {
+        govJobs.innerHTML = completed.slice(-5).reverse().map(j => `<li>${this.jobCard(j)}</li>`).join('')
+      }
+    },
+
+    /* ── GOVERNMENT: DOCUMENTS ─────────────────────── */
+
+    renderDocuments() {
+      const checkSvg = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M2 5l2.5 2.5L8 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+
+      // Dynamic compliance from stored data (fallback to defaults)
+      const compliance = this.getStore('compliance')
+      const items = [
+        { label: 'Public Liability Insurance', status: 'Current — exp. Dec 2026' },
+        { label: 'Workers Compensation', status: 'Current' },
+        { label: 'SWMS Library', status: '3 documents current' },
+        { label: 'ABN', status: '49 553 784 085 — Active' },
+        { label: 'Business Registration', status: 'Active' },
+      ]
+
+      document.getElementById('portal-compliance').innerHTML = items.map((item, i) => `
+        <div class="compliance-item" ${i === items.length - 1 ? 'style="border:none"' : ''}>
+          <span class="compliance-item__label">${this.esc(item.label)}</span>
+          <span class="compliance-item__status compliance-item__status--ok">
+            <span class="compliance-check compliance-check--ok">${checkSvg}</span>
+            ${this.esc(item.status)}
+          </span>
+        </div>
+      `).join('')
+
+      const docIcon = '<svg class="doc-card__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 4h10l4 4v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z"/><path d="M14 4v4h4"/></svg>'
+      const docs = [
+        { name: 'Public Liability Certificate', cat: 'Insurance', date: 'Jan 2026' },
+        { name: 'Workers Comp Certificate', cat: 'Insurance', date: 'Jan 2026' },
+        { name: 'Tree Removal SWMS', cat: 'SWMS', date: 'Mar 2026' },
+        { name: 'Mowing & Landscaping SWMS', cat: 'SWMS', date: 'Mar 2026' },
+        { name: 'Vegetation Management SWMS', cat: 'SWMS', date: 'Mar 2026' },
+        { name: 'ABN Registration', cat: 'Company', date: 'Nov 2023' },
+      ]
+
+      document.getElementById('portal-docs').innerHTML = docs.map(d => `
+        <div class="doc-card" role="button" tabindex="0" onclick="Portal.toast('Document viewer coming soon','info')" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
+          ${docIcon}
+          <div class="doc-card__name">${this.esc(d.name)}</div>
+          <div class="doc-card__meta">${this.esc(d.cat)} · ${d.date}</div>
+        </div>
+      `).join('')
+    },
+
+    logout() {
+      this.client = null
+      this._cache = {}
+      document.getElementById('login-email').value = ''
+      document.getElementById('portal-app').style.display = 'none'
+      document.getElementById('portal-login').style.display = ''
+    },
+
+    /* ── HELPERS ────────────────────────────────────── */
+
+    initials(name) {
+      return (name || '').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+    },
+
+    formatCurrency(amount) {
+      return (parseFloat(amount) || 0).toLocaleString('en-AU', { style: 'currency', currency: 'AUD', minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    },
+
+    toast(message, type = 'info') {
+      const container = document.querySelector('.toast-container')
+      const el = document.createElement('div')
+      el.className = `toast toast--${type}`
+      const msgSpan = document.createElement('span')
+      msgSpan.className = 'toast__message'
+      msgSpan.textContent = message // textContent = XSS safe
+      el.appendChild(msgSpan)
+      container.appendChild(el)
+      requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('is-visible')))
+      setTimeout(() => { el.classList.remove('is-visible'); setTimeout(() => el.remove(), 400) }, 4000)
+    },
+  }
+
+  window.Portal = Portal
+  Portal.init()
+})()
+</script>
+</body>
+</html>

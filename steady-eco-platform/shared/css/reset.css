@@ -1,0 +1,177 @@
+/* ═══════════════════════════════════════════════════════════
+   STEADY ECO — MODERN CSS RESET
+   Strips browser defaults. Builds a clean foundation.
+   Based on Andy Bell's modern reset + custom additions.
+   ═══════════════════════════════════════════════════════════ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -moz-text-size-adjust: none;
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-height: 100dvh;
+  line-height: 1.6;
+  font-family: var(--se-font-ui);
+  font-size: var(--se-text-md);
+  color: var(--se-text-primary);
+  background-color: var(--se-bg-base);
+  overflow-x: hidden;
+}
+
+/* Remove default list styles */
+ul[role='list'],
+ol[role='list'],
+ul,
+ol {
+  list-style: none;
+}
+
+/* Set core body defaults */
+body,
+h1, h2, h3, h4, h5, h6,
+p, figure, blockquote, dl, dd {
+  margin: 0;
+}
+
+/* Balanced text wrapping on headings */
+h1, h2, h3, h4 {
+  text-wrap: balance;
+}
+
+/* Prevent orphans on body text */
+p {
+  text-wrap: pretty;
+}
+
+/* A elements without class get default styles */
+a:not([class]) {
+  text-decoration-skip-ink: auto;
+  color: currentColor;
+}
+
+/* Easier image handling */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* Inherit fonts for form controls */
+input,
+button,
+textarea,
+select {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  line-height: inherit;
+}
+
+/* Text areas without rows get a min height */
+textarea:not([rows]) {
+  min-height: 10em;
+}
+
+/* Focus visible for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--se-border-focus);
+  outline-offset: 2px;
+}
+
+/* Remove all animations and transitions for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Anchor targets scroll with padding */
+:target {
+  scroll-margin-block: 5ex;
+}
+
+/* Button reset */
+button {
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+}
+
+/* Table reset */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* Remove default fieldset styles */
+fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Dialog reset */
+dialog {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+/* Hidden utility */
+[hidden] {
+  display: none !important;
+}
+
+/* Selection colour — brand green */
+::selection {
+  background: var(--se-green-600);
+  color: var(--se-text-inverse);
+}
+
+/* Scrollbar styling — dark theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--se-border-default);
+  border-radius: var(--se-radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--se-border-strong);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--se-border-default) transparent;
+}

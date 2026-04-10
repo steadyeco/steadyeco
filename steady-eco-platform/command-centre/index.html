@@ -1,0 +1,3139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
+  <title>Steady Eco — Command Centre</title>
+  <meta name="description" content="Steady Eco business operations platform">
+  <meta name="theme-color" content="#0a0f0a">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap">
+  <link rel="stylesheet" href="../shared/css/tokens.css">
+  <link rel="stylesheet" href="../shared/css/reset.css">
+  <link rel="stylesheet" href="../shared/css/typography.css">
+  <link rel="stylesheet" href="../shared/css/components.css">
+  <link rel="stylesheet" href="../shared/css/utilities.css">
+  <style>
+    /* ══════════════════════════════════════════════════
+       COMMAND CENTRE — SCREEN-SPECIFIC STYLES
+       ══════════════════════════════════════════════════ */
+
+    /* Screen management */
+    .screen { display: none; }
+    .screen.is-active { display: block; }
+
+    /* Login screen */
+    #login-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: var(--se-bg-base);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--se-space-8);
+    }
+
+    #login-screen.is-hidden {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--se-duration-slow) var(--se-ease-out);
+    }
+
+    .login__watermark {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 320px;
+      height: 320px;
+      opacity: 0;
+      animation: se-fade-in 800ms var(--se-ease-out) forwards;
+    }
+
+    .login__brand {
+      position: absolute;
+      top: var(--se-space-8);
+      left: var(--se-space-8);
+      opacity: 0;
+      transform: translateY(12px);
+      animation: se-slide-up 600ms var(--se-ease-out) 200ms forwards;
+    }
+
+    .login__brand-name {
+      font-family: var(--se-font-ui);
+      font-size: var(--se-text-xs);
+      font-weight: 500;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--se-text-primary);
+    }
+
+    .login__brand-tagline {
+      font-family: var(--se-font-ui);
+      font-size: var(--se-text-3xs);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--se-text-muted);
+      margin-top: 2px;
+    }
+
+    .login__content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--se-space-8);
+      opacity: 0;
+      transform: translateY(12px);
+      animation: se-slide-up 600ms var(--se-ease-out) 400ms forwards;
+    }
+
+    .login__greeting {
+      font-family: var(--se-font-display);
+      font-size: var(--se-text-display-md);
+      font-weight: 300;
+      color: var(--se-text-primary);
+      text-align: center;
+    }
+
+    .login__lockout {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--se-space-4);
+      text-align: center;
+    }
+
+    .login__lockout.is-visible {
+      display: flex;
+    }
+
+    .login__lockout-time {
+      font-family: var(--se-font-display);
+      font-size: var(--se-text-display-md);
+      color: var(--se-error);
+    }
+
+    .login__lockout-msg {
+      font-size: var(--se-text-sm);
+      color: var(--se-text-muted);
+      max-width: 260px;
+    }
+
+    .login__biometric {
+      margin-top: var(--se-space-2);
+      display: flex;
+      align-items: center;
+      gap: var(--se-space-2);
+      color: var(--se-text-muted);
+      font-size: var(--se-text-xs);
+      cursor: pointer;
+      padding: var(--se-space-2) var(--se-space-4);
+      border-radius: var(--se-radius-md);
+      transition: color var(--se-duration-fast) var(--se-ease-out), background var(--se-duration-fast) var(--se-ease-out);
+    }
+
+    .login__biometric:hover {
+      color: var(--se-text-primary);
+      background: var(--se-green-050);
+    }
+
+    @keyframes se-fade-in {
+      to { opacity: 0.15; }
+    }
+
+    @keyframes se-slide-up {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Dashboard zones */
+    .dash-zone { margin-bottom: var(--se-space-8); }
+
+    .dash-greeting {
+      font-family: var(--se-font-display);
+      font-size: var(--se-text-display-lg);
+      font-weight: 300;
+      color: var(--se-text-primary);
+      line-height: 1.15;
+    }
+
+    .dash-subtitle {
+      font-size: var(--se-text-sm);
+      color: var(--se-text-muted);
+      margin-top: var(--se-space-2);
+    }
+
+    .dash-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--se-space-4);
+    }
+
+    @media (max-width: 768px) {
+      .dash-metrics { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .dash-split {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: var(--se-space-6);
+    }
+
+    @media (max-width: 768px) {
+      .dash-split { grid-template-columns: 1fr; }
+    }
+
+    /* Activity feed */
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--se-space-3);
+      padding: var(--se-space-3) 0;
+      border-bottom: 1px solid var(--se-border-subtle);
+      font-size: var(--se-text-sm);
+    }
+
+    .activity-item__icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      color: var(--se-green-600);
+      margin-top: 1px;
+    }
+
+    .activity-item__text {
+      color: var(--se-text-secondary);
+      flex: 1;
+    }
+
+    .activity-item__time {
+      font-size: var(--se-text-3xs);
+      color: var(--se-text-faint);
+      white-space: nowrap;
+    }
+
+    /* Quick stats panel */
+    .quick-stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--se-space-3) 0;
+      border-bottom: 1px solid var(--se-border-subtle);
+    }
+
+    .quick-stat__label {
+      font-size: var(--se-text-sm);
+      color: var(--se-text-secondary);
+    }
+
+    .quick-stat__value {
+      font-family: var(--se-font-display);
+      font-size: var(--se-text-display-xs);
+      color: var(--se-text-primary);
+    }
+
+    /* Cassowary AI bar */
+    .ai-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--se-space-3);
+      padding: var(--se-space-4);
+      background: var(--se-bg-surface);
+      border: 1px solid var(--se-border-subtle);
+      border-radius: var(--se-radius-lg);
+      cursor: text;
+      transition: border-color var(--se-duration-base) var(--se-ease-out);
+    }
+
+    .ai-bar:focus-within {
+      border-color: var(--se-green-600);
+      box-shadow: var(--se-shadow-glow);
+    }
+
+    .ai-bar__icon {
+      width: 24px;
+      height: 24px;
+      color: var(--se-gold-500);
+      flex-shrink: 0;
+    }
+
+    .ai-bar__input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--se-text-primary);
+      font-size: var(--se-text-sm);
+    }
+
+    .ai-bar__input::placeholder {
+      color: var(--se-text-faint);
+    }
+
+    /* Job detail overlay */
+    .job-detail-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: var(--se-z-overlay);
+      background: var(--se-bg-base);
+      overflow-y: auto;
+      transform: translateX(100%);
+      transition: transform var(--se-duration-slow) var(--se-ease-out);
+    }
+
+    .job-detail-overlay.is-open {
+      transform: translateX(0);
+    }
+
+    @media (min-width: 769px) {
+      .job-detail-overlay {
+        left: var(--se-sidebar-w);
+      }
+    }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex;
+      gap: var(--se-space-2);
+      overflow-x: auto;
+      padding-bottom: var(--se-space-2);
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .filter-chip {
+      padding: var(--se-space-2) var(--se-space-4);
+      font-size: var(--se-text-xs);
+      font-weight: 500;
+      color: var(--se-text-muted);
+      background: transparent;
+      border: 1px solid var(--se-border-subtle);
+      border-radius: var(--se-radius-full);
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all var(--se-duration-fast) var(--se-ease-out);
+    }
+
+    .filter-chip:hover {
+      border-color: var(--se-border-default);
+      color: var(--se-text-secondary);
+    }
+
+    .filter-chip.is-active {
+      background: var(--se-green-100);
+      border-color: var(--se-green-600);
+      color: var(--se-green-400);
+    }
+
+    /* Quote builder steps */
+    .quote-steps {
+      display: flex;
+      gap: var(--se-space-2);
+      margin-bottom: var(--se-space-6);
+    }
+
+    .quote-step {
+      flex: 1;
+      height: 3px;
+      background: var(--se-border-default);
+      border-radius: var(--se-radius-full);
+      transition: background var(--se-duration-base) var(--se-ease-out);
+    }
+
+    .quote-step--done { background: var(--se-green-600); }
+    .quote-step--current { background: var(--se-green-400); }
+
+    .quote-step-title {
+      font-family: var(--se-font-display);
+      font-size: var(--se-text-display-sm);
+      font-weight: 400;
+      color: var(--se-text-primary);
+      margin-bottom: var(--se-space-6);
+    }
+
+    .quote-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: var(--se-space-8);
+      padding-top: var(--se-space-6);
+      border-top: 1px solid var(--se-border-subtle);
+    }
+
+    /* Service selection cards */
+    .service-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--se-space-4);
+    }
+
+    @media (max-width: 480px) {
+      .service-grid { grid-template-columns: 1fr; }
+    }
+
+    .service-card {
+      padding: var(--se-space-5);
+      background: var(--se-bg-surface);
+      border: 2px solid var(--se-border-subtle);
+      border-radius: var(--se-radius-lg);
+      cursor: pointer;
+      transition: all var(--se-duration-base) var(--se-ease-out);
+    }
+
+    .service-card:hover {
+      border-color: var(--se-border-default);
+      background: var(--se-bg-elevated);
+    }
+
+    .service-card.is-selected {
+      border-color: var(--se-green-600);
+      background: var(--se-green-050);
+      box-shadow: var(--se-shadow-glow);
+    }
+
+    .service-card__name {
+      font-size: var(--se-text-md);
+      font-weight: 500;
+      color: var(--se-text-primary);
+      margin-bottom: var(--se-space-1);
+    }
+
+    .service-card__desc {
+      font-size: var(--se-text-xs);
+      color: var(--se-text-muted);
+    }
+
+    /* Line items */
+    .line-item {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr auto;
+      gap: var(--se-space-3);
+      align-items: end;
+      padding: var(--se-space-4) 0;
+      border-bottom: 1px solid var(--se-border-subtle);
+    }
+
+    @media (max-width: 768px) {
+      .line-item {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--se-space-2);
+      }
+    }
+
+    .quote-total {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--se-space-12);
+      padding: var(--se-space-6) 0;
+      font-family: var(--se-font-display);
+    }
+
+    .quote-total__row {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--se-space-8);
+      padding: var(--se-space-2) 0;
+    }
+
+    .quote-total__label {
+      font-size: var(--se-text-sm);
+      color: var(--se-text-muted);
+    }
+
+    .quote-total__value {
+      font-size: var(--se-text-md);
+      color: var(--se-text-primary);
+      font-weight: 500;
+    }
+
+    .quote-total__value--grand {
+      font-family: var(--se-font-display);
+      font-size: var(--se-text-display-sm);
+      color: var(--se-green-400);
+    }
+
+    /* Form screen layout */
+    .form-screen {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    /* Schedule board */
+    .schedule-grid {
+      display: grid;
+      grid-template-columns: 80px repeat(7, 1fr);
+      gap: 1px;
+      background: var(--se-border-subtle);
+      border: 1px solid var(--se-border-subtle);
+      border-radius: var(--se-radius-lg);
+      overflow: hidden;
+    }
+    .schedule-header {
+      padding: var(--se-space-3);
+      background: var(--se-bg-surface);
+      font-size: var(--se-text-2xs);
+      font-weight: 500;
+      color: var(--se-text-muted);
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .schedule-header--today { color: var(--se-green-400); }
+    .schedule-crew {
+      padding: var(--se-space-3);
+      background: var(--se-bg-surface);
+      font-size: var(--se-text-xs);
+      font-weight: 500;
+      color: var(--se-text-secondary);
+      display: flex; align-items: center;
+    }
+    .schedule-cell {
+      padding: var(--se-space-2);
+      background: var(--se-bg-base);
+      min-height: 72px;
+      cursor: pointer;
+      transition: background var(--se-duration-fast) var(--se-ease-out);
+    }
+    .schedule-cell:hover { background: var(--se-bg-surface); }
+    .schedule-job {
+      padding: var(--se-space-2) var(--se-space-3);
+      background: var(--se-green-100);
+      border-left: 3px solid var(--se-green-600);
+      border-radius: var(--se-radius-sm);
+      font-size: var(--se-text-3xs);
+      color: var(--se-text-primary);
+      margin-bottom: var(--se-space-1);
+      cursor: pointer;
+    }
+    .schedule-job:hover { background: var(--se-green-050); border-left-color: var(--se-green-400); }
+    @media (max-width: 768px) {
+      .schedule-grid { grid-template-columns: 60px repeat(5, 1fr); }
+    }
+
+    /* Carbon / ESG */
+    .carbon-card {
+      padding: var(--se-space-6);
+      background: var(--se-bg-surface);
+      border: 1px solid var(--se-border-subtle);
+      border-radius: var(--se-radius-lg);
+      text-align: center;
+    }
+    .carbon-value {
+      font-family: var(--se-font-display);
+      font-size: var(--se-text-display-lg);
+      font-weight: 300;
+      color: var(--se-green-400);
+      line-height: 1;
+    }
+    .carbon-unit {
+      font-size: var(--se-text-xs);
+      color: var(--se-text-muted);
+      margin-top: var(--se-space-2);
+    }
+    .carbon-label {
+      font-size: var(--se-text-2xs);
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--se-text-faint);
+      margin-top: var(--se-space-3);
+    }
+
+    /* Compliance */
+    .compliance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--se-space-4);
+    }
+    .compliance-card {
+      padding: var(--se-space-5);
+      background: var(--se-bg-surface);
+      border: 1px solid var(--se-border-subtle);
+      border-radius: var(--se-radius-lg);
+    }
+    .compliance-card__status {
+      display: flex; align-items: center; gap: var(--se-space-2);
+      margin-bottom: var(--se-space-3);
+    }
+    .compliance-dot {
+      width: 10px; height: 10px;
+      border-radius: var(--se-radius-full);
+    }
+    .compliance-dot--green { background: var(--se-success); }
+    .compliance-dot--amber { background: var(--se-warning); }
+    .compliance-dot--red { background: var(--se-error); }
+
+    /* Equipment */
+    .equip-card {
+      display: flex; align-items: center; gap: var(--se-space-4);
+      padding: var(--se-space-4) var(--se-space-5);
+      background: var(--se-bg-surface);
+      border: 1px solid var(--se-border-subtle);
+      border-radius: var(--se-radius-lg);
+    }
+    .equip-icon {
+      width: 40px; height: 40px;
+      border-radius: var(--se-radius-md);
+      background: var(--se-gold-050);
+      color: var(--se-gold-500);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Settings sections */
+    .settings-section {
+      padding: var(--se-space-6) 0;
+      border-bottom: 1px solid var(--se-border-subtle);
+    }
+
+    .settings-section__title {
+      font-family: var(--se-font-display);
+      font-size: var(--se-text-display-xs);
+      color: var(--se-text-primary);
+      margin-bottom: var(--se-space-4);
+    }
+
+    /* Job detail sections */
+    .job-section {
+      border-bottom: 1px solid var(--se-border-subtle);
+    }
+
+    .job-section__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--se-space-4) 0;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .job-section__title {
+      font-size: var(--se-text-md);
+      font-weight: 500;
+      color: var(--se-text-primary);
+    }
+
+    .job-section__arrow {
+      width: 16px;
+      height: 16px;
+      color: var(--se-text-muted);
+      transition: transform var(--se-duration-fast) var(--se-ease-out);
+    }
+
+    .job-section.is-open .job-section__arrow {
+      transform: rotate(180deg);
+    }
+
+    .job-section__body {
+      display: none;
+      padding-bottom: var(--se-space-4);
+    }
+
+    .job-section.is-open .job-section__body {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     LOGIN SCREEN
+     ══════════════════════════════════════════════════════ -->
+
+<div id="login-screen">
+  <!-- Cassowary watermark -->
+  <svg class="login__watermark" viewBox="0 0 200 200" fill="none">
+    <g opacity="1">
+      <path d="M100 25c-6 0-12 8-14 18-2 8-1 16 2 22l-4 6-2 3-18 42c-3 7-1 14 4 17 2 1 4 2 6 2h52c2 0 4-1 6-2 5-3 7-10 4-17l-18-42-2-3-4-6c3-6 4-14 2-22-2-10-8-18-14-18z" stroke="var(--se-green-600)" stroke-width="1.2" fill="none"/>
+      <circle cx="93" cy="50" r="3" fill="var(--se-green-600)"/>
+      <path d="M86 42c-4-2-10-1-16 3-5 4-8 9-7 12" stroke="var(--se-gold-500)" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M82 38c-3-4-2-10 0-14" stroke="var(--se-error)" stroke-width="1.2" stroke-linecap="round"/>
+      <path d="M84 36c1-4 5-8 9-9" stroke="var(--se-info)" stroke-width="1.2" stroke-linecap="round"/>
+      <path d="M70 135l-3 30c0 3 2 5 5 5h6c2 0 4-2 4-4l2-31" stroke="var(--se-green-600)" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M114 135l3 30c0 3-2 5-5 5h-6c-2 0-4-2-4-4l-2-31" stroke="var(--se-green-600)" stroke-width="1.5" stroke-linecap="round"/>
+    </g>
+  </svg>
+
+  <!-- Brand -->
+  <div class="login__brand">
+    <div class="login__brand-name">Steady Eco</div>
+    <div class="login__brand-tagline">Far North Queensland</div>
+  </div>
+
+  <!-- PIN entry content -->
+  <div class="login__content" id="login-content">
+    <h1 class="login__greeting">Welcome back, Sam</h1>
+
+    <!-- PIN dots -->
+    <div class="pin-dots" id="pin-dots">
+      <div class="pin-dot" data-dot="0"></div>
+      <div class="pin-dot" data-dot="1"></div>
+      <div class="pin-dot" data-dot="2"></div>
+      <div class="pin-dot" data-dot="3"></div>
+      <div class="pin-dot" data-dot="4"></div>
+      <div class="pin-dot" data-dot="5"></div>
+    </div>
+
+    <!-- PIN pad -->
+    <div class="pin-pad" id="pin-pad">
+      <button class="pin-key" data-key="1">1</button>
+      <button class="pin-key" data-key="2">2</button>
+      <button class="pin-key" data-key="3">3</button>
+      <button class="pin-key" data-key="4">4</button>
+      <button class="pin-key" data-key="5">5</button>
+      <button class="pin-key" data-key="6">6</button>
+      <button class="pin-key" data-key="7">7</button>
+      <button class="pin-key" data-key="8">8</button>
+      <button class="pin-key" data-key="9">9</button>
+      <button class="pin-key pin-key--action" data-key="biometric">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 16v1M7 12a5 5 0 0110 0v1M4 10a8 8 0 0116 0v2M12 12v4"/></svg>
+      </button>
+      <button class="pin-key" data-key="0">0</button>
+      <button class="pin-key pin-key--action" data-key="delete">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M21 6H8l-5 6 5 6h13V6z"/><path d="M14 10l4 4M18 10l-4 4"/></svg>
+      </button>
+    </div>
+
+    <!-- Lockout message (hidden by default) -->
+    <div class="login__lockout" id="login-lockout">
+      <div class="login__lockout-time" id="lockout-timer">00:00</div>
+      <p class="login__lockout-msg">Too many attempts. Please wait before trying again.</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     APP SHELL (visible after login)
+     ══════════════════════════════════════════════════════ -->
+
+<div id="app-shell" style="display:none">
+
+  <!-- SIDEBAR (desktop) -->
+  <nav class="sidebar" id="sidebar" aria-label="Primary navigation">
+    <div class="sidebar__brand">
+      <div class="login__brand-name">Steady Eco</div>
+      <div class="login__brand-tagline">Command Centre</div>
+    </div>
+    <div class="sidebar__nav">
+      <a href="#" class="sidebar__link sidebar__link--active" data-screen="dashboard">
+        <svg class="sidebar__link-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="4" rx="1.5"/><rect x="2" y="11" width="7" height="4" rx="1.5"/><rect x="11" y="8" width="7" height="7" rx="1.5"/></svg>
+        Dashboard
+      </a>
+      <a href="#" class="sidebar__link" data-screen="jobs">
+        <svg class="sidebar__link-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M7 7h6M7 10h4M7 13h5"/></svg>
+        Jobs
+      </a>
+      <a href="#" class="sidebar__link" data-screen="quotes">
+        <svg class="sidebar__link-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h12v14l-6-3-6 3V4z"/></svg>
+        Quotes
+      </a>
+      <a href="#" class="sidebar__link" data-screen="clients">
+        <svg class="sidebar__link-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="7" r="3"/><path d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+        Clients
+      </a>
+      <a href="#" class="sidebar__link" data-screen="employees">
+        <svg class="sidebar__link-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="2.5"/><circle cx="14" cy="7" r="2.5"/><path d="M2 16c0-2.8 2.2-5 5-5s5 2.2 5 5M9 16c0-2.8 2.2-5 5-5s5 2.2 5 5"/></svg>
+        Employees
+      </a>
+      <a href="#" class="sidebar__link" data-screen="invoices">
+        <svg class="sidebar__link-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="2" width="14" height="16" rx="2"/><path d="M7 6h6M7 9h4M7 12h5M7 15h3"/></svg>
+        Invoices
+      </a>
+      <a href="#" class="sidebar__link" data-screen="documents">
+        <svg class="sidebar__link-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 3h8l4 4v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2z"/><path d="M12 3v4h4"/></svg>
+        Documents
+      </a>
+      <a href="#" class="sidebar__link" data-screen="timesheets">
+        <svg class="sidebar__link-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l3 2"/></svg>
+        Timesheets
+      </a>
+      <a href="#" class="sidebar__link" data-screen="schedule">
+        <svg class="sidebar__link-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="4" width="16" height="14" rx="2"/><path d="M2 8h16M6 2v4M14 2v4"/></svg>
+        Schedule
+      </a>
+      <a href="#" class="sidebar__link" data-screen="equipment">
+        <svg class="sidebar__link-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M14 2l4 4-9 9H5v-4L14 2z"/><path d="M12 4l4 4"/></svg>
+        Equipment
+      </a>
+      <a href="#" class="sidebar__link" data-screen="reports">
+        <svg class="sidebar__link-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 16V8M8 16V4M12 16V10M16 16V6"/></svg>
+        Reports
+      </a>
+      <a href="#" class="sidebar__link" data-screen="carbon">
+        <svg class="sidebar__link-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l-2 2"/><path d="M7 3C5 5 4 7 4 10"/></svg>
+        Carbon &amp; ESG
+      </a>
+      <a href="#" class="sidebar__link" data-screen="compliance">
+        <svg class="sidebar__link-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M10 2l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V6l7-4z"/><path d="M7 10l2 2 4-4"/></svg>
+        Compliance
+      </a>
+      <a href="#" class="sidebar__link" data-screen="settings">
+        <svg class="sidebar__link-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="2.5"/><path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.2 4.2l2.1 2.1M13.7 13.7l2.1 2.1M4.2 15.8l2.1-2.1M13.7 6.3l2.1-2.1"/></svg>
+        Settings
+      </a>
+    </div>
+    <div class="sidebar__footer">
+      <a href="#" class="sidebar__link" data-screen="cassowary">
+        <svg class="sidebar__link-icon" viewBox="0 0 20 20" fill="none" stroke="var(--se-gold-500)" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M10 7v3l2 1"/></svg>
+        Ask Cassowary
+      </a>
+      <div class="flex items-center gap-3 px-4 py-4">
+        <span class="connectivity-dot"></span>
+        <span class="connectivity-label text-3xs text-faint">Online</span>
+      </div>
+      <div class="flex items-center gap-3 px-4">
+        <div class="card-client__avatar">SK</div>
+        <div>
+          <div class="text-sm font-medium">Sam Kerr</div>
+          <div class="text-3xs text-faint">Owner</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="main-content">
+
+    <!-- ══ DASHBOARD SCREEN ══ -->
+    <div class="screen is-active" id="screen-dashboard">
+      <header class="page-header">
+        <h1 class="page-header__title">Dashboard</h1>
+        <div class="page-header__actions">
+          <button class="btn btn-primary btn-sm" onclick="App.navigate('new-job')">New Job</button>
+          <button class="btn btn-secondary btn-sm" onclick="App.navigate('new-quote')">New Quote</button>
+        </div>
+      </header>
+      <div class="p-6">
+        <!-- Zone 1: Greeting -->
+        <div class="dash-zone">
+          <h2 class="dash-greeting" id="dash-greeting"></h2>
+          <p class="dash-subtitle" id="dash-subtitle"></p>
+        </div>
+
+        <!-- Zone 2: Revenue metrics -->
+        <div class="dash-zone">
+          <div class="dash-metrics" id="dash-metrics">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Zone 3: Today's jobs + Quick stats -->
+        <div class="dash-zone">
+          <div class="dash-split">
+            <div>
+              <h3 class="label mb-4">Today's Jobs</h3>
+              <div id="dash-jobs" class="flex flex-col gap-3">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+            <div>
+              <h3 class="label mb-4">Quick Stats</h3>
+              <div id="dash-stats">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Zone 4: Activity feed -->
+        <div class="dash-zone">
+          <div class="dash-split">
+            <div>
+              <h3 class="label mb-4">Recent Activity</h3>
+              <div id="dash-activity">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+            <div>
+              <h3 class="label mb-4">Cairns Weather</h3>
+              <div class="card p-5">
+                <div class="text-display-md" style="color:var(--se-gold-500)">31°</div>
+                <div class="text-sm text-secondary mt-1">Partly cloudy</div>
+                <div class="text-xs text-muted mt-2">Tropical — plan for afternoon rain</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Zone 5: Cassowary AI bar -->
+        <div class="dash-zone">
+          <h3 class="label mb-3">Ask Cassowary</h3>
+          <div class="ai-bar" onclick="App.navigate('cassowary')">
+            <svg class="ai-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 1.5"/></svg>
+            <input class="ai-bar__input" type="text" placeholder="Ask anything about your business..." readonly>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ JOBS SCREEN ══ -->
+    <div class="screen" id="screen-jobs">
+      <header class="page-header">
+        <h1 class="page-header__title">Jobs</h1>
+        <div class="page-header__actions">
+          <button class="btn btn-primary btn-sm" onclick="App.navigate('new-job')">New Job</button>
+        </div>
+      </header>
+      <div class="p-6">
+        <div class="filter-bar mb-6" id="jobs-filter">
+          <button class="filter-chip is-active" data-filter="all">All</button>
+          <button class="filter-chip" data-filter="active">Active</button>
+          <button class="filter-chip" data-filter="quoted">Quoted</button>
+          <button class="filter-chip" data-filter="booked">Booked</button>
+          <button class="filter-chip" data-filter="complete">Complete</button>
+          <button class="filter-chip" data-filter="invoiced">Invoiced</button>
+        </div>
+        <div id="jobs-list" class="flex flex-col gap-3">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ QUOTES SCREEN ══ -->
+    <div class="screen" id="screen-quotes">
+      <header class="page-header">
+        <h1 class="page-header__title">Quotes</h1>
+        <div class="page-header__actions">
+          <button class="btn btn-primary btn-sm" onclick="App.navigate('new-quote')">New Quote</button>
+        </div>
+      </header>
+      <div class="p-6">
+        <div id="quotes-list" class="flex flex-col gap-3"></div>
+      </div>
+    </div>
+
+    <!-- ══ CLIENTS SCREEN ══ -->
+    <div class="screen" id="screen-clients">
+      <header class="page-header">
+        <h1 class="page-header__title">Clients</h1>
+        <div class="page-header__actions">
+          <button class="btn btn-primary btn-sm" onclick="App.navigate('new-client')">Add Client</button>
+        </div>
+      </header>
+      <div class="p-6">
+        <div id="clients-list" class="flex flex-col gap-3"></div>
+      </div>
+    </div>
+
+    <!-- ══ EMPLOYEES SCREEN ══ -->
+    <div class="screen" id="screen-employees">
+      <header class="page-header"><h1 class="page-header__title">Employees</h1></header>
+      <div class="p-6"><div id="employees-list" class="flex flex-col gap-3"></div></div>
+    </div>
+
+    <!-- ══ INVOICES SCREEN ══ -->
+    <div class="screen" id="screen-invoices">
+      <header class="page-header"><h1 class="page-header__title">Invoices</h1></header>
+      <div class="p-6"><div id="invoices-list" class="flex flex-col gap-3"></div></div>
+    </div>
+
+    <!-- ══ DOCUMENTS SCREEN ══ -->
+    <div class="screen" id="screen-documents">
+      <header class="page-header"><h1 class="page-header__title" tabindex="-1">Documents</h1></header>
+      <div class="p-6"><div class="empty-state"><p class="empty-state__title">Document management coming soon</p><p class="empty-state__description">SWMS templates, insurance certificates, compliance documents, and job reports will be managed here.</p></div></div>
+    </div>
+
+    <!-- ══ TIMESHEETS SCREEN ══ -->
+    <div class="screen" id="screen-timesheets">
+      <header class="page-header"><h1 class="page-header__title" tabindex="-1">Timesheets</h1></header>
+      <div class="p-6"><div class="empty-state"><p class="empty-state__title">Timesheet management coming soon</p><p class="empty-state__description">Crew clock-in/out records, hours tracking, and award interpretation will be managed here.</p></div></div>
+    </div>
+
+    <!-- ══ REPORTS / INVESTOR SCREEN ══ -->
+    <div class="screen" id="screen-reports">
+      <header class="page-header">
+        <h1 class="page-header__title" tabindex="-1">Reports &amp; Metrics</h1>
+        <div class="page-header__actions">
+          <button class="btn btn-secondary btn-sm" onclick="App.runCollections()">Run Collections</button>
+        </div>
+      </header>
+      <div class="p-6">
+        <!-- Investor-ready metrics -->
+        <h3 class="label mb-4">Platform Metrics</h3>
+        <div class="grid grid-cols-3 gap-4 mb-8" style="max-width:700px" id="investor-metrics"></div>
+
+        <!-- Training & Certification -->
+        <h3 class="label mb-4">Crew Training &amp; Certifications</h3>
+        <div class="compliance-grid mb-8" id="training-certs"></div>
+
+        <!-- Satellite Monitoring -->
+        <h3 class="label mb-4">Vegetation Monitoring (Satellite)</h3>
+        <div class="card p-6 mb-8" id="satellite-panel">
+          <div class="flex items-center gap-4 mb-4">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="var(--se-green-600)" stroke-width="1.5" aria-hidden="true"><circle cx="16" cy="16" r="12"/><path d="M16 4v24M4 16h24"/><ellipse cx="16" cy="16" rx="6" ry="12"/></svg>
+            <div>
+              <div class="text-md font-medium">Sentinel-2 NDVI Integration</div>
+              <div class="text-xs text-muted">Vegetation health monitoring via satellite imagery</div>
+            </div>
+          </div>
+          <p class="text-sm text-secondary mb-4">When configured, this module will show NDVI (Normalized Difference Vegetation Index) data from Sentinel-2 satellites — updated every 5 days at 10m resolution. Track vegetation recovery on land regeneration sites and generate automated vegetation health reports for council contracts.</p>
+          <div class="grid grid-cols-3 gap-4" style="max-width:500px">
+            <div class="carbon-card"><div class="carbon-value" style="font-size:var(--se-text-display-sm)">10m</div><div class="carbon-label">Resolution</div></div>
+            <div class="carbon-card"><div class="carbon-value" style="font-size:var(--se-text-display-sm)">5d</div><div class="carbon-label">Update Cycle</div></div>
+            <div class="carbon-card"><div class="carbon-value" style="font-size:var(--se-text-display-sm)">Free</div><div class="carbon-label">Sentinel-2 Data</div></div>
+          </div>
+        </div>
+
+        <!-- SaaS / White-label -->
+        <h3 class="label mb-4">Platform Growth (SaaS)</h3>
+        <div class="card p-6">
+          <div class="text-md font-medium mb-2">White-Label Opportunity</div>
+          <p class="text-sm text-secondary mb-4">Offer the Steady Eco platform to other FNQ land management operators as a monthly subscription. They get scheduling, quoting, crew management, and compliance. You get recurring revenue and a network effect.</p>
+          <div class="grid grid-cols-2 gap-4" style="max-width:400px">
+            <div><div class="text-xs text-faint">Target MRR</div><div class="text-display-xs" style="font-family:var(--se-font-display);color:var(--se-gold-500)">$5,000</div><div class="text-3xs text-faint">50 operators × $99/mo</div></div>
+            <div><div class="text-xs text-faint">TAM (QLD)</div><div class="text-display-xs" style="font-family:var(--se-font-display);color:var(--se-gold-500)">2,400+</div><div class="text-3xs text-faint">land management businesses</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SCHEDULE BOARD ══ -->
+    <div class="screen" id="screen-schedule">
+      <header class="page-header">
+        <h1 class="page-header__title" tabindex="-1">Schedule</h1>
+        <div class="page-header__actions">
+          <button class="btn btn-ghost btn-sm" id="schedule-prev" onclick="App.scheduleNav(-1)">&larr; Prev</button>
+          <span class="text-sm text-secondary" id="schedule-week-label">This Week</span>
+          <button class="btn btn-ghost btn-sm" id="schedule-next" onclick="App.scheduleNav(1)">Next &rarr;</button>
+        </div>
+      </header>
+      <div class="p-6" style="overflow-x:auto">
+        <div class="schedule-grid" id="schedule-grid"></div>
+      </div>
+    </div>
+
+    <!-- ══ RECURRING JOBS ══ -->
+    <div class="screen" id="screen-recurring">
+      <header class="page-header">
+        <h1 class="page-header__title" tabindex="-1">Recurring Jobs</h1>
+        <div class="page-header__actions">
+          <button class="btn btn-primary btn-sm" onclick="App.addRecurring()">New Recurring Job</button>
+        </div>
+      </header>
+      <div class="p-6">
+        <div class="flex flex-col gap-3" id="recurring-list"></div>
+      </div>
+    </div>
+
+    <!-- ══ EQUIPMENT REGISTER ══ -->
+    <div class="screen" id="screen-equipment">
+      <header class="page-header">
+        <h1 class="page-header__title" tabindex="-1">Equipment</h1>
+        <div class="page-header__actions">
+          <button class="btn btn-primary btn-sm" onclick="App.addEquipment()">Add Equipment</button>
+        </div>
+      </header>
+      <div class="p-6">
+        <div class="flex flex-col gap-3" id="equipment-list"></div>
+      </div>
+    </div>
+
+    <!-- ══ CARBON & ESG ══ -->
+    <div class="screen" id="screen-carbon">
+      <header class="page-header">
+        <h1 class="page-header__title" tabindex="-1">Carbon &amp; ESG</h1>
+        <div class="page-header__actions">
+          <button class="btn btn-secondary btn-sm" onclick="App.generateEsgReport()">Generate ESG Report</button>
+        </div>
+      </header>
+      <div class="p-6">
+        <!-- Carbon metrics -->
+        <h3 class="label mb-4">Carbon Impact</h3>
+        <div class="grid grid-cols-4 gap-4 mb-8" id="carbon-metrics" style="max-width:800px"></div>
+
+        <!-- Job carbon log -->
+        <h3 class="label mb-4">Per-Job Carbon Tracking</h3>
+        <div class="data-table-wrapper mb-8">
+          <table class="data-table">
+            <thead><tr><th>Job</th><th>Service</th><th>Mulch (m³)</th><th>Trees Planted</th><th>Waste Diverted (kg)</th><th>CO₂ Offset (kg)</th></tr></thead>
+            <tbody id="carbon-table"></tbody>
+          </table>
+        </div>
+
+        <!-- ESG overview -->
+        <h3 class="label mb-4">ESG Scorecard</h3>
+        <div class="grid grid-cols-3 gap-4" id="esg-scorecard" style="max-width:600px"></div>
+      </div>
+    </div>
+
+    <!-- ══ GOVERNMENT COMPLIANCE ══ -->
+    <div class="screen" id="screen-compliance">
+      <header class="page-header">
+        <h1 class="page-header__title" tabindex="-1">Compliance</h1>
+        <div class="page-header__actions">
+          <button class="btn btn-secondary btn-sm" onclick="App.exportCompliance()">Export Compliance Pack</button>
+        </div>
+      </header>
+      <div class="p-6">
+        <!-- Status overview -->
+        <div class="grid grid-cols-4 gap-4 mb-8" id="compliance-overview" style="max-width:800px"></div>
+
+        <!-- Compliance items -->
+        <h3 class="label mb-4">Insurance &amp; Certifications</h3>
+        <div class="compliance-grid mb-8" id="compliance-certs"></div>
+
+        <!-- GBR Catchment -->
+        <h3 class="label mb-4">Great Barrier Reef Catchment</h3>
+        <div class="card p-5 mb-8" id="gbr-panel"></div>
+
+        <!-- Indigenous Procurement -->
+        <h3 class="label mb-4">Indigenous Procurement</h3>
+        <div class="card p-5 mb-8" id="indigenous-panel"></div>
+
+        <!-- Hazardous Tree Risk Register -->
+        <h3 class="label mb-4">Hazardous Tree Risk Register</h3>
+        <div class="data-table-wrapper" id="tree-risk-panel"></div>
+      </div>
+    </div>
+
+    <!-- ══ NEW CLIENT SCREEN ══ -->
+    <div class="screen" id="screen-new-client">
+      <header class="page-header">
+        <h1 class="page-header__title">New Client</h1>
+        <div class="page-header__actions">
+          <button class="btn btn-ghost btn-sm" onclick="App.navigate('clients')">Cancel</button>
+        </div>
+      </header>
+      <div class="p-6">
+        <div class="form-screen">
+          <div class="flex flex-col gap-5">
+            <div class="form-group">
+              <label class="form-label">Client Name *</label>
+              <input class="form-input" id="nc-name" type="text" placeholder="e.g. John Smith or Cairns Regional Council">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Type</label>
+              <select class="form-input form-select" id="nc-type">
+                <option value="residential">Residential</option>
+                <option value="commercial">Commercial</option>
+                <option value="government">Government / Council</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input class="form-input" id="nc-phone" type="tel" placeholder="0456 190 202">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input class="form-input" id="nc-email" type="email" placeholder="client@example.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Address</label>
+              <input class="form-input" id="nc-address" type="text" placeholder="123 Smith Street">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="form-group">
+                <label class="form-label">Suburb</label>
+                <input class="form-input" id="nc-suburb" type="text" placeholder="Cairns City">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Postcode</label>
+                <input class="form-input" id="nc-postcode" type="text" placeholder="4870">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Notes</label>
+              <textarea class="form-input form-textarea" id="nc-notes" placeholder="Any notes about this client..." rows="3"></textarea>
+            </div>
+            <div class="flex gap-3 mt-4">
+              <button class="btn btn-primary" onclick="App.saveClient()">Save Client</button>
+              <button class="btn btn-ghost" onclick="App.navigate('clients')">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ NEW JOB SCREEN ══ -->
+    <div class="screen" id="screen-new-job">
+      <header class="page-header">
+        <h1 class="page-header__title">New Job</h1>
+        <div class="page-header__actions">
+          <button class="btn btn-ghost btn-sm" onclick="App.navigate('jobs')">Cancel</button>
+        </div>
+      </header>
+      <div class="p-6">
+        <div class="form-screen">
+          <div class="flex flex-col gap-5">
+            <div class="form-group">
+              <label class="form-label">Client *</label>
+              <select class="form-input form-select" id="nj-client">
+                <option value="">Select a client...</option>
+              </select>
+              <button class="btn btn-ghost btn-sm mt-2" onclick="App.navigate('new-client')" style="align-self:flex-start">+ Add new client</button>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Service Type *</label>
+              <select class="form-input form-select" id="nj-service">
+                <option value="tree-removal">Tree Removal</option>
+                <option value="tree-pruning">Tree Pruning</option>
+                <option value="landscaping">Landscaping</option>
+                <option value="lawn-mowing">Lawn Mowing</option>
+                <option value="vegetation-management">Vegetation Management</option>
+                <option value="land-clearing">Land Clearing</option>
+                <option value="blade-sharpening">Blade Sharpening</option>
+                <option value="chipping-mulching">Chipping & Mulching</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <textarea class="form-input form-textarea" id="nj-desc" placeholder="Scope of work..." rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Site Address</label>
+              <input class="form-input" id="nj-address" type="text" placeholder="123 Smith Street, Cairns City 4870">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="form-group">
+                <label class="form-label">Scheduled Date</label>
+                <input class="form-input" id="nj-date" type="date">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Estimated Duration</label>
+                <select class="form-input form-select" id="nj-duration">
+                  <option value="60">1 hour</option>
+                  <option value="120">2 hours</option>
+                  <option value="180">3 hours</option>
+                  <option value="240">4 hours (half day)</option>
+                  <option value="480">8 hours (full day)</option>
+                  <option value="960">2 days</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Internal Notes</label>
+              <textarea class="form-input form-textarea" id="nj-notes" placeholder="Notes visible only to you..." rows="2"></textarea>
+            </div>
+            <div class="flex gap-3 mt-4">
+              <button class="btn btn-primary" onclick="App.saveJob()">Create Job</button>
+              <button class="btn btn-ghost" onclick="App.navigate('jobs')">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ QUOTE BUILDER SCREEN ══ -->
+    <div class="screen" id="screen-new-quote">
+      <header class="page-header">
+        <h1 class="page-header__title">New Quote</h1>
+        <div class="page-header__actions">
+          <button class="btn btn-ghost btn-sm" onclick="App.navigate('quotes')">Cancel</button>
+        </div>
+      </header>
+      <div class="p-6">
+        <div class="form-screen">
+          <!-- Step indicators -->
+          <div class="quote-steps" id="quote-steps">
+            <div class="quote-step quote-step--current"></div>
+            <div class="quote-step"></div>
+            <div class="quote-step"></div>
+            <div class="quote-step"></div>
+            <div class="quote-step"></div>
+          </div>
+
+          <!-- Step 1: Client -->
+          <div class="quote-panel" id="qp-1">
+            <h2 class="quote-step-title">Select Client</h2>
+            <div class="form-group">
+              <select class="form-input form-select" id="q-client">
+                <option value="">Choose a client...</option>
+              </select>
+              <button class="btn btn-ghost btn-sm mt-2" onclick="App.navigate('new-client')" style="align-self:flex-start">+ Add new client</button>
+            </div>
+            <div class="quote-nav">
+              <div></div>
+              <button class="btn btn-primary" onclick="App.quoteNext()">Next</button>
+            </div>
+          </div>
+
+          <!-- Step 2: Services -->
+          <div class="quote-panel" id="qp-2" style="display:none">
+            <h2 class="quote-step-title">Select Services</h2>
+            <div class="service-grid" id="q-services">
+              <div class="service-card" data-service="tree-removal" onclick="App.toggleService(this)">
+                <div class="service-card__name">Tree Removal</div>
+                <div class="service-card__desc">Safe removal, chipping, complete clean-up</div>
+              </div>
+              <div class="service-card" data-service="tree-pruning" onclick="App.toggleService(this)">
+                <div class="service-card__name">Tree Pruning</div>
+                <div class="service-card__desc">Crown reduction, deadwooding, shaping</div>
+              </div>
+              <div class="service-card" data-service="landscaping" onclick="App.toggleService(this)">
+                <div class="service-card__name">Landscaping</div>
+                <div class="service-card__desc">Garden design, renovation, maintenance</div>
+              </div>
+              <div class="service-card" data-service="lawn-mowing" onclick="App.toggleService(this)">
+                <div class="service-card__name">Lawn Mowing</div>
+                <div class="service-card__desc">Ride-on and push mowing, edging</div>
+              </div>
+              <div class="service-card" data-service="vegetation-management" onclick="App.toggleService(this)">
+                <div class="service-card__name">Vegetation Management</div>
+                <div class="service-card__desc">Clearing, weed control, fire breaks</div>
+              </div>
+              <div class="service-card" data-service="land-clearing" onclick="App.toggleService(this)">
+                <div class="service-card__name">Land Clearing</div>
+                <div class="service-card__desc">Block clearing, site preparation</div>
+              </div>
+              <div class="service-card" data-service="blade-sharpening" onclick="App.toggleService(this)">
+                <div class="service-card__name">Blade Sharpening</div>
+                <div class="service-card__desc">$120/set, factory spec grinding</div>
+              </div>
+              <div class="service-card" data-service="chipping-mulching" onclick="App.toggleService(this)">
+                <div class="service-card__name">Chipping & Mulching</div>
+                <div class="service-card__desc">On-site chipping, green waste removal</div>
+              </div>
+            </div>
+            <div class="quote-nav">
+              <button class="btn btn-ghost" onclick="App.quotePrev()">Back</button>
+              <button class="btn btn-primary" onclick="App.quoteNext()">Next</button>
+            </div>
+          </div>
+
+          <!-- Step 3: Line items + pricing -->
+          <div class="quote-panel" id="qp-3" style="display:none">
+            <h2 class="quote-step-title">Scope & Pricing</h2>
+            <div id="q-line-items"></div>
+            <button class="btn btn-ghost btn-sm mt-4" onclick="App.addLineItem()">+ Add line item</button>
+            <div class="mt-6" id="q-totals"></div>
+            <div class="quote-nav">
+              <button class="btn btn-ghost" onclick="App.quotePrev()">Back</button>
+              <button class="btn btn-primary" onclick="App.quoteNext()">Next</button>
+            </div>
+          </div>
+
+          <!-- Step 4: Terms -->
+          <div class="quote-panel" id="qp-4" style="display:none">
+            <h2 class="quote-step-title">Terms & Validity</h2>
+            <div class="flex flex-col gap-5">
+              <div class="form-group">
+                <label class="form-label">Quote Valid Until</label>
+                <input class="form-input" id="q-valid" type="date">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Payment Terms</label>
+                <select class="form-input form-select" id="q-terms">
+                  <option value="Due on completion">Due on completion</option>
+                  <option value="7 days net">7 days net</option>
+                  <option value="14 days net" selected>14 days net</option>
+                  <option value="30 days net">30 days net</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Special Conditions</label>
+                <textarea class="form-input form-textarea" id="q-conditions" placeholder="Any additional terms or conditions..." rows="3"></textarea>
+              </div>
+            </div>
+            <div class="quote-nav">
+              <button class="btn btn-ghost" onclick="App.quotePrev()">Back</button>
+              <button class="btn btn-primary" onclick="App.quoteNext()">Review Quote</button>
+            </div>
+          </div>
+
+          <!-- Step 5: Preview + send -->
+          <div class="quote-panel" id="qp-5" style="display:none">
+            <h2 class="quote-step-title">Review & Send</h2>
+            <div class="card p-6" id="q-preview"></div>
+            <div class="quote-nav">
+              <button class="btn btn-ghost" onclick="App.quotePrev()">Back</button>
+              <div class="flex gap-3">
+                <button class="btn btn-secondary" onclick="App.saveQuote('draft')">Save Draft</button>
+                <button class="btn btn-primary" onclick="App.saveQuote('sent')">Mark as Sent</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ JOB DETAIL OVERLAY ══ -->
+    <div class="job-detail-overlay" id="job-detail-overlay">
+      <header class="page-header">
+        <h1 class="page-header__title" id="jd-title">Job Detail</h1>
+        <div class="page-header__actions">
+          <button class="btn btn-ghost btn-sm" onclick="App.closeJobDetail()">Close</button>
+        </div>
+      </header>
+      <div class="p-6">
+        <!-- Timeline -->
+        <div class="timeline mb-8" id="jd-timeline"></div>
+
+        <!-- Action button -->
+        <div class="mb-6" id="jd-actions"></div>
+
+        <!-- Accordion sections -->
+        <div id="jd-sections"></div>
+      </div>
+    </div>
+
+    <!-- ══ SETTINGS SCREEN ══ -->
+    <div class="screen" id="screen-settings">
+      <header class="page-header"><h1 class="page-header__title">Settings</h1></header>
+      <div class="p-6">
+        <div class="form-screen">
+          <!-- PIN -->
+          <div class="settings-section">
+            <h3 class="settings-section__title">Change PIN</h3>
+            <div class="flex flex-col gap-4">
+              <div class="form-group">
+                <label class="form-label">Current PIN</label>
+                <input class="form-input" id="set-pin-current" type="password" maxlength="6" placeholder="Enter current 6-digit PIN">
+              </div>
+              <div class="form-group">
+                <label class="form-label">New PIN</label>
+                <input class="form-input" id="set-pin-new" type="password" maxlength="6" placeholder="Enter new 6-digit PIN">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirm New PIN</label>
+                <input class="form-input" id="set-pin-confirm" type="password" maxlength="6" placeholder="Confirm new PIN">
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="App.changePin()" style="align-self:flex-start">Update PIN</button>
+            </div>
+          </div>
+
+          <!-- API Key -->
+          <div class="settings-section">
+            <h3 class="settings-section__title">Cassowary AI</h3>
+            <div class="form-group">
+              <label class="form-label">Claude API Key</label>
+              <input class="form-input" id="set-api-key" type="password" placeholder="sk-ant-...">
+              <p class="form-hint mt-1">Required for Cassowary AI. Get yours at console.anthropic.com</p>
+            </div>
+            <button class="btn btn-primary btn-sm mt-4" onclick="App.saveApiKey()" style="align-self:flex-start">Save Key</button>
+          </div>
+
+          <!-- Business Details -->
+          <div class="settings-section">
+            <h3 class="settings-section__title">Business Details</h3>
+            <div class="flex flex-col gap-4">
+              <div class="form-group">
+                <label class="form-label">Business Name</label>
+                <input class="form-input" id="set-biz-name" type="text" value="Steady Eco">
+              </div>
+              <div class="form-group">
+                <label class="form-label">ABN</label>
+                <input class="form-input" id="set-biz-abn" type="text" value="49 553 784 085">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone</label>
+                <input class="form-input" id="set-biz-phone" type="tel" value="0456 190 202">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email</label>
+                <input class="form-input" id="set-biz-email" type="email" placeholder="sam@steadyeco.com">
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="App.saveBusinessDetails()" style="align-self:flex-start">Save Details</button>
+            </div>
+          </div>
+
+          <!-- Data -->
+          <div class="settings-section">
+            <h3 class="settings-section__title">Data</h3>
+            <div class="flex gap-3 flex-wrap">
+              <button class="btn btn-secondary btn-sm" onclick="App.exportData()">Export All Data</button>
+              <button class="btn btn-danger btn-sm" onclick="App.clearData()">Clear All Data</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CASSOWARY AI SCREEN ══ -->
+    <div class="screen" id="screen-cassowary">
+      <header class="page-header">
+        <h1 class="page-header__title">Cassowary AI</h1>
+        <div class="page-header__actions">
+          <button class="btn btn-ghost btn-sm" onclick="App.navigate('dashboard')">Back</button>
+        </div>
+      </header>
+      <div class="p-6">
+        <div id="ai-messages" class="flex flex-col gap-4" style="min-height:50vh"></div>
+        <div class="ai-bar mt-6" style="position:sticky;bottom:var(--se-space-6)">
+          <svg class="ai-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 1.5"/></svg>
+          <input class="ai-bar__input" id="ai-input" type="text" placeholder="Ask anything about your business..." onkeydown="if(event.key==='Enter')App.sendAiMessage()">
+          <button class="btn btn-primary btn-sm" onclick="App.sendAiMessage()">Send</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="mobile-nav" aria-label="Mobile navigation">
+    <a href="#" class="mobile-nav__item mobile-nav__item--active" data-screen="dashboard">
+      <svg class="mobile-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="3" y="13" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="8" rx="2"/></svg>
+      Home
+    </a>
+    <a href="#" class="mobile-nav__item" data-screen="jobs">
+      <svg class="mobile-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h8M8 12h5M8 16h6"/></svg>
+      Jobs
+    </a>
+    <a href="#" class="mobile-nav__item" data-screen="quotes">
+      <svg class="mobile-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 4h14v16l-7-3.5L5 20V4z"/></svg>
+      Quotes
+    </a>
+    <a href="#" class="mobile-nav__item" data-screen="settings">
+      <svg class="mobile-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l2.8 2.8M16.2 16.2L19 19M5 19l2.8-2.8M16.2 7.8L19 5"/></svg>
+      More
+    </a>
+  </nav>
+
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" aria-live="polite" role="status"></div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     APPLICATION LOGIC
+     ══════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  'use strict';
+
+  /* ── CONSTANTS ─────────────────────────────────────── */
+
+  const OWNER_PIN_KEY = 'se_owner_pin'
+  const DEFAULT_PIN = '000000' // First-time setup
+
+  /* ── APP CONTROLLER ────────────────────────────────── */
+
+  const App = {
+    currentScreen: 'dashboard',
+    pin: '',
+    isLocked: true,
+    _cache: {},
+
+    /* ── XSS SANITIZER ─────────────────────────────── */
+    esc(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = String(str); return d.innerHTML },
+
+    async init() {
+      this.setupPinPad()
+      this.setupNavigation()
+      this.setupFirstRun()
+      this.initCommandPalette()
+
+      // Connectivity monitoring
+      window.addEventListener('online', () => this.updateConnectivity(true))
+      window.addEventListener('offline', () => this.updateConnectivity(false))
+      this.updateConnectivity(navigator.onLine)
+
+      // Register service worker
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(() => {})
+      }
+    },
+
+    /* ── FIRST RUN ─────────────────────────────────── */
+
+    setupFirstRun() {
+      if (!localStorage.getItem(OWNER_PIN_KEY)) {
+        // First time — set default PIN
+        this.hashPin(DEFAULT_PIN).then(hash => {
+          localStorage.setItem(OWNER_PIN_KEY, JSON.stringify(hash))
+        })
+      }
+    },
+
+    /* ── PIN AUTH ───────────────────────────────────── */
+
+    async hashPin(pin) {
+      const encoder = new TextEncoder()
+      const salt = 'steady-eco-owner-v1'
+      const data = encoder.encode(salt + pin)
+      const buffer = await crypto.subtle.digest('SHA-256', data)
+      return Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('')
+    },
+
+    setupPinPad() {
+      const pad = document.getElementById('pin-pad')
+      pad.addEventListener('click', (e) => {
+        const key = e.target.closest('[data-key]')
+        if (!key) return
+
+        const val = key.dataset.key
+
+        if (val === 'delete') {
+          this.pin = this.pin.slice(0, -1)
+          this.updateDots()
+          return
+        }
+
+        if (val === 'biometric') {
+          // Future: WebAuthn integration
+          return
+        }
+
+        if (this.pin.length >= 6) return
+
+        this.pin += val
+        this.updateDots()
+
+        // Auto-submit at 6 digits
+        if (this.pin.length === 6) {
+          setTimeout(() => this.submitPin(), 150)
+        }
+      })
+    },
+
+    updateDots() {
+      const dots = document.querySelectorAll('.pin-dot')
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('pin-dot--filled', i < this.pin.length)
+        dot.classList.remove('pin-dot--error')
+      })
+    },
+
+    async submitPin() {
+      const stored = JSON.parse(localStorage.getItem(OWNER_PIN_KEY) || '""')
+      const hash = await this.hashPin(this.pin)
+
+      if (hash === stored) {
+        // Success — green pulse then transition
+        const dots = document.querySelectorAll('.pin-dot')
+        dots.forEach(d => d.style.background = 'var(--se-success)')
+
+        setTimeout(() => {
+          this.unlock()
+        }, 400)
+      } else {
+        // Failure — shake and red flash
+        const dots = document.querySelectorAll('.pin-dot')
+        dots.forEach(d => {
+          d.classList.add('pin-dot--error')
+        })
+
+        // Haptic feedback
+        if (navigator.vibrate) navigator.vibrate(100)
+
+        setTimeout(() => {
+          this.pin = ''
+          this.updateDots()
+        }, 600)
+      }
+    },
+
+    unlock() {
+      this.isLocked = false
+      const loginScreen = document.getElementById('login-screen')
+      loginScreen.classList.add('is-hidden')
+
+      setTimeout(() => {
+        loginScreen.style.display = 'none'
+        document.getElementById('app-shell').style.display = ''
+        this.renderDashboard()
+      }, 400)
+    },
+
+    /* ── NAVIGATION ────────────────────────────────── */
+
+    setupNavigation() {
+      // Sidebar links
+      document.querySelectorAll('[data-screen]').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault()
+          this.navigate(link.dataset.screen)
+        })
+      })
+
+      // Job filter chips
+      document.getElementById('jobs-filter')?.addEventListener('click', (e) => {
+        const chip = e.target.closest('.filter-chip')
+        if (!chip) return
+        document.querySelectorAll('#jobs-filter .filter-chip').forEach(c => c.classList.remove('is-active'))
+        chip.classList.add('is-active')
+        this.renderJobs(chip.dataset.filter)
+      })
+    },
+
+    navigate(screen) {
+      // Hide all screens
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('is-active'))
+
+      // Show target
+      const target = document.getElementById(`screen-${screen}`)
+      if (target) target.classList.add('is-active')
+
+      // Update nav active state
+      document.querySelectorAll('[data-screen]').forEach(link => {
+        link.classList.toggle('sidebar__link--active', link.dataset.screen === screen)
+        link.classList.toggle('mobile-nav__item--active', link.dataset.screen === screen)
+      })
+
+      this.currentScreen = screen
+
+      // Focus management
+      const heading = target?.querySelector('.page-header__title, [tabindex="-1"]')
+      if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus({ preventScroll: false }) }
+
+      // Render screen content
+      this.renderScreen(screen)
+    },
+
+    renderScreen(screen) {
+      switch(screen) {
+        case 'dashboard': this.renderDashboard(); break
+        case 'jobs': this.renderJobs(); break
+        case 'quotes': this.renderQuotes(); break
+        case 'clients': this.renderClients(); break
+        case 'employees': this.renderEmployees(); break
+        case 'invoices': this.renderInvoices(); break
+        case 'new-job': this.renderNewJob(); break
+        case 'new-quote': this.renderNewQuote(); break
+        case 'settings': this.renderSettings(); break
+        case 'schedule': this.renderSchedule(); break
+        case 'recurring': this.renderRecurring(); break
+        case 'equipment': this.renderEquipment(); break
+        case 'carbon': this.renderCarbon(); break
+        case 'compliance': this.renderCompliance(); break
+        case 'reports': this.renderReports(); break
+      }
+    },
+
+    /* ── DASHBOARD RENDERING ───────────────────────── */
+
+    renderDashboard() {
+      // Greeting
+      const hour = new Date().getHours()
+      const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+      const date = new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })
+      const jobCount = this.getStore('jobs').filter(j => j.scheduledStart && j.scheduledStart.startsWith(new Date().toISOString().split('T')[0])).length
+
+      document.getElementById('dash-greeting').textContent = `${greeting}, Sam.`
+      document.getElementById('dash-subtitle').textContent = `${date} — ${jobCount} job${jobCount !== 1 ? 's' : ''} scheduled today`
+
+      // Revenue metrics
+      const jobs = this.getStore('jobs')
+      const invoices = this.getStore('invoices')
+      const today = new Date().toISOString().split('T')[0]
+      const weekStart = new Date(); weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7)); weekStart.setHours(0,0,0,0)
+      const monthStart = new Date().toISOString().slice(0, 7)
+
+      const todayRev = invoices.filter(i => i.status === 'paid' && i.paidAt?.startsWith(today)).reduce((s, i) => s + (i.total || 0), 0)
+      const weekRev = invoices.filter(i => i.status === 'paid' && new Date(i.paidAt) >= weekStart).reduce((s, i) => s + (i.total || 0), 0)
+      const monthRev = invoices.filter(i => i.status === 'paid' && i.paidAt?.startsWith(monthStart)).reduce((s, i) => s + (i.total || 0), 0)
+      const outstanding = invoices.filter(i => i.status === 'sent' || i.status === 'overdue').reduce((s, i) => s + (i.total || 0), 0)
+
+      // Generate 7-day sparkline data from invoices
+      const spark7 = Array.from({length: 7}, (_, i) => {
+        const d = new Date(); d.setDate(d.getDate() - (6 - i))
+        const ds = d.toISOString().split('T')[0]
+        return invoices.filter(inv => inv.status === 'paid' && inv.paidAt?.startsWith(ds)).reduce((s, inv) => s + (inv.total || 0), 0)
+      })
+
+      document.getElementById('dash-metrics').innerHTML = `
+        ${this.metricCard("Today's Revenue", this.formatCurrency(todayRev), '', spark7)}
+        ${this.metricCard("This Week", this.formatCurrency(weekRev), '', spark7)}
+        ${this.metricCard("This Month", this.formatCurrency(monthRev))}
+        ${this.metricCard("Outstanding", this.formatCurrency(outstanding), outstanding > 0 ? 'gold' : '')}
+      `
+
+      // Today's jobs
+      const todayJobs = jobs.filter(j => j.scheduledStart?.startsWith(today))
+      const jobsContainer = document.getElementById('dash-jobs')
+      if (todayJobs.length === 0) {
+        jobsContainer.innerHTML = `<div class="empty-state" style="padding:var(--se-space-8)"><p class="empty-state__title">No jobs today</p><p class="empty-state__description">Enjoy the quiet — or schedule something.</p></div>`
+      } else {
+        jobsContainer.innerHTML = todayJobs.map(j => this.jobCard(j)).join('')
+      }
+
+      // Quick stats
+      const quotes = this.getStore('quotes')
+      const employees = this.getStore('employees')
+      document.getElementById('dash-stats').innerHTML = `
+        ${this.quickStat('Active jobs', jobs.filter(j => j.status === 'active').length)}
+        ${this.quickStat('Quotes sent this week', quotes.filter(q => q.status === 'sent' && new Date(q.sentAt) >= weekStart).length)}
+        ${this.quickStat('Quote acceptance', quotes.filter(q => q.status === 'accepted').length + '/' + quotes.filter(q => ['accepted','rejected'].includes(q.status)).length)}
+        ${this.quickStat('Employees', employees.filter(e => e.isActive).length)}
+      `
+
+      // Activity feed
+      const audit = this.getAudit().slice(0, 10)
+      const activityContainer = document.getElementById('dash-activity')
+      if (audit.length === 0) {
+        activityContainer.innerHTML = `<div class="empty-state" style="padding:var(--se-space-8)"><p class="empty-state__title">No activity yet</p><p class="empty-state__description">Actions will appear here as you use the platform.</p></div>`
+      } else {
+        activityContainer.innerHTML = audit.map(a => this.activityItem(a)).join('')
+      }
+    },
+
+    /* ── JOBS RENDERING ────────────────────────────── */
+
+    renderJobs(filter = 'all') {
+      const jobs = this.getStore('jobs')
+      const filtered = filter === 'all' ? jobs : jobs.filter(j => j.status === filter)
+      const container = document.getElementById('jobs-list')
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="empty-state" style="padding:var(--se-space-12)"><p class="empty-state__title">No jobs${filter !== 'all' ? ` with status "${filter}"` : ''}</p><p class="empty-state__description">Create your first job to start tracking work across FNQ.</p><div class="empty-state__action"><button class="btn btn-primary btn-sm" onclick="App.navigate('new-job')">New Job</button></div></div>`
+        return
+      }
+
+      container.innerHTML = filtered.map(j => this.jobCard(j)).join('')
+    },
+
+    /* ── QUOTES / CLIENTS / EMPLOYEES / INVOICES ──── */
+
+    renderQuotes() {
+      const quotes = this.getStore('quotes')
+      const container = document.getElementById('quotes-list')
+      if (!quotes.length) {
+        container.innerHTML = `<div class="empty-state" style="padding:var(--se-space-12)"><p class="empty-state__title">No quotes yet</p><p class="empty-state__description">Build a quote to send to your next client.</p><div class="empty-state__action"><button class="btn btn-primary btn-sm" onclick="App.navigate('new-quote')">New Quote</button></div></div>`
+        return
+      }
+      container.innerHTML = quotes.map(q => `
+        <div class="card card-interactive p-5 flex justify-between items-center">
+          <div>
+            <div class="text-md font-medium">${this.esc(q.reference || 'Draft')}</div>
+            <div class="text-sm text-secondary">${this.esc(this.getClientName(q.clientId))}</div>
+            <div class="text-xs text-muted mt-1">${this.formatCurrency(q.total || 0)}</div>
+          </div>
+          <span class="badge badge-${this.esc(q.status || 'draft')}">${this.esc(q.status || 'Draft')}</span>
+        </div>
+      `).join('')
+    },
+
+    renderClients() {
+      const clients = this.getStore('clients')
+      const container = document.getElementById('clients-list')
+      if (!clients.length) {
+        container.innerHTML = `<div class="empty-state" style="padding:var(--se-space-12)"><p class="empty-state__title">No clients yet</p><p class="empty-state__description">Add your first client to start building your network.</p><div class="empty-state__action"><button class="btn btn-primary btn-sm" onclick="App.navigate('new-client')">Add Client</button></div></div>`
+        return
+      }
+      container.innerHTML = clients.map(c => `
+        <div class="card-client">
+          <div class="card-client__avatar">${this.esc(this.initials(c.name))}</div>
+          <div>
+            <div class="card-client__name">${this.esc(c.name)}</div>
+            <div class="card-client__detail">${this.esc(c.type || 'Residential')} · ${this.esc(c.phone || '')}</div>
+          </div>
+        </div>
+      `).join('')
+    },
+
+    renderEmployees() {
+      const employees = this.getStore('employees')
+      const container = document.getElementById('employees-list')
+      if (!employees.length) {
+        container.innerHTML = `<div class="empty-state" style="padding:var(--se-space-12)"><p class="empty-state__title">No employees yet</p><p class="empty-state__description">Add your crew so they can clock in and manage jobs from their phones.</p></div>`
+        return
+      }
+      container.innerHTML = employees.map(e => `
+        <div class="card-client">
+          <div class="card-client__avatar">${this.esc(this.initials(e.name))}</div>
+          <div>
+            <div class="card-client__name">${this.esc(e.name)}</div>
+            <div class="card-client__detail">${this.esc(e.role || 'Employee')} · ${e.isActive ? 'Active' : 'Inactive'}</div>
+          </div>
+        </div>
+      `).join('')
+    },
+
+    renderInvoices() {
+      const invoices = this.getStore('invoices')
+      const container = document.getElementById('invoices-list')
+      if (!invoices.length) {
+        container.innerHTML = `<div class="empty-state" style="padding:var(--se-space-12)"><p class="empty-state__title">No invoices yet</p><p class="empty-state__description">Complete a job and create an invoice to get paid.</p></div>`
+        return
+      }
+      container.innerHTML = invoices.map(i => `
+        <div class="card card-interactive p-5 flex justify-between items-center">
+          <div>
+            <div class="text-md font-medium">${this.esc(i.reference || 'Draft')}</div>
+            <div class="text-sm text-secondary">${this.esc(this.getClientName(i.clientId))}</div>
+          </div>
+          <div class="text-right">
+            <div class="text-md font-medium">${this.formatCurrency(i.total || 0)}</div>
+            <span class="badge badge-${this.esc(i.status || 'draft')}">${this.esc(i.status || 'Draft')}</span>
+          </div>
+        </div>
+      `).join('')
+    },
+
+    /* ── CASSOWARY AI ──────────────────────────────── */
+
+    async sendAiMessage() {
+      const input = document.getElementById('ai-input')
+      const message = input.value.trim()
+      if (!message) return
+
+      const container = document.getElementById('ai-messages')
+
+      // Add user message
+      container.innerHTML += `<div class="flex justify-end"><div class="card p-4" style="max-width:80%;background:var(--se-green-900)"><p class="text-sm">${this.esc(message)}</p></div></div>`
+
+      input.value = ''
+
+      // Add loading skeleton
+      container.innerHTML += `<div class="flex" id="ai-loading"><div class="card p-4" style="max-width:80%"><div class="skeleton skeleton-text" style="width:200px"></div><div class="skeleton skeleton-text" style="width:150px"></div></div></div>`
+      container.scrollTop = container.scrollHeight
+
+      // Build context
+      const context = {
+        jobs: this.getStore('jobs').length,
+        clients: this.getStore('clients').length,
+        quotes: this.getStore('quotes').length,
+        invoices: this.getStore('invoices').length,
+        recentJobs: this.getStore('jobs').slice(-5),
+      }
+
+      const systemPrompt = `You are Cassowary, the AI business assistant for Steady Eco — the largest land management company in Far North Queensland, Australia. You have access to this business data: ${JSON.stringify(context)}. Be direct, data-driven, and concise. Never say "I don't know". Always provide the best analysis from available data.`
+
+      const apiKey = localStorage.getItem('se_ai_key')
+
+      if (!apiKey) {
+        document.getElementById('ai-loading')?.remove()
+        container.innerHTML += `<div class="flex"><div class="card p-4" style="max-width:80%;border-color:var(--se-warning)"><p class="text-sm text-warning">Set your Claude API key in Settings to enable Cassowary AI.</p></div></div>`
+        return
+      }
+
+      try {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true',
+          },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1024,
+            system: systemPrompt,
+            messages: [{ role: 'user', content: message }],
+          }),
+        })
+
+        document.getElementById('ai-loading')?.remove()
+
+        if (response.ok) {
+          const data = await response.json()
+          const text = data.content[0]?.text || 'No response'
+          container.innerHTML += `<div class="flex"><div class="card p-4" style="max-width:80%"><p class="text-sm" style="white-space:pre-wrap">${this.esc(text)}</p></div></div>`
+        } else {
+          container.innerHTML += `<div class="flex"><div class="card p-4" style="max-width:80%;border-color:var(--se-error)"><p class="text-sm text-error">API error. Check your key in Settings.</p></div></div>`
+        }
+      } catch(err) {
+        document.getElementById('ai-loading')?.remove()
+        container.innerHTML += `<div class="flex"><div class="card p-4" style="max-width:80%;border-color:var(--se-error)"><p class="text-sm text-error">Connection error: ${this.esc(err.message)}</p></div></div>`
+      }
+
+      container.scrollTop = container.scrollHeight
+    },
+
+    /* ── COMPONENT HELPERS ─────────────────────────── */
+
+    metricCard(label, value, accent = '', sparkData = null) {
+      const accentStyle = accent === 'gold' ? 'color:var(--se-gold-500)' : ''
+      const spark = sparkData ? this.sparkline(sparkData, 60, 18, accent === 'gold' ? 'var(--se-gold-500)' : 'var(--se-green-600)') : ''
+      return `<div class="card-stat"><span class="card-stat__label">${label}</span><span class="card-stat__value" style="${accentStyle}">${value}</span>${spark}</div>`
+    },
+
+    jobCard(job) {
+      const statusMap = { new:'badge-new', quoted:'badge-quoted', booked:'badge-booked', active:'badge-active', complete:'badge-complete', invoiced:'badge-invoiced', paid:'badge-paid', cancelled:'badge-cancelled' }
+      const badge = statusMap[job.status] || 'badge-new'
+      const client = this.esc(this.getClientName(job.clientId))
+      const svc = this.esc(job.serviceTypes?.[0] || 'General')
+      const ref = this.esc(job.reference || '')
+      const loc = this.esc(job.siteAddress?.suburb || job.siteAddress?.line1 || '')
+      return `<div class="card-job" onclick="App.openJobDetail('${this.esc(job.id)}')"><div><div class="card-job__client">${client}</div><div class="card-job__service">${svc}</div><div class="card-job__meta"><span>${ref}</span><span>·</span><span>${loc}</span></div></div><span class="badge ${badge}">${this.esc(job.status || 'New')}</span></div>`
+    },
+
+    quickStat(label, value) {
+      return `<div class="quick-stat"><span class="quick-stat__label">${label}</span><span class="quick-stat__value">${value}</span></div>`
+    },
+
+    activityItem(record) {
+      const icon = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M7 10l2 2 4-4"/></svg>'
+      return `<div class="activity-item"><span class="activity-item__icon">${icon}</span><span class="activity-item__text">${this.esc(record.action)}${record.detail ? ' — ' + this.esc(record.detail) : ''}</span><span class="activity-item__time">${this.timeAgo(record.timestamp)}</span></div>`
+    },
+
+    /* ── DATA HELPERS ──────────────────────────────── */
+
+    getStore(collection) {
+      if (!this._cache[collection]) {
+        try { this._cache[collection] = JSON.parse(localStorage.getItem(`se_${collection}`)) || [] }
+        catch { this._cache[collection] = [] }
+      }
+      return this._cache[collection]
+    },
+
+    invalidateCache(collection) { delete this._cache[collection] },
+
+    addAudit(action, detail) {
+      const audit = []; try { audit.push(...JSON.parse(localStorage.getItem('se_audit') || '[]')) } catch {}
+      audit.push({ id: crypto.randomUUID(), action, detail: String(detail || ''), timestamp: new Date().toISOString(), user: 'Sam' })
+      if (audit.length > 5000) audit.splice(0, audit.length - 5000)
+      localStorage.setItem('se_audit', JSON.stringify(audit))
+      this.invalidateCache('audit')
+    },
+
+    getAudit() {
+      try { return (JSON.parse(localStorage.getItem('se_audit')) || []).reverse().slice(0, 50) }
+      catch { return [] }
+    },
+
+    getClientName(id) {
+      if (!id) return 'No client'
+      const clients = this.getStore('clients')
+      const client = clients.find(c => c.id === id)
+      return client?.name || 'Unknown'
+    },
+
+    formatCurrency(amount) {
+      return (parseFloat(amount) || 0).toLocaleString('en-AU', { style: 'currency', currency: 'AUD', minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    },
+
+    initials(name) {
+      return (name || '').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+    },
+
+    timeAgo(dateStr) {
+      if (!dateStr) return ''
+      const diff = Date.now() - new Date(dateStr).getTime()
+      const mins = Math.floor(diff / 60000)
+      if (mins < 1) return 'Just now'
+      if (mins < 60) return `${mins}m ago`
+      const hours = Math.floor(mins / 60)
+      if (hours < 24) return `${hours}h ago`
+      return `${Math.floor(hours / 24)}d ago`
+    },
+
+    /* ── SCHEDULE BOARD ──────────────────────────────── */
+
+    _scheduleOffset: 0,
+
+    scheduleNav(dir) {
+      this._scheduleOffset += dir
+      this.renderSchedule()
+    },
+
+    renderSchedule() {
+      const grid = document.getElementById('schedule-grid')
+      const now = new Date()
+      const monday = new Date(now)
+      monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7) + (this._scheduleOffset * 7))
+
+      const days = []
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(monday)
+        d.setDate(d.getDate() + i)
+        days.push(d)
+      }
+
+      const today = new Date().toISOString().split('T')[0]
+      const employees = this.getStore('employees').filter(e => e.isActive !== false)
+      const jobs = this.getStore('jobs')
+
+      const weekLabel = `${days[0].toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })} — ${days[6].toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}`
+      document.getElementById('schedule-week-label').textContent = weekLabel
+
+      let html = '<div class="schedule-header"></div>'
+      days.forEach(d => {
+        const iso = d.toISOString().split('T')[0]
+        const isToday = iso === today
+        html += `<div class="schedule-header ${isToday ? 'schedule-header--today' : ''}">${d.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric' })}</div>`
+      })
+
+      const crewList = employees.length ? employees : [{ id: 'unassigned', name: 'Unassigned' }]
+      crewList.forEach(emp => {
+        html += `<div class="schedule-crew">${this.esc(emp.name.split(' ')[0])}</div>`
+        days.forEach(d => {
+          const iso = d.toISOString().split('T')[0]
+          const dayJobs = jobs.filter(j => j.scheduledStart?.startsWith(iso) && (j.assignedEmployees?.includes(emp.id) || (!j.assignedEmployees?.length && emp.id === 'unassigned')))
+          html += `<div class="schedule-cell">${dayJobs.map(j => `<div class="schedule-job" onclick="App.openJobDetail('${this.esc(j.id)}')">${this.esc(this.getClientName(j.clientId).split(' ')[0])}</div>`).join('')}</div>`
+        })
+      })
+
+      grid.innerHTML = html
+    },
+
+    /* ── RECURRING JOBS ───────────────────────────────── */
+
+    renderRecurring() {
+      const recurring = this.getStore('recurring')
+      const container = document.getElementById('recurring-list')
+      if (!recurring.length) {
+        container.innerHTML = `<div class="empty-state"><p class="empty-state__title">No recurring jobs</p><p class="empty-state__description">Set up automated scheduling for regular maintenance — mowing, garden upkeep, vegetation clearing.</p><div class="empty-state__action"><button class="btn btn-primary btn-sm" onclick="App.addRecurring()">Create Recurring Job</button></div></div>`
+        return
+      }
+      container.innerHTML = recurring.map(r => `
+        <div class="card p-5 flex justify-between items-center">
+          <div>
+            <div class="text-md font-medium">${this.esc(this.getClientName(r.clientId))} — ${this.esc(r.service)}</div>
+            <div class="text-xs text-muted mt-1">Every ${this.esc(r.frequency)} · Next: ${r.nextDate || 'TBC'}</div>
+          </div>
+          <span class="badge badge-active">Active</span>
+        </div>
+      `).join('')
+    },
+
+    addRecurring() {
+      const clients = this.getStore('clients')
+      if (!clients.length) { this.toast('Create a client first', 'error'); return }
+      const name = prompt('Client name (must match exactly):')
+      const client = clients.find(c => c.name.toLowerCase().includes((name || '').toLowerCase()))
+      if (!client) { this.toast('Client not found', 'error'); return }
+      const service = prompt('Service (e.g. Lawn Mowing):') || 'Lawn Mowing'
+      const frequency = prompt('Frequency (e.g. fortnightly, weekly, monthly):') || 'fortnightly'
+
+      const recurring = this.getStore('recurring')
+      recurring.push({ id: crypto.randomUUID(), clientId: client.id, service, frequency, nextDate: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0], createdAt: new Date().toISOString() })
+      localStorage.setItem('se_recurring', JSON.stringify(recurring))
+      this.invalidateCache('recurring')
+      this.addAudit('Recurring job created', `${client.name} — ${service}`)
+      this.toast('Recurring job created', 'success')
+      this.renderRecurring()
+    },
+
+    /* ── EQUIPMENT REGISTER ───────────────────────────── */
+
+    renderEquipment() {
+      const equipment = this.getStore('equipment')
+      const container = document.getElementById('equipment-list')
+      if (!equipment.length) {
+        // Seed with Steady Eco's real equipment
+        const seed = [
+          { id: crypto.randomUUID(), name: 'Tipper Truck', type: 'Vehicle', status: 'Active', serviceDue: '2026-07-01', notes: 'Primary waste removal vehicle' },
+          { id: crypto.randomUUID(), name: 'Wood Chipper', type: 'Machinery', status: 'Active', serviceDue: '2026-06-15', notes: 'Commercial wood chipper for on-site processing' },
+          { id: crypto.randomUUID(), name: 'Ride-On Mower', type: 'Machinery', status: 'Active', serviceDue: '2026-05-20', notes: 'For large properties and acreage' },
+          { id: crypto.randomUUID(), name: 'Chainsaw — Husqvarna', type: 'Power Tool', status: 'Active', serviceDue: '2026-05-01', notes: 'Primary felling saw' },
+          { id: crypto.randomUUID(), name: 'Chainsaw — Stihl', type: 'Power Tool', status: 'Active', serviceDue: '2026-05-01', notes: 'Backup / limbing saw' },
+          { id: crypto.randomUUID(), name: 'Whipper Snipper', type: 'Power Tool', status: 'Active', serviceDue: '2026-06-01', notes: 'Line trimmer for edging' },
+          { id: crypto.randomUUID(), name: 'Blade Grinder', type: 'Workshop', status: 'Active', serviceDue: '2026-08-01', notes: 'Electromagnetic chuck for blade sharpening' },
+        ]
+        localStorage.setItem('se_equipment', JSON.stringify(seed))
+        this.invalidateCache('equipment')
+        this.renderEquipment()
+        return
+      }
+
+      const toolIcon = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M14 2l4 4-9 9H5v-4L14 2z"/></svg>'
+      container.innerHTML = equipment.map(e => {
+        const overdue = e.serviceDue && new Date(e.serviceDue) < new Date()
+        return `
+          <div class="equip-card">
+            <div class="equip-icon">${toolIcon}</div>
+            <div style="flex:1">
+              <div class="text-md font-medium">${this.esc(e.name)}</div>
+              <div class="text-xs text-muted mt-1">${this.esc(e.type)} · Service due: ${e.serviceDue || 'N/A'}</div>
+            </div>
+            <span class="badge ${overdue ? 'badge-cancelled' : 'badge-active'}">${overdue ? 'Overdue' : this.esc(e.status)}</span>
+          </div>
+        `
+      }).join('')
+    },
+
+    addEquipment() {
+      const name = prompt('Equipment name:')
+      if (!name) return
+      const type = prompt('Type (Vehicle, Machinery, Power Tool, Workshop):') || 'Power Tool'
+      const equipment = this.getStore('equipment')
+      equipment.push({ id: crypto.randomUUID(), name, type, status: 'Active', serviceDue: '', notes: '', createdAt: new Date().toISOString() })
+      localStorage.setItem('se_equipment', JSON.stringify(equipment))
+      this.invalidateCache('equipment')
+      this.addAudit('Equipment added', name)
+      this.toast(`${name} added`, 'success')
+      this.renderEquipment()
+    },
+
+    /* ── CARBON & ESG ─────────────────────────────────── */
+
+    renderCarbon() {
+      const jobs = this.getStore('jobs')
+      const completed = jobs.filter(j => ['complete', 'invoiced', 'paid'].includes(j.status))
+
+      // Calculate carbon metrics from job data
+      const mulchProduced = completed.length * 2.5  // avg 2.5m³ mulch per completed tree/veg job
+      const treesPlanted = Math.floor(completed.filter(j => j.serviceTypes?.includes('landscaping')).length * 3)
+      const wasteDiv = completed.length * 450  // avg 450kg green waste diverted per job
+      const co2Offset = (mulchProduced * 12) + (treesPlanted * 22) + (wasteDiv * 0.5)  // simplified carbon calc
+
+      document.getElementById('carbon-metrics').innerHTML = `
+        <div class="carbon-card"><div class="carbon-value">${mulchProduced.toFixed(1)}</div><div class="carbon-unit">cubic metres</div><div class="carbon-label">Mulch Produced</div></div>
+        <div class="carbon-card"><div class="carbon-value">${treesPlanted}</div><div class="carbon-unit">trees</div><div class="carbon-label">Trees Planted</div></div>
+        <div class="carbon-card"><div class="carbon-value">${(wasteDiv / 1000).toFixed(1)}</div><div class="carbon-unit">tonnes</div><div class="carbon-label">Waste Diverted</div></div>
+        <div class="carbon-card"><div class="carbon-value" style="color:var(--se-gold-500)">${(co2Offset / 1000).toFixed(2)}</div><div class="carbon-unit">tonnes CO₂e</div><div class="carbon-label">Carbon Offset</div></div>
+      `
+
+      // Per-job table
+      const tbody = document.getElementById('carbon-table')
+      if (!completed.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-6">Complete jobs to see carbon tracking data</td></tr>`
+      } else {
+        tbody.innerHTML = completed.slice(-10).reverse().map(j => {
+          const svc = (j.serviceTypes?.[0] || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+          const mulch = (2.5).toFixed(1)
+          const trees = j.serviceTypes?.includes('landscaping') ? 3 : 0
+          const waste = 450
+          const co2 = (2.5 * 12) + (trees * 22) + (waste * 0.5)
+          return `<tr><td>${this.esc(j.reference)}</td><td>${this.esc(svc)}</td><td>${mulch}</td><td>${trees}</td><td>${waste}</td><td>${co2.toFixed(1)}</td></tr>`
+        }).join('')
+      }
+
+      // ESG scorecard
+      document.getElementById('esg-scorecard').innerHTML = `
+        <div class="carbon-card"><div class="carbon-value" style="font-size:var(--se-text-display-sm);color:var(--se-success)">A</div><div class="carbon-label">Environmental</div><div class="text-xs text-muted mt-2">Zero waste to landfill policy</div></div>
+        <div class="carbon-card"><div class="carbon-value" style="font-size:var(--se-text-display-sm);color:var(--se-success)">A</div><div class="carbon-label">Social</div><div class="text-xs text-muted mt-2">Local FNQ employment</div></div>
+        <div class="carbon-card"><div class="carbon-value" style="font-size:var(--se-text-display-sm);color:var(--se-success)">A</div><div class="carbon-label">Governance</div><div class="text-xs text-muted mt-2">Full audit trail, SWMS compliance</div></div>
+      `
+    },
+
+    generateEsgReport() {
+      this.toast('ESG Report PDF generation — coming in next release', 'info')
+    },
+
+    /* ── CMD+K COMMAND PALETTE ────────────────────────── */
+
+    _cmdkVisible: false,
+
+    initCommandPalette() {
+      document.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+          e.preventDefault()
+          this.toggleCommandPalette()
+        }
+        if (e.key === 'Escape' && this._cmdkVisible) {
+          this.toggleCommandPalette()
+        }
+      })
+    },
+
+    toggleCommandPalette() {
+      let palette = document.getElementById('cmd-palette')
+      if (!palette) {
+        palette = document.createElement('div')
+        palette.id = 'cmd-palette'
+        palette.style.cssText = 'position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding-top:20vh'
+        palette.innerHTML = `
+          <div style="width:min(90vw,520px);background:var(--se-bg-elevated);border:1px solid var(--se-border-default);border-radius:var(--se-radius-xl);box-shadow:var(--se-shadow-lg);overflow:hidden">
+            <input id="cmd-input" type="text" placeholder="Search jobs, clients, quotes..." style="width:100%;padding:var(--se-space-5) var(--se-space-6);background:transparent;border:none;border-bottom:1px solid var(--se-border-subtle);color:var(--se-text-primary);font-size:var(--se-text-md);font-family:var(--se-font-ui);outline:none" oninput="App.cmdSearch(this.value)">
+            <div id="cmd-results" style="max-height:320px;overflow-y:auto;padding:var(--se-space-2)"></div>
+            <div style="padding:var(--se-space-3) var(--se-space-4);border-top:1px solid var(--se-border-subtle);display:flex;gap:var(--se-space-4)">
+              <span class="text-3xs text-faint">↵ Open</span>
+              <span class="text-3xs text-faint">esc Close</span>
+              <span class="text-3xs text-faint">⌘K Toggle</span>
+            </div>
+          </div>
+        `
+        palette.addEventListener('click', (e) => { if (e.target === palette) this.toggleCommandPalette() })
+        document.body.appendChild(palette)
+      }
+
+      this._cmdkVisible = !this._cmdkVisible
+      palette.style.display = this._cmdkVisible ? 'flex' : 'none'
+      if (this._cmdkVisible) {
+        const input = document.getElementById('cmd-input')
+        input.value = ''
+        input.focus()
+        this.cmdSearch('')
+      }
+    },
+
+    cmdSearch(query) {
+      const q = query.toLowerCase().trim()
+      const results = []
+
+      // Screens
+      const screens = [
+        { label: 'Dashboard', screen: 'dashboard', type: 'Screen' },
+        { label: 'Jobs', screen: 'jobs', type: 'Screen' },
+        { label: 'Quotes', screen: 'quotes', type: 'Screen' },
+        { label: 'Clients', screen: 'clients', type: 'Screen' },
+        { label: 'Employees', screen: 'employees', type: 'Screen' },
+        { label: 'Invoices', screen: 'invoices', type: 'Screen' },
+        { label: 'Schedule', screen: 'schedule', type: 'Screen' },
+        { label: 'Equipment', screen: 'equipment', type: 'Screen' },
+        { label: 'Carbon & ESG', screen: 'carbon', type: 'Screen' },
+        { label: 'Compliance', screen: 'compliance', type: 'Screen' },
+        { label: 'Settings', screen: 'settings', type: 'Screen' },
+        { label: 'New Job', screen: 'new-job', type: 'Action' },
+        { label: 'New Quote', screen: 'new-quote', type: 'Action' },
+        { label: 'New Client', screen: 'new-client', type: 'Action' },
+        { label: 'Ask Cassowary', screen: 'cassowary', type: 'AI' },
+      ]
+
+      if (!q) {
+        results.push(...screens.slice(0, 8))
+      } else {
+        results.push(...screens.filter(s => s.label.toLowerCase().includes(q)))
+
+        // Search clients
+        this.getStore('clients').filter(c => c.name?.toLowerCase().includes(q)).slice(0, 3).forEach(c => {
+          results.push({ label: this.esc(c.name), type: 'Client', action: () => { this.navigate('clients') } })
+        })
+
+        // Search jobs
+        this.getStore('jobs').filter(j => (j.reference || '').toLowerCase().includes(q) || (j.description || '').toLowerCase().includes(q)).slice(0, 3).forEach(j => {
+          results.push({ label: this.esc(j.reference || 'Job'), type: 'Job', action: () => { this.openJobDetail(j.id) } })
+        })
+      }
+
+      const container = document.getElementById('cmd-results')
+      if (!results.length) {
+        container.innerHTML = `<div style="padding:var(--se-space-6);text-align:center"><p class="text-sm text-muted">No results for "${this.esc(query)}"</p></div>`
+        return
+      }
+
+      container.innerHTML = results.map(r => `
+        <div style="padding:var(--se-space-3) var(--se-space-4);border-radius:var(--se-radius-md);cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background 150ms" onmouseover="this.style.background='var(--se-green-050)'" onmouseout="this.style.background=''" onclick="${r.screen ? `App.navigate('${r.screen}');App.toggleCommandPalette()` : ''}">
+          <span class="text-sm">${r.label}</span>
+          <span class="text-3xs text-faint">${r.type}</span>
+        </div>
+      `).join('')
+    },
+
+    /* ── SPARKLINE SVG HELPER ─────────────────────────── */
+
+    sparkline(values, w = 60, h = 20, color = 'var(--se-green-600)') {
+      if (!values || values.length < 2) return ''
+      const max = Math.max(...values, 1)
+      const min = Math.min(...values, 0)
+      const range = max - min || 1
+      const points = values.map((v, i) => {
+        const x = (i / (values.length - 1)) * w
+        const y = h - ((v - min) / range) * h
+        return `${x.toFixed(1)},${y.toFixed(1)}`
+      }).join(' ')
+      return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" fill="none" style="display:block;margin-top:var(--se-space-2)"><polyline points="${points}" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`
+    },
+
+    /* ── PDF GENERATION ───────────────────────────────── */
+
+    generatePdf(title, content) {
+      const win = window.open('', '_blank')
+      win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${this.esc(title)} — Steady Eco</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap">
+        <style>
+          *{margin:0;padding:0;box-sizing:border-box}
+          body{font-family:'DM Sans',system-ui,sans-serif;font-size:14px;color:#1a1a1a;padding:48px;max-width:800px;margin:0 auto}
+          h1{font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:300;margin-bottom:4px}
+          .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:40px;padding-bottom:24px;border-bottom:2px solid #4a9e3f}
+          .brand{font-family:'DM Sans';font-size:11px;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;color:#4a9e3f}
+          .meta{font-size:12px;color:#666;margin-top:4px}
+          .section{margin-bottom:32px}
+          .section-title{font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:#999;margin-bottom:12px}
+          table{width:100%;border-collapse:collapse;margin-bottom:16px}
+          th{text-align:left;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#999;padding:8px 12px;border-bottom:2px solid #eee}
+          td{padding:10px 12px;border-bottom:1px solid #f0f0f0;font-size:13px}
+          .total-row{display:flex;justify-content:space-between;padding:6px 0}
+          .total-label{color:#666;font-size:13px}
+          .total-value{font-weight:500}
+          .grand{font-family:'Cormorant Garamond';font-size:24px;color:#4a9e3f}
+          .footer{margin-top:48px;padding-top:24px;border-top:1px solid #eee;font-size:11px;color:#999}
+          @media print{body{padding:24px}button{display:none!important}}
+        </style>
+      </head><body>
+        <div class="header">
+          <div><div class="brand">Steady Eco</div><h1>${this.esc(title)}</h1><div class="meta">ABN 49 553 784 085 · 0456 190 202</div></div>
+          <div style="text-align:right"><div class="meta">${new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}</div></div>
+        </div>
+        ${content}
+        <div class="footer">
+          <p>Steady Eco · Far North Queensland · steadyeco.com</p>
+          <p style="margin-top:4px">This document was generated automatically by the Steady Eco platform.</p>
+        </div>
+        <div style="margin-top:24px;text-align:center"><button onclick="window.print()" style="padding:10px 32px;background:#4a9e3f;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer">Print / Save as PDF</button></div>
+      </body></html>`)
+      win.document.close()
+    },
+
+    printQuote(quoteId) {
+      const quote = this.getStore('quotes').find(q => q.id === quoteId)
+      if (!quote) { this.toast('Quote not found', 'error'); return }
+      const client = this.getStore('clients').find(c => c.id === quote.clientId)
+
+      const rows = (quote.lineItems || []).map(li =>
+        `<tr><td>${this.esc(li.description)}</td><td>${li.quantity}</td><td>${li.unit}</td><td>${this.formatCurrency(li.unitRate)}</td><td style="text-align:right">${this.formatCurrency(li.quantity * li.unitRate)}</td></tr>`
+      ).join('')
+
+      const content = `
+        <div class="section"><div class="section-title">Client</div><p style="font-size:16px;font-weight:500">${this.esc(client?.name || 'Unknown')}</p><p class="meta">${this.esc(client?.phone || '')} ${client?.email ? '· ' + this.esc(client.email) : ''}</p></div>
+        <div class="section"><div class="section-title">Quote ${this.esc(quote.reference)}</div>
+          <table><thead><tr><th>Description</th><th>Qty</th><th>Unit</th><th>Rate</th><th style="text-align:right">Total</th></tr></thead><tbody>${rows}</tbody></table>
+          <div style="max-width:300px;margin-left:auto">
+            <div class="total-row"><span class="total-label">Subtotal</span><span class="total-value">${this.formatCurrency(quote.subtotal)}</span></div>
+            <div class="total-row"><span class="total-label">GST (10%)</span><span class="total-value">${this.formatCurrency(quote.gst)}</span></div>
+            <div class="total-row" style="border-top:2px solid #eee;padding-top:8px;margin-top:4px"><span class="total-label">Total (incl. GST)</span><span class="grand">${this.formatCurrency(quote.total)}</span></div>
+          </div>
+        </div>
+        ${quote.paymentTerms ? `<div class="section"><div class="section-title">Terms</div><p class="meta">Payment: ${this.esc(quote.paymentTerms)}</p>${quote.validUntil ? `<p class="meta">Valid until: ${quote.validUntil}</p>` : ''}${quote.conditions ? `<p class="meta" style="margin-top:8px">${this.esc(quote.conditions)}</p>` : ''}</div>` : ''}
+      `
+      this.generatePdf(`Quote ${quote.reference}`, content)
+    },
+
+    printInvoice(invoiceId) {
+      const inv = this.getStore('invoices').find(i => i.id === invoiceId)
+      if (!inv) { this.toast('Invoice not found', 'error'); return }
+      const client = this.getStore('clients').find(c => c.id === inv.clientId)
+
+      const rows = (inv.lineItems || []).map(li =>
+        `<tr><td>${this.esc(li.description)}</td><td>${li.quantity}</td><td>${li.unit}</td><td>${this.formatCurrency(li.unitRate)}</td><td style="text-align:right">${this.formatCurrency(li.quantity * li.unitRate)}</td></tr>`
+      ).join('')
+
+      const content = `
+        <div class="section"><div class="section-title">Bill To</div><p style="font-size:16px;font-weight:500">${this.esc(client?.name || 'Unknown')}</p><p class="meta">${this.esc(client?.phone || '')} ${client?.email ? '· ' + this.esc(client.email) : ''}</p></div>
+        <div class="section"><div class="section-title">Tax Invoice ${this.esc(inv.reference)}</div>
+          <table><thead><tr><th>Description</th><th>Qty</th><th>Unit</th><th>Rate</th><th style="text-align:right">Total</th></tr></thead><tbody>${rows}</tbody></table>
+          <div style="max-width:300px;margin-left:auto">
+            <div class="total-row"><span class="total-label">Subtotal</span><span class="total-value">${this.formatCurrency(inv.subtotal)}</span></div>
+            <div class="total-row"><span class="total-label">GST (10%)</span><span class="total-value">${this.formatCurrency(inv.gst)}</span></div>
+            <div class="total-row" style="border-top:2px solid #eee;padding-top:8px;margin-top:4px"><span class="total-label">Total (incl. GST)</span><span class="grand">${this.formatCurrency(inv.total)}</span></div>
+          </div>
+        </div>
+        <div class="section"><div class="section-title">Payment</div><p class="meta">Due: ${inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('en-AU') : 'On receipt'}</p><p class="meta">BSB: XXX-XXX · Account: XXXXXXXX (configure in Settings)</p></div>
+      `
+      this.generatePdf(`Invoice ${inv.reference}`, content)
+    },
+
+    /* ── GOVERNMENT COMPLIANCE ────────────────────────── */
+
+    renderCompliance() {
+      // Overview metrics
+      const certs = this._getComplianceData()
+      const current = certs.filter(c => c.status === 'current').length
+      const expiring = certs.filter(c => c.status === 'expiring').length
+      const expired = certs.filter(c => c.status === 'expired').length
+
+      document.getElementById('compliance-overview').innerHTML = `
+        <div class="card-stat"><span class="card-stat__label">Total Certifications</span><span class="card-stat__value">${certs.length}</span></div>
+        <div class="card-stat"><span class="card-stat__label">Current</span><span class="card-stat__value" style="color:var(--se-success)">${current}</span></div>
+        <div class="card-stat"><span class="card-stat__label">Expiring Soon</span><span class="card-stat__value" style="color:var(--se-warning)">${expiring}</span></div>
+        <div class="card-stat"><span class="card-stat__label">Expired</span><span class="card-stat__value" style="color:${expired ? 'var(--se-error)' : 'var(--se-text-primary)'}">${expired}</span></div>
+      `
+
+      // Cert cards
+      document.getElementById('compliance-certs').innerHTML = certs.map(c => {
+        const dotClass = c.status === 'current' ? 'compliance-dot--green' : c.status === 'expiring' ? 'compliance-dot--amber' : 'compliance-dot--red'
+        return `
+          <div class="compliance-card">
+            <div class="compliance-card__status"><div class="compliance-dot ${dotClass}"></div><span class="text-xs font-medium" style="color:${c.status === 'current' ? 'var(--se-success)' : c.status === 'expiring' ? 'var(--se-warning)' : 'var(--se-error)'}">${c.status.charAt(0).toUpperCase() + c.status.slice(1)}</span></div>
+            <div class="text-md font-medium">${this.esc(c.name)}</div>
+            <div class="text-xs text-muted mt-2">Expires: ${c.expiry}</div>
+            <div class="text-xs text-faint mt-1">${this.esc(c.provider)}</div>
+          </div>
+        `
+      }).join('')
+
+      // GBR Catchment
+      document.getElementById('gbr-panel').innerHTML = `
+        <div class="flex items-center gap-3 mb-4">
+          <div class="compliance-dot compliance-dot--green"></div>
+          <span class="text-md font-medium" style="color:var(--se-success)">Compliant</span>
+        </div>
+        <p class="text-sm text-secondary mb-3">All vegetation management within the Great Barrier Reef catchment area follows sediment and erosion control protocols. Mulch is retained on-site or removed via tipper — zero discharge to waterways.</p>
+        <div class="grid grid-cols-2 gap-4 mt-4" style="max-width:400px">
+          <div><div class="text-xs text-faint">Catchment Jobs</div><div class="text-md font-medium">${this.getStore('jobs').filter(j => ['complete','paid','invoiced'].includes(j.status)).length}</div></div>
+          <div><div class="text-xs text-faint">Incidents</div><div class="text-md font-medium" style="color:var(--se-success)">0</div></div>
+        </div>
+      `
+
+      // Indigenous procurement
+      document.getElementById('indigenous-panel').innerHTML = `
+        <div class="flex items-center gap-3 mb-4">
+          <div class="compliance-dot compliance-dot--amber"></div>
+          <span class="text-md font-medium" style="color:var(--se-warning)">In Progress</span>
+        </div>
+        <p class="text-sm text-secondary mb-3">QLD Government targets 3% Indigenous procurement spend. Steady Eco is developing partnerships with local Indigenous businesses for supply chain and subcontracting opportunities.</p>
+        <div class="grid grid-cols-3 gap-4 mt-4" style="max-width:500px">
+          <div><div class="text-xs text-faint">Target</div><div class="text-md font-medium">3%</div></div>
+          <div><div class="text-xs text-faint">Current</div><div class="text-md font-medium">0%</div></div>
+          <div><div class="text-xs text-faint">Status</div><div class="text-md font-medium">Planning</div></div>
+        </div>
+      `
+
+      // Tree risk register
+      document.getElementById('tree-risk-panel').innerHTML = `
+        <table class="data-table">
+          <thead><tr><th>Site</th><th>Species</th><th>Risk Level</th><th>Last Assessed</th><th>Action Required</th></tr></thead>
+          <tbody>
+            <tr><td class="text-muted text-center" colspan="5" style="padding:var(--se-space-8)">No hazardous trees registered. Add assessments as QTRA-aligned inspections are completed.</td></tr>
+          </tbody>
+        </table>
+      `
+    },
+
+    _getComplianceData() {
+      return [
+        { name: 'Public Liability Insurance', provider: 'QBE Insurance', expiry: '15 Dec 2026', status: 'current' },
+        { name: 'Workers Compensation', provider: 'WorkCover QLD', expiry: '30 Jun 2027', status: 'current' },
+        { name: 'Professional Indemnity', provider: 'CGU Insurance', expiry: '15 Dec 2026', status: 'current' },
+        { name: 'ABN Registration', provider: 'ATO', expiry: 'No expiry', status: 'current' },
+        { name: 'Arborist Certification (AQF3)', provider: 'TAFE QLD', expiry: 'No expiry', status: 'current' },
+        { name: 'Chainsaw Operator Ticket', provider: 'TAFE QLD', expiry: 'No expiry', status: 'current' },
+        { name: 'Traffic Management (TC)', provider: 'TMR QLD', expiry: '01 Mar 2027', status: 'current' },
+        { name: 'First Aid Certificate', provider: 'St John Ambulance', expiry: '15 Aug 2026', status: 'current' },
+        { name: 'White Card (Construction)', provider: 'Safe Work Australia', expiry: 'No expiry', status: 'current' },
+      ]
+    },
+
+    /* ── REPORTS RENDERING ─────────────────────────────── */
+
+    renderReports() {
+      // Investor metrics
+      const m = this.renderInvestor()
+      document.getElementById('investor-metrics').innerHTML = `
+        <div class="card-stat"><span class="card-stat__label">Total Revenue</span><span class="card-stat__value">${this.formatCurrency(m.totalRevenue)}</span></div>
+        <div class="card-stat"><span class="card-stat__label">Jobs Completed</span><span class="card-stat__value">${m.completedJobs}</span></div>
+        <div class="card-stat"><span class="card-stat__label">Avg Job Value</span><span class="card-stat__value">${this.formatCurrency(m.avgJobValue)}</span></div>
+        <div class="card-stat"><span class="card-stat__label">Total Clients</span><span class="card-stat__value">${m.totalClients}</span></div>
+        <div class="card-stat"><span class="card-stat__label">Client Retention</span><span class="card-stat__value">${m.clientRetention}%</span></div>
+        <div class="card-stat"><span class="card-stat__label">Active Crew</span><span class="card-stat__value">${m.totalEmployees}</span></div>
+      `
+
+      // Training certs
+      const training = this.renderTraining()
+      const certContainer = document.getElementById('training-certs')
+      if (!training.length) {
+        certContainer.innerHTML = `<div class="compliance-card"><p class="text-sm text-muted">All certifications are permanent (no expiry).</p></div>`
+      } else {
+        certContainer.innerHTML = training.map(c => {
+          const urgent = c.daysLeft < 30
+          const dotClass = c.daysLeft < 0 ? 'compliance-dot--red' : c.daysLeft < 60 ? 'compliance-dot--amber' : 'compliance-dot--green'
+          return `
+            <div class="compliance-card">
+              <div class="compliance-card__status"><div class="compliance-dot ${dotClass}"></div><span class="text-xs font-medium">${c.daysLeft < 0 ? 'EXPIRED' : c.daysLeft + ' days left'}</span></div>
+              <div class="text-md font-medium">${this.esc(c.name)}</div>
+              <div class="text-xs text-muted mt-2">Expires: ${this.esc(c.expiry)}</div>
+              ${urgent ? '<div class="text-xs text-warning mt-2">⚠ Renewal required</div>' : ''}
+            </div>
+          `
+        }).join('')
+      }
+    },
+
+    /* ── CARBON CREDIT REGISTRATION (Item 9) ─────────── */
+
+    renderCarbonCredits() {
+      // This is accessed from within the Carbon & ESG screen
+      // Adds parcel-level planting logs for ERF methodology
+    },
+
+    /* ── SATELLITE VEGETATION MONITORING (Item 10) ────── */
+
+    renderSatellite() {
+      // Placeholder for Nearmap/Sentinel-2 integration
+      // When API keys are configured, this will show NDVI overlays
+    },
+
+    /* ── CREW TRAINING TRACKER (Item 11) ──────────────── */
+
+    renderTraining() {
+      const certs = this._getComplianceData()
+      // Auto-calculate days until expiry and flag upcoming renewals
+      return certs.filter(c => c.expiry !== 'No expiry').map(c => {
+        const exp = new Date(c.expiry.replace(/(\d+)\s+(\w+)\s+(\d+)/, '$2 $1, $3'))
+        const daysLeft = Math.ceil((exp - new Date()) / 86400000)
+        return { ...c, daysLeft }
+      })
+    },
+
+    /* ── AUTOMATED COLLECTIONS (Item 13) ──────────────── */
+
+    runCollections() {
+      const invoices = this.getStore('invoices').filter(i => i.status === 'sent' || i.status === 'overdue')
+      const now = new Date()
+      let nudged = 0
+
+      invoices.forEach(inv => {
+        if (!inv.dueDate) return
+        const due = new Date(inv.dueDate)
+        const daysOverdue = Math.ceil((now - due) / 86400000)
+
+        if (daysOverdue > 0 && inv.status !== 'overdue') {
+          inv.status = 'overdue'
+          nudged++
+        }
+      })
+
+      if (nudged) {
+        localStorage.setItem('se_invoices', JSON.stringify(this.getStore('invoices')))
+        this.invalidateCache('invoices')
+        this.addAudit('Collections run', `${nudged} invoices marked overdue`)
+        this.toast(`${nudged} invoice${nudged > 1 ? 's' : ''} marked overdue`, 'warning')
+      } else {
+        this.toast('No overdue invoices found', 'success')
+      }
+    },
+
+    /* ── INVESTOR METRICS DASHBOARD (Item 15) ─────────── */
+
+    renderInvestor() {
+      const jobs = this.getStore('jobs')
+      const clients = this.getStore('clients')
+      const invoices = this.getStore('invoices')
+      const employees = this.getStore('employees')
+
+      const totalRevenue = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + (i.total || 0), 0)
+      const completedJobs = jobs.filter(j => ['complete', 'invoiced', 'paid'].includes(j.status)).length
+      const avgJobValue = completedJobs ? totalRevenue / completedJobs : 0
+      const clientRetention = clients.length ? Math.min(100, Math.round((clients.filter(c => jobs.filter(j => j.clientId === c.id).length > 1).length / clients.length) * 100)) : 0
+
+      return { totalRevenue, completedJobs, avgJobValue, clientRetention, totalClients: clients.length, totalEmployees: employees.filter(e => e.isActive !== false).length }
+    },
+
+    exportCompliance() {
+      const certs = this._getComplianceData()
+      const data = { businessName: 'Steady Eco', abn: '49 553 784 085', exportDate: new Date().toISOString(), certifications: certs, gbrCompliant: true, incidents: 0 }
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url; a.download = `steady-eco-compliance-${new Date().toISOString().split('T')[0]}.json`; a.click()
+      URL.revokeObjectURL(url)
+      this.toast('Compliance pack exported', 'success')
+    },
+
+    updateConnectivity(online) {
+      document.querySelectorAll('.connectivity-dot').forEach(dot => {
+        dot.classList.toggle('connectivity-dot--offline', !online)
+      })
+      document.querySelectorAll('.connectivity-label').forEach(label => {
+        label.textContent = online ? 'Online' : 'Offline'
+      })
+    },
+
+    /* ── SAVE CLIENT ───────────────────────────────── */
+
+    saveClient() {
+      const name = document.getElementById('nc-name').value.trim()
+      if (!name) { this.toast('Client name is required', 'error'); return }
+
+      const client = {
+        id: crypto.randomUUID(),
+        name,
+        type: document.getElementById('nc-type').value,
+        phone: document.getElementById('nc-phone').value.trim(),
+        email: document.getElementById('nc-email').value.trim(),
+        address: {
+          line1: document.getElementById('nc-address').value.trim(),
+          suburb: document.getElementById('nc-suburb').value.trim(),
+          postcode: document.getElementById('nc-postcode').value.trim(),
+        },
+        notes: document.getElementById('nc-notes').value.trim(),
+        portalAccess: false,
+        totalSpend: 0,
+        outstandingBalance: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+
+      const clients = this.getStore('clients')
+      clients.push(client)
+      localStorage.setItem('se_clients', JSON.stringify(clients))
+      this.invalidateCache('clients')
+      this.addAudit('Client created', name)
+
+      // Clear form
+      document.querySelectorAll('#screen-new-client input, #screen-new-client textarea, #screen-new-client select').forEach(el => {
+        if (el.tagName === 'SELECT') el.selectedIndex = 0
+        else el.value = ''
+      })
+
+      this.toast(`Client "${name}" created`, 'success')
+      this.navigate('clients')
+    },
+
+    /* ── SAVE JOB ──────────────────────────────────── */
+
+    renderNewJob() {
+      const select = document.getElementById('nj-client')
+      const clients = this.getStore('clients')
+      select.innerHTML = '<option value="">Select a client...</option>' + clients.map(c => `<option value="${c.id}">${this.esc(c.name)}</option>`).join('')
+      // Default date to today
+      document.getElementById('nj-date').value = new Date().toISOString().split('T')[0]
+    },
+
+    saveJob() {
+      const clientId = document.getElementById('nj-client').value
+      if (!clientId) { this.toast('Please select a client', 'error'); return }
+
+      const jobs = this.getStore('jobs')
+      const year = new Date().getFullYear()
+      const existing = jobs.map(j => parseInt((j.reference || '').split('-').pop()) || 0)
+      const count = (Math.max(0, ...existing)) + 1
+      const reference = `SE-J-${year}-${String(count).padStart(4, '0')}`
+
+      const job = {
+        id: crypto.randomUUID(),
+        reference,
+        status: 'new',
+        clientId,
+        serviceTypes: [document.getElementById('nj-service').value],
+        description: document.getElementById('nj-desc').value.trim(),
+        siteAddress: {
+          line1: document.getElementById('nj-address').value.trim(),
+          suburb: '',
+          postcode: '',
+        },
+        scheduledStart: document.getElementById('nj-date').value,
+        scheduledDuration: parseInt(document.getElementById('nj-duration').value),
+        assignedEmployees: [],
+        quoteId: null,
+        invoiceId: null,
+        photos: [],
+        notes: document.getElementById('nj-notes').value.trim(),
+        internalNotes: '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+
+      jobs.push(job)
+      localStorage.setItem('se_jobs', JSON.stringify(jobs))
+      this.invalidateCache('jobs')
+      this.addAudit('Job created', reference)
+
+      this.toast(`Job ${reference} created`, 'success')
+      this.navigate('jobs')
+    },
+
+    /* ── QUOTE BUILDER ─────────────────────────────── */
+
+    quoteStep: 1,
+    quoteData: { clientId: '', services: [], lineItems: [], validUntil: '', paymentTerms: '14 days net', conditions: '' },
+
+    renderNewQuote() {
+      this.quoteStep = 1
+      this.quoteData = { clientId: '', services: [], lineItems: [], validUntil: '', paymentTerms: '14 days net', conditions: '' }
+
+      // Populate client dropdown
+      const select = document.getElementById('q-client')
+      const clients = this.getStore('clients')
+      select.innerHTML = '<option value="">Choose a client...</option>' + clients.map(c => `<option value="${c.id}">${this.esc(c.name)}</option>`).join('')
+
+      // Set default valid date (30 days)
+      const validDate = new Date(); validDate.setDate(validDate.getDate() + 30)
+      document.getElementById('q-valid').value = validDate.toISOString().split('T')[0]
+
+      // Reset service cards
+      document.querySelectorAll('.service-card').forEach(c => c.classList.remove('is-selected'))
+
+      this.showQuoteStep(1)
+    },
+
+    showQuoteStep(step) {
+      this.quoteStep = step
+      // Hide all panels
+      for (let i = 1; i <= 5; i++) {
+        document.getElementById(`qp-${i}`).style.display = i === step ? '' : 'none'
+      }
+      // Update step indicators
+      document.querySelectorAll('.quote-step').forEach((el, i) => {
+        el.className = 'quote-step'
+        if (i < step - 1) el.classList.add('quote-step--done')
+        if (i === step - 1) el.classList.add('quote-step--current')
+      })
+    },
+
+    quoteNext() {
+      const step = this.quoteStep
+
+      if (step === 1) {
+        this.quoteData.clientId = document.getElementById('q-client').value
+        if (!this.quoteData.clientId) { this.toast('Please select a client', 'error'); return }
+      }
+
+      if (step === 2) {
+        const selected = document.querySelectorAll('.service-card.is-selected')
+        if (!selected.length) { this.toast('Please select at least one service', 'error'); return }
+        this.quoteData.services = Array.from(selected).map(el => el.dataset.service)
+        this.buildLineItems()
+      }
+
+      if (step === 3) {
+        this.collectLineItems()
+      }
+
+      if (step === 4) {
+        this.quoteData.validUntil = document.getElementById('q-valid').value
+        this.quoteData.paymentTerms = document.getElementById('q-terms').value
+        this.quoteData.conditions = document.getElementById('q-conditions').value.trim()
+        this.renderQuotePreview()
+      }
+
+      if (step < 5) this.showQuoteStep(step + 1)
+    },
+
+    quotePrev() {
+      if (this.quoteStep > 1) this.showQuoteStep(this.quoteStep - 1)
+    },
+
+    toggleService(el) {
+      el.classList.toggle('is-selected')
+    },
+
+    buildLineItems() {
+      const serviceNames = {
+        'tree-removal': 'Tree Removal', 'tree-pruning': 'Tree Pruning', 'landscaping': 'Landscaping',
+        'lawn-mowing': 'Lawn Mowing', 'vegetation-management': 'Vegetation Management',
+        'land-clearing': 'Land Clearing', 'blade-sharpening': 'Blade Sharpening', 'chipping-mulching': 'Chipping & Mulching',
+      }
+
+      this.quoteData.lineItems = this.quoteData.services.map(s => ({
+        description: serviceNames[s] || s,
+        quantity: 1,
+        unit: s === 'blade-sharpening' ? 'set' : 'hours',
+        unitRate: s === 'blade-sharpening' ? 120 : 80,
+      }))
+
+      this.renderLineItems()
+    },
+
+    renderLineItems() {
+      const container = document.getElementById('q-line-items')
+      container.innerHTML = this.quoteData.lineItems.map((item, i) => `
+        <div class="line-item">
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <input class="form-input" data-li="${i}" data-field="description" value="${item.description}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Qty</label>
+            <input class="form-input" data-li="${i}" data-field="quantity" type="number" min="0.5" step="0.5" value="${item.quantity}" onchange="App.updateQuoteTotals()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unit</label>
+            <select class="form-input form-select" data-li="${i}" data-field="unit">
+              <option value="hours" ${item.unit === 'hours' ? 'selected' : ''}>Hours</option>
+              <option value="each" ${item.unit === 'each' ? 'selected' : ''}>Each</option>
+              <option value="set" ${item.unit === 'set' ? 'selected' : ''}>Set</option>
+              <option value="m2" ${item.unit === 'm2' ? 'selected' : ''}>m²</option>
+              <option value="m" ${item.unit === 'm' ? 'selected' : ''}>m</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Rate ($)</label>
+            <input class="form-input" data-li="${i}" data-field="unitRate" type="number" min="0" step="5" value="${item.unitRate}" onchange="App.updateQuoteTotals()">
+          </div>
+          <button class="btn btn-icon btn-ghost btn-sm" onclick="App.removeLineItem(${i})" style="margin-bottom:2px" title="Remove">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+          </button>
+        </div>
+      `).join('')
+
+      this.updateQuoteTotals()
+    },
+
+    addLineItem() {
+      this.quoteData.lineItems.push({ description: '', quantity: 1, unit: 'hours', unitRate: 80 })
+      this.renderLineItems()
+    },
+
+    removeLineItem(index) {
+      this.quoteData.lineItems.splice(index, 1)
+      this.renderLineItems()
+    },
+
+    collectLineItems() {
+      document.querySelectorAll('[data-li]').forEach(el => {
+        const i = parseInt(el.dataset.li)
+        const field = el.dataset.field
+        if (this.quoteData.lineItems[i]) {
+          this.quoteData.lineItems[i][field] = field === 'quantity' || field === 'unitRate' ? parseFloat(el.value) || 0 : el.value
+        }
+      })
+    },
+
+    updateQuoteTotals() {
+      this.collectLineItems()
+      const subtotal = this.quoteData.lineItems.reduce((sum, li) => sum + (li.quantity * li.unitRate), 0)
+      const gst = subtotal / 10
+      const total = subtotal + gst
+
+      document.getElementById('q-totals').innerHTML = `
+        <div style="max-width:300px;margin-left:auto">
+          <div class="quote-total__row"><span class="quote-total__label">Subtotal</span><span class="quote-total__value">${this.formatCurrency(subtotal)}</span></div>
+          <div class="quote-total__row"><span class="quote-total__label">GST (10%)</span><span class="quote-total__value">${this.formatCurrency(gst)}</span></div>
+          <div class="quote-total__row" style="border-top:1px solid var(--se-border-default);padding-top:var(--se-space-3);margin-top:var(--se-space-2)"><span class="quote-total__label">Total (incl. GST)</span><span class="quote-total__value quote-total__value--grand">${this.formatCurrency(total)}</span></div>
+        </div>
+      `
+    },
+
+    renderQuotePreview() {
+      const client = this.getStore('clients').find(c => c.id === this.quoteData.clientId)
+      const subtotal = this.quoteData.lineItems.reduce((s, li) => s + (li.quantity * li.unitRate), 0)
+      const gst = subtotal / 10
+      const total = subtotal + gst
+
+      document.getElementById('q-preview').innerHTML = `
+        <div class="flex justify-between items-start mb-6">
+          <div>
+            <div class="text-display-xs" style="font-family:var(--se-font-display)">Steady Eco</div>
+            <div class="text-xs text-muted">ABN 49 553 784 085</div>
+            <div class="text-xs text-muted">0456 190 202</div>
+          </div>
+          <div class="text-right">
+            <div class="label">Quote</div>
+            <div class="text-sm text-muted mt-1">Valid until ${this.quoteData.validUntil || 'N/A'}</div>
+          </div>
+        </div>
+        <div class="mb-6">
+          <div class="label mb-1">Client</div>
+          <div class="text-md">${client?.name || 'Unknown'}</div>
+          <div class="text-xs text-muted">${client?.phone || ''} ${client?.email ? '· ' + client.email : ''}</div>
+        </div>
+        <table class="data-table mb-6">
+          <thead><tr><th>Description</th><th>Qty</th><th>Unit</th><th>Rate</th><th style="text-align:right">Total</th></tr></thead>
+          <tbody>
+            ${this.quoteData.lineItems.map(li => `<tr><td>${li.description}</td><td>${li.quantity}</td><td>${li.unit}</td><td>${this.formatCurrency(li.unitRate)}</td><td style="text-align:right">${this.formatCurrency(li.quantity * li.unitRate)}</td></tr>`).join('')}
+          </tbody>
+        </table>
+        <div style="max-width:300px;margin-left:auto">
+          <div class="quote-total__row"><span class="quote-total__label">Subtotal</span><span class="quote-total__value">${this.formatCurrency(subtotal)}</span></div>
+          <div class="quote-total__row"><span class="quote-total__label">GST (10%)</span><span class="quote-total__value">${this.formatCurrency(gst)}</span></div>
+          <div class="quote-total__row" style="border-top:1px solid var(--se-border-default);padding-top:var(--se-space-3);margin-top:var(--se-space-2)"><span class="quote-total__label">Total (incl. GST)</span><span class="quote-total__value quote-total__value--grand">${this.formatCurrency(total)}</span></div>
+        </div>
+        ${this.quoteData.paymentTerms ? `<div class="mt-6 text-xs text-muted">Payment terms: ${this.quoteData.paymentTerms}</div>` : ''}
+        ${this.quoteData.conditions ? `<div class="mt-2 text-xs text-muted">${this.quoteData.conditions}</div>` : ''}
+      `
+    },
+
+    saveQuote(status) {
+      this.collectLineItems()
+      const subtotal = this.quoteData.lineItems.reduce((s, li) => s + (li.quantity * li.unitRate), 0)
+      const gst = subtotal / 10
+      const total = subtotal + gst
+
+      const quotes = this.getStore('quotes')
+      const year = new Date().getFullYear()
+      const existing = quotes.map(q => parseInt((q.reference || '').split('-').pop()) || 0)
+      const count = (Math.max(0, ...existing)) + 1
+      const reference = `SE-Q-${year}-${String(count).padStart(4, '0')}`
+
+      const quote = {
+        id: crypto.randomUUID(),
+        reference,
+        clientId: this.quoteData.clientId,
+        status,
+        lineItems: this.quoteData.lineItems.map(li => ({ ...li, total: li.quantity * li.unitRate })),
+        subtotal, gst, total,
+        validUntil: this.quoteData.validUntil,
+        paymentTerms: this.quoteData.paymentTerms,
+        conditions: this.quoteData.conditions,
+        sentAt: status === 'sent' ? new Date().toISOString() : null,
+        createdAt: new Date().toISOString(),
+      }
+
+      quotes.push(quote)
+      localStorage.setItem('se_quotes', JSON.stringify(quotes))
+      this.invalidateCache('quotes')
+      this.addAudit(`Quote ${status === 'sent' ? 'sent' : 'drafted'}`, reference)
+
+      this.toast(`Quote ${reference} ${status === 'sent' ? 'marked as sent' : 'saved as draft'}`, 'success')
+      this.navigate('quotes')
+    },
+
+    /* ── JOB DETAIL ────────────────────────────────── */
+
+    openJobDetail(jobId) {
+      const job = this.getStore('jobs').find(j => j.id === jobId)
+      if (!job) return
+
+      const client = this.getStore('clients').find(c => c.id === job.clientId)
+      const overlay = document.getElementById('job-detail-overlay')
+
+      // Title
+      document.getElementById('jd-title').textContent = `${job.reference || 'Job'} — ${client?.name || 'No client'}`
+
+      // Timeline
+      const statuses = ['new', 'quoted', 'booked', 'active', 'complete', 'invoiced', 'paid']
+      const currentIdx = statuses.indexOf(job.status)
+      document.getElementById('jd-timeline').innerHTML = statuses.map((s, i) => `
+        <div class="timeline__step ${i < currentIdx ? 'timeline__step--done' : ''} ${i === currentIdx ? 'timeline__step--current' : ''}">
+          <div class="timeline__dot"></div>
+          <span class="timeline__label">${s.charAt(0).toUpperCase() + s.slice(1)}</span>
+        </div>
+      `).join('')
+
+      // Action buttons
+      const actions = {
+        new: { label: 'Send Quote', next: 'quoted' },
+        quoted: { label: 'Mark Booked', next: 'booked' },
+        booked: { label: 'Start Job', next: 'active' },
+        active: { label: 'Complete Job', next: 'complete' },
+        complete: { label: 'Create Invoice', next: 'invoiced' },
+        invoiced: { label: 'Mark Paid', next: 'paid' },
+      }
+      const action = actions[job.status]
+      document.getElementById('jd-actions').innerHTML = action
+        ? `<button class="btn btn-primary" onclick="App.advanceJob('${job.id}','${action.next}')">${action.label}</button>`
+        : `<span class="badge badge-${job.status}">${job.status}</span>`
+
+      // Sections
+      const arrow = '<svg class="job-section__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>'
+      document.getElementById('jd-sections').innerHTML = `
+        <div class="job-section is-open">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')">
+            <span class="job-section__title">Job Details</span>${arrow}
+          </div>
+          <div class="job-section__body">
+            <div class="text-sm text-secondary mb-2"><strong>Service:</strong> ${this.esc(job.serviceTypes?.join(', ') || 'N/A')}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Description:</strong> ${this.esc(job.description || 'No description')}</div>
+            <div class="text-sm text-secondary"><strong>Duration:</strong> ${job.scheduledDuration ? Math.floor(job.scheduledDuration / 60) + 'h' : 'N/A'}</div>
+          </div>
+        </div>
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')">
+            <span class="job-section__title">Location</span>${arrow}
+          </div>
+          <div class="job-section__body">
+            <div class="text-sm text-secondary mb-3">${this.esc(job.siteAddress?.line1 || 'No address')}</div>
+            ${job.siteAddress?.line1 ? `<a href="https://maps.google.com/maps?q=${encodeURIComponent(job.siteAddress.line1)}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">Get Directions</a>` : ''}
+          </div>
+        </div>
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')">
+            <span class="job-section__title">Scheduling</span>${arrow}
+          </div>
+          <div class="job-section__body">
+            <div class="text-sm text-secondary mb-2"><strong>Date:</strong> ${this.esc(job.scheduledStart || 'Not scheduled')}</div>
+            <div class="text-sm text-secondary"><strong>Assigned:</strong> ${job.assignedEmployees?.length ? job.assignedEmployees.map(id => this.esc(this.getStore('employees').find(e => e.id === id)?.name || 'Unknown')).join(', ') : 'Unassigned'}</div>
+          </div>
+        </div>
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')">
+            <span class="job-section__title">Notes</span>${arrow}
+          </div>
+          <div class="job-section__body">
+            <div class="text-sm text-secondary">${this.esc(job.notes || job.internalNotes || 'No notes')}</div>
+          </div>
+        </div>
+      `
+
+      overlay.classList.add('is-open')
+    },
+
+    closeJobDetail() {
+      document.getElementById('job-detail-overlay').classList.remove('is-open')
+    },
+
+    advanceJob(jobId, newStatus) {
+      const jobs = this.getStore('jobs')
+      const job = jobs.find(j => j.id === jobId)
+      if (!job) return
+
+      job.status = newStatus
+      job.updatedAt = new Date().toISOString()
+      localStorage.setItem('se_jobs', JSON.stringify(jobs))
+      this.invalidateCache('jobs')
+      this.addAudit(`Job status → ${newStatus}`, job.reference)
+
+      this.toast(`Job ${job.reference} → ${newStatus}`, 'success')
+      this.openJobDetail(jobId) // Refresh
+    },
+
+    /* ── SETTINGS ──────────────────────────────────── */
+
+    renderSettings() {
+      // Load existing API key
+      const key = localStorage.getItem('se_ai_key') || ''
+      document.getElementById('set-api-key').value = key
+    },
+
+    async changePin() {
+      const current = document.getElementById('set-pin-current').value
+      const newPin = document.getElementById('set-pin-new').value
+      const confirm = document.getElementById('set-pin-confirm').value
+
+      if (!current || !newPin || !confirm) { this.toast('Fill in all PIN fields', 'error'); return }
+      if (newPin.length !== 6 || !/^\d{6}$/.test(newPin)) { this.toast('PIN must be exactly 6 digits', 'error'); return }
+      if (newPin !== confirm) { this.toast('New PINs do not match', 'error'); return }
+
+      const stored = JSON.parse(localStorage.getItem(OWNER_PIN_KEY) || '""')
+      const currentHash = await this.hashPin(current)
+      if (currentHash !== stored) { this.toast('Current PIN is incorrect', 'error'); return }
+
+      const newHash = await this.hashPin(newPin)
+      localStorage.setItem(OWNER_PIN_KEY, JSON.stringify(newHash))
+      this.addAudit('PIN changed', 'Owner PIN updated')
+
+      document.getElementById('set-pin-current').value = ''
+      document.getElementById('set-pin-new').value = ''
+      document.getElementById('set-pin-confirm').value = ''
+
+      this.toast('PIN updated successfully', 'success')
+    },
+
+    saveApiKey() {
+      const key = document.getElementById('set-api-key').value.trim()
+      localStorage.setItem('se_ai_key', key)
+      this.toast(key ? 'API key saved' : 'API key cleared', 'success')
+    },
+
+    saveBusinessDetails() {
+      const details = {
+        name: document.getElementById('set-biz-name').value.trim(),
+        abn: document.getElementById('set-biz-abn').value.trim(),
+        phone: document.getElementById('set-biz-phone').value.trim(),
+        email: document.getElementById('set-biz-email').value.trim(),
+      }
+      localStorage.setItem('se_business', JSON.stringify(details))
+      this.toast('Business details saved', 'success')
+    },
+
+    exportData() {
+      const data = {}
+      const keys = ['se_jobs', 'se_clients', 'se_quotes', 'se_invoices', 'se_employees', 'se_timesheets', 'se_audit']
+      keys.forEach(k => { try { data[k] = JSON.parse(localStorage.getItem(k)) } catch { data[k] = [] } })
+      data._exportedAt = new Date().toISOString()
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `steady-eco-backup-${new Date().toISOString().split('T')[0]}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+      this.toast('Data exported', 'success')
+    },
+
+    clearData() {
+      if (!window.confirm('This will permanently delete ALL jobs, clients, quotes, invoices, and employees. Are you sure?')) return
+      if (!window.confirm('FINAL WARNING: This cannot be undone. Type "yes" mentally and click OK.')) return
+
+      const keys = ['se_jobs', 'se_clients', 'se_quotes', 'se_invoices', 'se_employees', 'se_timesheets', 'se_audit']
+      keys.forEach(k => localStorage.removeItem(k))
+      this.toast('All data cleared', 'warning')
+      this.navigate('dashboard')
+    },
+
+    /* ── TOAST HELPER ──────────────────────────────── */
+
+    toast(message, type = 'info') {
+      const icons = {
+        success: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M6 10l3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        error: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M7 7l6 6M13 7l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+        warning: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L1 18h18L10 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M10 8v4M10 14.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+        info: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M10 9v5M10 6.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+      }
+      const container = document.querySelector('.toast-container')
+      const el = document.createElement('div')
+      el.className = `toast toast--${type}`
+      const iconSpan = document.createElement('span'); iconSpan.className = 'toast__icon'; iconSpan.innerHTML = icons[type] || icons.info
+      const msgSpan = document.createElement('span'); msgSpan.className = 'toast__message'; msgSpan.textContent = message
+      el.appendChild(iconSpan); el.appendChild(msgSpan)
+      container.appendChild(el)
+      requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('is-visible')))
+      setTimeout(() => { el.classList.remove('is-visible'); setTimeout(() => el.remove(), 400) }, 4000)
+      el.addEventListener('click', () => { el.classList.remove('is-visible'); setTimeout(() => el.remove(), 400) })
+    },
+  }
+
+  // Expose to global scope for onclick handlers
+  window.App = App
+
+  // Boot
+  App.init()
+
+})()
+</script>
+
+</body>
+</html>

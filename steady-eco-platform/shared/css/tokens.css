@@ -1,0 +1,162 @@
+/* ═══════════════════════════════════════════════════════════
+   STEADY ECO — DESIGN TOKEN SYSTEM
+   The complete source of truth for all styling.
+   Import this at the root of every CSS file.
+
+   Nothing in the platform uses raw values.
+   Every colour, every spacing unit, every shadow —
+   it comes from here or it doesn't ship.
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+
+  /* ── COLOUR PALETTE ──────────────────────────────────── */
+
+  /* Backgrounds */
+  --se-bg-base:       #0a0f0a;
+  --se-bg-surface:    #0f1a0f;
+  --se-bg-elevated:   #111e11;
+  --se-bg-overlay:    #162016;
+  --se-bg-input:      #0d160d;
+
+  /* Brand greens */
+  --se-green-900:     #1a3d18;
+  --se-green-800:     #2d5a27;
+  --se-green-700:     #3a7533;
+  --se-green-600:     #4a9e3f;   /* PRIMARY */
+  --se-green-500:     #5db552;
+  --se-green-400:     #72c967;
+  --se-green-100:     rgba(74, 158, 63, 0.1);
+  --se-green-050:     rgba(74, 158, 63, 0.05);
+
+  /* Brand gold */
+  --se-gold-600:      #b8942e;
+  --se-gold-500:      #c8a84b;   /* PRIMARY */
+  --se-gold-400:      #d4b85a;
+  --se-gold-100:      rgba(200, 168, 75, 0.12);
+  --se-gold-050:      rgba(200, 168, 75, 0.06);
+
+  /* Text */
+  --se-text-primary:  #e8ede6;
+  --se-text-secondary:#a8bba4;
+  --se-text-muted:    #7a8f76;
+  --se-text-faint:    #6a8066;   /* WCAG AA compliant (3.8:1) */
+  --se-text-inverse:  #0a0f0a;
+
+  /* Borders */
+  --se-border-subtle: rgba(74, 158, 63, 0.08);
+  --se-border-default:rgba(74, 158, 63, 0.15);
+  --se-border-strong: rgba(74, 158, 63, 0.35);
+  --se-border-focus:  rgba(74, 158, 63, 0.7);
+
+  /* Status colours */
+  --se-success:       #4a9e3f;
+  --se-warning:       #c8a84b;
+  --se-error:         #e05555;
+  --se-error-700:     #c04040;
+  --se-info:          #4a7ec8;
+
+  /* Status backgrounds */
+  --se-success-bg:    rgba(74, 158, 63, 0.12);
+  --se-warning-bg:    rgba(200, 168, 75, 0.12);
+  --se-error-bg:      rgba(224, 85, 85, 0.12);
+  --se-info-bg:       rgba(74, 126, 200, 0.12);
+
+  /* Job status colours */
+  --se-status-new:       #4a7ec8;
+  --se-status-quoted:    #c8a84b;
+  --se-status-booked:    #9b59b6;
+  --se-status-active:    #4a9e3f;
+  --se-status-complete:  #27ae60;
+  --se-status-invoiced:  #e67e22;
+  --se-status-paid:      #1abc9c;
+  --se-status-cancelled: #e05555;
+
+  /* Shadows */
+  --se-shadow-sm:     0 2px 8px rgba(0, 0, 0, 0.3);
+  --se-shadow-md:     0 4px 20px rgba(0, 0, 0, 0.4);
+  --se-shadow-lg:     0 8px 40px rgba(0, 0, 0, 0.5);
+  --se-shadow-glow:   0 0 20px rgba(74, 158, 63, 0.15);
+  --se-shadow-glow-lg:0 0 40px rgba(74, 158, 63, 0.3);
+  --se-shadow-gold:   0 0 20px rgba(200, 168, 75, 0.2);
+  --se-shadow-error:  0 0 40px rgba(224, 85, 85, 0.3);
+
+
+  /* ── TYPOGRAPHY ──────────────────────────────────────── */
+
+  --se-font-display: 'Cormorant Garamond', Georgia, serif;
+  --se-font-ui:      'DM Sans', system-ui, sans-serif;
+  --se-font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Display scale (Cormorant Garamond) */
+  --se-text-display-3xl: 64px;
+  --se-text-display-2xl: 72px;
+  --se-text-display-xl:  56px;
+  --se-text-display-lg:  44px;
+  --se-text-display-md:  36px;
+  --se-text-display-sm:  28px;
+  --se-text-display-xs:  22px;
+
+  /* UI scale (DM Sans) */
+  --se-text-xl:  20px;
+  --se-text-lg:  18px;
+  --se-text-md:  16px;
+  --se-text-sm:  14px;
+  --se-text-xs:  12px;
+  --se-text-2xs: 11px;
+  --se-text-3xs: 10px;
+
+
+  /* ── SPACING (8pt grid) ──────────────────────────────── */
+
+  --se-space-1:   4px;
+  --se-space-2:   8px;
+  --se-space-3:   12px;
+  --se-space-4:   16px;
+  --se-space-5:   20px;
+  --se-space-6:   24px;
+  --se-space-8:   32px;
+  --se-space-10:  40px;
+  --se-space-12:  48px;
+  --se-space-16:  64px;
+  --se-space-20:  80px;
+  --se-space-24:  96px;
+
+
+  /* ── LAYOUT ──────────────────────────────────────────── */
+
+  --se-container:    1280px;
+  --se-sidebar-w:    260px;
+  --se-header-h:     64px;
+  --se-mobile-nav-h: 64px;
+  --se-radius-sm:    4px;
+  --se-radius-md:    8px;
+  --se-radius-lg:    12px;
+  --se-radius-xl:    16px;
+  --se-radius-full:  9999px;
+
+
+  /* ── MOTION ──────────────────────────────────────────── */
+
+  --se-ease-out:    cubic-bezier(0.0, 0.0, 0.2, 1);
+  --se-ease-in:     cubic-bezier(0.4, 0.0, 1, 1);
+  --se-ease-inout:  cubic-bezier(0.4, 0.0, 0.2, 1);
+  --se-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --se-duration-fast:   150ms;
+  --se-duration-base:   250ms;
+  --se-duration-slow:   400ms;
+  --se-duration-slower: 600ms;
+
+
+  /* ── Z-INDEX SCALE ───────────────────────────────────── */
+
+  --se-z-base:      1;
+  --se-z-above:     10;
+  --se-z-dropdown:  100;
+  --se-z-sticky:    200;
+  --se-z-overlay:   300;
+  --se-z-modal:     400;
+  --se-z-toast:     500;
+  --se-z-cursor:    9999;
+}
