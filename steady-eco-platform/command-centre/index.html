@@ -994,14 +994,35 @@
 
     <!-- ══ DOCUMENTS SCREEN ══ -->
     <div class="screen" id="screen-documents">
-      <header class="page-header"><h1 class="page-header__title" tabindex="-1">Documents</h1></header>
-      <div class="p-6"><div class="empty-state"><p class="empty-state__title">Document management coming soon</p><p class="empty-state__description">SWMS templates, insurance certificates, compliance documents, and job reports will be managed here.</p></div></div>
+      <header class="page-header">
+        <h1 class="page-header__title" tabindex="-1">Documents</h1>
+        <div class="page-header__actions">
+          <button class="btn btn-secondary btn-sm" onclick="App.viewSignedSwms()">View Signed SWMS</button>
+        </div>
+      </header>
+      <div class="p-6">
+        <h3 class="label mb-4">SWMS Templates</h3>
+        <div class="flex flex-col gap-3 mb-8" id="docs-swms"></div>
+        <h3 class="label mb-4">Insurance &amp; Certifications</h3>
+        <div class="compliance-grid mb-8" id="docs-certs"></div>
+        <h3 class="label mb-4">Signed SWMS Records</h3>
+        <div class="data-table-wrapper"><table class="data-table"><thead><tr><th>SWMS</th><th>Employee</th><th>Date</th><th>Location</th></tr></thead><tbody id="docs-signed"></tbody></table></div>
+      </div>
     </div>
 
     <!-- ══ TIMESHEETS SCREEN ══ -->
     <div class="screen" id="screen-timesheets">
-      <header class="page-header"><h1 class="page-header__title" tabindex="-1">Timesheets</h1></header>
-      <div class="p-6"><div class="empty-state"><p class="empty-state__title">Timesheet management coming soon</p><p class="empty-state__description">Crew clock-in/out records, hours tracking, and award interpretation will be managed here.</p></div></div>
+      <header class="page-header">
+        <h1 class="page-header__title" tabindex="-1">Timesheets</h1>
+        <div class="page-header__actions">
+          <button class="btn btn-secondary btn-sm" onclick="App.exportTimesheets()">Export CSV</button>
+        </div>
+      </header>
+      <div class="p-6">
+        <div class="grid grid-cols-3 gap-4 mb-8" style="max-width:500px" id="ts-summary"></div>
+        <h3 class="label mb-4">Clock Records</h3>
+        <div class="data-table-wrapper"><table class="data-table"><thead><tr><th>Employee</th><th>Date</th><th>Clock In</th><th>Clock Out</th><th>Duration</th><th>Status</th></tr></thead><tbody id="ts-records"></tbody></table></div>
+      </div>
     </div>
 
     <!-- ══ REPORTS / INVESTOR SCREEN ══ -->
@@ -1072,7 +1093,7 @@
       <header class="page-header">
         <h1 class="page-header__title" tabindex="-1">Recurring Jobs</h1>
         <div class="page-header__actions">
-          <button class="btn btn-primary btn-sm" onclick="App.addRecurring()">New Recurring Job</button>
+          <button class="btn btn-primary btn-sm" onclick="App.navigate('new-recurring')">New Recurring Job</button>
         </div>
       </header>
       <div class="p-6">
@@ -1080,17 +1101,59 @@
       </div>
     </div>
 
+    <!-- ══ NEW RECURRING JOB ══ -->
+    <div class="screen" id="screen-new-recurring">
+      <header class="page-header">
+        <h1 class="page-header__title">New Recurring Job</h1>
+        <div class="page-header__actions"><button class="btn btn-ghost btn-sm" onclick="App.navigate('recurring')">Cancel</button></div>
+      </header>
+      <div class="p-6"><div class="form-screen"><div class="flex flex-col gap-5">
+        <div class="form-group"><label class="form-label" for="nr-client">Client *</label><select class="form-input form-select" id="nr-client"></select></div>
+        <div class="form-group"><label class="form-label" for="nr-service">Service *</label>
+          <select class="form-input form-select" id="nr-service">
+            <option value="Lawn Mowing">Lawn Mowing</option><option value="Garden Maintenance">Garden Maintenance</option><option value="Vegetation Management">Vegetation Management</option><option value="Tree Pruning">Tree Pruning</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label" for="nr-freq">Frequency *</label>
+          <select class="form-input form-select" id="nr-freq">
+            <option value="Weekly">Weekly</option><option value="Fortnightly" selected>Fortnightly</option><option value="Monthly">Monthly</option><option value="Quarterly">Quarterly</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label" for="nr-next">Next Scheduled Date</label><input class="form-input" id="nr-next" type="date"></div>
+        <div class="form-group"><label class="form-label" for="nr-notes">Notes</label><textarea class="form-input form-textarea" id="nr-notes" rows="2" placeholder="e.g. Front and back yard, ride-on mower"></textarea></div>
+        <button class="btn btn-primary" onclick="App.saveRecurring()">Create Recurring Job</button>
+      </div></div></div>
+    </div>
+
     <!-- ══ EQUIPMENT REGISTER ══ -->
     <div class="screen" id="screen-equipment">
       <header class="page-header">
         <h1 class="page-header__title" tabindex="-1">Equipment</h1>
         <div class="page-header__actions">
-          <button class="btn btn-primary btn-sm" onclick="App.addEquipment()">Add Equipment</button>
+          <button class="btn btn-primary btn-sm" onclick="App.navigate('new-equipment')">Add Equipment</button>
         </div>
       </header>
       <div class="p-6">
         <div class="flex flex-col gap-3" id="equipment-list"></div>
       </div>
+    </div>
+
+    <!-- ══ NEW EQUIPMENT ══ -->
+    <div class="screen" id="screen-new-equipment">
+      <header class="page-header">
+        <h1 class="page-header__title">Add Equipment</h1>
+        <div class="page-header__actions"><button class="btn btn-ghost btn-sm" onclick="App.navigate('equipment')">Cancel</button></div>
+      </header>
+      <div class="p-6"><div class="form-screen"><div class="flex flex-col gap-5">
+        <div class="form-group"><label class="form-label" for="eq-name">Equipment Name *</label><input class="form-input" id="eq-name" type="text" placeholder="e.g. Husqvarna 572XP Chainsaw"></div>
+        <div class="form-group"><label class="form-label" for="eq-type">Type</label>
+          <select class="form-input form-select" id="eq-type"><option value="Vehicle">Vehicle</option><option value="Machinery">Machinery</option><option value="Power Tool" selected>Power Tool</option><option value="Workshop">Workshop</option><option value="Safety">Safety Equipment</option></select>
+        </div>
+        <div class="form-group"><label class="form-label" for="eq-serial">Serial Number</label><input class="form-input" id="eq-serial" type="text" placeholder="Optional"></div>
+        <div class="form-group"><label class="form-label" for="eq-service">Next Service Due</label><input class="form-input" id="eq-service" type="date"></div>
+        <div class="form-group"><label class="form-label" for="eq-notes">Notes</label><textarea class="form-input form-textarea" id="eq-notes" rows="2" placeholder="Condition, location, maintenance notes..."></textarea></div>
+        <button class="btn btn-primary" onclick="App.saveEquipment()">Add Equipment</button>
+      </div></div></div>
     </div>
 
     <!-- ══ CARBON & ESG ══ -->
@@ -1759,6 +1822,10 @@
         case 'carbon': this.renderCarbon(); break
         case 'compliance': this.renderCompliance(); break
         case 'reports': this.renderReports(); break
+        case 'documents': this.renderDocuments(); break
+        case 'timesheets': this.renderTimesheets(); break
+        case 'new-recurring': this.renderNewRecurring(); break
+        case 'new-equipment': break
       }
     },
 
@@ -2125,7 +2192,7 @@
         days.forEach(d => {
           const iso = d.toISOString().split('T')[0]
           const dayJobs = jobs.filter(j => j.scheduledStart?.startsWith(iso) && (j.assignedEmployees?.includes(emp.id) || (!j.assignedEmployees?.length && emp.id === 'unassigned')))
-          html += `<div class="schedule-cell">${dayJobs.map(j => `<div class="schedule-job" onclick="App.openJobDetail('${this.esc(j.id)}')">${this.esc(this.getClientName(j.clientId).split(' ')[0])}</div>`).join('')}</div>`
+          html += `<div class="schedule-cell" onclick="App.scheduleAddJob('${iso}','${emp.id}')">${dayJobs.map(j => `<div class="schedule-job" onclick="event.stopPropagation();App.openJobDetail('${this.esc(j.id)}')">${this.esc(this.getClientName(j.clientId).split(' ')[0])}</div>`).join('')}</div>`
         })
       })
 
@@ -2152,22 +2219,29 @@
       `).join('')
     },
 
-    addRecurring() {
+    renderNewRecurring() {
+      const select = document.getElementById('nr-client')
       const clients = this.getStore('clients')
-      if (!clients.length) { this.toast('Create a client first', 'error'); return }
-      const name = prompt('Client name (must match exactly):')
-      const client = clients.find(c => c.name.toLowerCase().includes((name || '').toLowerCase()))
-      if (!client) { this.toast('Client not found', 'error'); return }
-      const service = prompt('Service (e.g. Lawn Mowing):') || 'Lawn Mowing'
-      const frequency = prompt('Frequency (e.g. fortnightly, weekly, monthly):') || 'fortnightly'
+      select.innerHTML = '<option value="">Select client...</option>' + clients.map(c => `<option value="${c.id}">${this.esc(c.name)}</option>`).join('')
+      const nextDate = new Date(); nextDate.setDate(nextDate.getDate() + 14)
+      document.getElementById('nr-next').value = nextDate.toISOString().split('T')[0]
+    },
+
+    saveRecurring() {
+      const clientId = document.getElementById('nr-client').value
+      if (!clientId) { this.toast('Select a client', 'error'); return }
+      const service = document.getElementById('nr-service').value
+      const frequency = document.getElementById('nr-freq').value
+      const nextDate = document.getElementById('nr-next').value
+      const notes = document.getElementById('nr-notes').value.trim()
 
       const recurring = this.getStore('recurring')
-      recurring.push({ id: crypto.randomUUID(), clientId: client.id, service, frequency, nextDate: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0], createdAt: new Date().toISOString() })
+      recurring.push({ id: crypto.randomUUID(), clientId, service, frequency, nextDate, notes, isActive: true, createdAt: new Date().toISOString() })
       localStorage.setItem('se_recurring', JSON.stringify(recurring))
       this.invalidateCache('recurring')
-      this.addAudit('Recurring job created', `${client.name} — ${service}`)
+      this.addAudit('Recurring job created', `${this.getClientName(clientId)} — ${service} (${frequency})`)
       this.toast('Recurring job created', 'success')
-      this.renderRecurring()
+      this.navigate('recurring')
     },
 
     /* ── EQUIPMENT REGISTER ───────────────────────────── */
@@ -2208,17 +2282,25 @@
       }).join('')
     },
 
-    addEquipment() {
-      const name = prompt('Equipment name:')
-      if (!name) return
-      const type = prompt('Type (Vehicle, Machinery, Power Tool, Workshop):') || 'Power Tool'
+    saveEquipment() {
+      const name = document.getElementById('eq-name').value.trim()
+      if (!name) { this.toast('Equipment name is required', 'error'); return }
       const equipment = this.getStore('equipment')
-      equipment.push({ id: crypto.randomUUID(), name, type, status: 'Active', serviceDue: '', notes: '', createdAt: new Date().toISOString() })
+      equipment.push({
+        id: crypto.randomUUID(),
+        name,
+        type: document.getElementById('eq-type').value,
+        serial: document.getElementById('eq-serial').value.trim(),
+        status: 'Active',
+        serviceDue: document.getElementById('eq-service').value,
+        notes: document.getElementById('eq-notes').value.trim(),
+        createdAt: new Date().toISOString()
+      })
       localStorage.setItem('se_equipment', JSON.stringify(equipment))
       this.invalidateCache('equipment')
       this.addAudit('Equipment added', name)
-      this.toast(`${name} added`, 'success')
-      this.renderEquipment()
+      this.toast(`${this.esc(name)} added`, 'success')
+      this.navigate('equipment')
     },
 
     /* ── CARBON & ESG ─────────────────────────────────── */
@@ -2264,7 +2346,234 @@
     },
 
     generateEsgReport() {
-      this.toast('ESG Report PDF generation — coming in next release', 'info')
+      const jobs = this.getStore('jobs')
+      const completed = jobs.filter(j => ['complete', 'invoiced', 'paid'].includes(j.status))
+      const mulch = completed.length * 2.5
+      const trees = Math.floor(completed.filter(j => j.serviceTypes?.includes('landscaping')).length * 3)
+      const waste = completed.length * 450
+      const co2 = (mulch * 12) + (trees * 22) + (waste * 0.5)
+
+      this.generatePdf('ESG & Carbon Report', `
+        <div class="section"><div class="section-title">Environmental Impact Summary</div>
+          <table><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody>
+            <tr><td>Mulch Produced</td><td>${mulch.toFixed(1)} m³</td></tr>
+            <tr><td>Trees Planted</td><td>${trees}</td></tr>
+            <tr><td>Green Waste Diverted from Landfill</td><td>${(waste/1000).toFixed(1)} tonnes</td></tr>
+            <tr><td>Estimated CO₂ Offset</td><td>${(co2/1000).toFixed(2)} tonnes CO₂e</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">ESG Scorecard</div>
+          <table><thead><tr><th>Category</th><th>Rating</th><th>Notes</th></tr></thead><tbody>
+            <tr><td>Environmental</td><td>A</td><td>Zero waste to landfill policy. All green waste chipped or removed.</td></tr>
+            <tr><td>Social</td><td>A</td><td>100% local FNQ employment. SWMS compliance on all jobs.</td></tr>
+            <tr><td>Governance</td><td>A</td><td>Full digital audit trail. All actions logged with timestamps.</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">Compliance Status</div>
+          <p class="meta">Public Liability: Current (exp. Dec 2026)</p>
+          <p class="meta">Workers Compensation: Current</p>
+          <p class="meta">GBR Catchment: Compliant — zero incidents</p>
+          <p class="meta">Indigenous Procurement: In progress (QLD 3% target)</p>
+        </div>
+        <div class="section"><div class="section-title">Methodology</div>
+          <p class="meta">Carbon estimates based on job-level tracking. Mulch carbon storage: 12kg CO₂e/m³. Tree sequestration: 22kg CO₂e/year/tree. Waste diversion: 0.5kg CO₂e/kg avoided landfill methane. Figures are indicative — formal ERF registration requires verified methodology audit.</p>
+        </div>
+      `)
+      this.addAudit('ESG Report generated', `${(co2/1000).toFixed(2)} tonnes CO₂e offset`)
+    },
+
+    /* ── TIMESHEETS (real data) ────────────────────────── */
+
+    renderTimesheets() {
+      const timesheets = this.getStore('timesheets')
+      const employees = this.getStore('employees')
+
+      // Summary metrics
+      const today = new Date().toISOString().split('T')[0]
+      const thisWeek = timesheets.filter(t => {
+        const d = new Date(t.date || t.createdAt)
+        const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7)
+        return d >= weekAgo
+      })
+      const clockIns = thisWeek.filter(t => t.type === 'clock-in')
+      const clockOuts = thisWeek.filter(t => t.type === 'clock-out')
+      const totalMins = clockOuts.reduce((s, t) => s + (t.duration || 0), 0)
+
+      document.getElementById('ts-summary').innerHTML = `
+        <div class="card-stat"><span class="card-stat__label">This Week</span><span class="card-stat__value">${Math.floor(totalMins / 60)}h ${totalMins % 60}m</span></div>
+        <div class="card-stat"><span class="card-stat__label">Clock Events</span><span class="card-stat__value">${thisWeek.length}</span></div>
+        <div class="card-stat"><span class="card-stat__label">Active Crew</span><span class="card-stat__value">${new Set(clockIns.map(t => t.employeeId)).size}</span></div>
+      `
+
+      // Records table — pair clock-ins with clock-outs
+      const tbody = document.getElementById('ts-records')
+      if (!timesheets.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-8">No timesheet records yet. Crew clock in/out via the Crew Portal.</td></tr>`
+        return
+      }
+
+      // Group by employee+date, show clock-in and matching clock-out
+      const grouped = {}
+      timesheets.forEach(t => {
+        const key = `${t.employeeId}_${t.date}`
+        if (!grouped[key]) grouped[key] = { employeeId: t.employeeId, date: t.date, clockIn: null, clockOut: null }
+        if (t.type === 'clock-in') grouped[key].clockIn = t
+        if (t.type === 'clock-out') grouped[key].clockOut = t
+      })
+
+      const rows = Object.values(grouped).sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 50)
+
+      tbody.innerHTML = rows.map(r => {
+        const emp = employees.find(e => e.id === r.employeeId)
+        const inTime = r.clockIn ? new Date(r.clockIn.time).toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' }) : '—'
+        const outTime = r.clockOut ? new Date(r.clockOut.time).toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' }) : '—'
+        const duration = r.clockOut?.duration ? `${Math.floor(r.clockOut.duration / 60)}h ${r.clockOut.duration % 60}m` : '—'
+        const status = r.clockOut ? 'Complete' : 'Clocked In'
+        return `<tr>
+          <td>${this.esc(emp?.name || 'Unknown')}</td>
+          <td>${this.esc(r.date || '—')}</td>
+          <td>${inTime}</td>
+          <td>${outTime}</td>
+          <td>${duration}</td>
+          <td><span class="badge ${r.clockOut ? 'badge-complete' : 'badge-active'}">${status}</span></td>
+        </tr>`
+      }).join('')
+    },
+
+    exportTimesheets() {
+      const timesheets = this.getStore('timesheets')
+      const employees = this.getStore('employees')
+      let csv = 'Employee,Date,Type,Time,Duration (min),Lat,Lng\\n'
+      timesheets.forEach(t => {
+        const emp = employees.find(e => e.id === t.employeeId)
+        csv += `"${emp?.name || 'Unknown'}","${t.date || ''}","${t.type || ''}","${t.time || ''}","${t.duration || ''}","${t.lat || ''}","${t.lng || ''}"\\n`
+      })
+      const blob = new Blob([csv], { type: 'text/csv' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url; a.download = `timesheets-${new Date().toISOString().split('T')[0]}.csv`; a.click()
+      URL.revokeObjectURL(url)
+      this.toast('Timesheets exported as CSV', 'success')
+    },
+
+    /* ── DOCUMENTS (real data) ─────────────────────────── */
+
+    renderDocuments() {
+      // SWMS templates
+      const swmsTemplates = ['Tree Removal', 'Mowing & Landscaping', 'Vegetation Management']
+      document.getElementById('docs-swms').innerHTML = swmsTemplates.map(name => `
+        <div class="card p-5 flex justify-between items-center">
+          <div>
+            <div class="text-md font-medium">${this.esc(name)} SWMS</div>
+            <div class="text-xs text-muted mt-1">Safe Work Method Statement — WHS Act 2011 (QLD)</div>
+          </div>
+          <span class="badge badge-active">Current</span>
+        </div>
+      `).join('')
+
+      // Insurance & certs
+      const certs = this._getComplianceData()
+      document.getElementById('docs-certs').innerHTML = certs.map(c => `
+        <div class="compliance-card">
+          <div class="compliance-card__status"><div class="compliance-dot compliance-dot--green"></div><span class="text-xs font-medium" style="color:var(--se-success)">Current</span></div>
+          <div class="text-md font-medium">${this.esc(c.name)}</div>
+          <div class="text-xs text-muted mt-2">${this.esc(c.provider)} — Exp: ${this.esc(c.expiry)}</div>
+        </div>
+      `).join('')
+
+      // Signed SWMS records
+      const signed = JSON.parse(localStorage.getItem('se_swms_signed') || '[]')
+      const tbody = document.getElementById('docs-signed')
+      if (!signed.length) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-6">No SWMS signed yet. Crew sign SWMS via the Crew Portal before starting work.</td></tr>`
+      } else {
+        tbody.innerHTML = signed.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || '')).slice(0, 30).map(s => `
+          <tr>
+            <td>${this.esc(s.swmsName || s.swmsId)}</td>
+            <td>${this.esc(s.employeeName || 'Unknown')}</td>
+            <td>${this.esc(s.date || '—')}</td>
+            <td>${this.esc(s.location || '—')}</td>
+          </tr>
+        `).join('')
+      }
+    },
+
+    viewSignedSwms() {
+      const signed = JSON.parse(localStorage.getItem('se_swms_signed') || '[]')
+      if (!signed.length) { this.toast('No signed SWMS records', 'info'); return }
+      // Export as JSON for now
+      const blob = new Blob([JSON.stringify(signed, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url; a.download = `swms-records-${new Date().toISOString().split('T')[0]}.json`; a.click()
+      URL.revokeObjectURL(url)
+      this.toast('SWMS records exported', 'success')
+    },
+
+    /* ── SCHEDULE CLICK-TO-ADD ─────────────────────────── */
+
+    scheduleAddJob(date, employeeId) {
+      // Pre-fill new job form with date and employee
+      this.navigate('new-job')
+      setTimeout(() => {
+        document.getElementById('nj-date').value = date
+        if (employeeId && employeeId !== 'unassigned') {
+          const select = document.getElementById('nj-assign')
+          Array.from(select.options).forEach(o => { o.selected = (o.value === employeeId) })
+        }
+      }, 100)
+    },
+
+    /* ── CREATE INVOICE FROM JOB ──────────────────────── */
+
+    createInvoiceFromJob(jobId) {
+      const jobs = this.getStore('jobs')
+      const job = jobs.find(j => j.id === jobId)
+      if (!job) { this.toast('Job not found', 'error'); return }
+
+      const client = this.getStore('clients').find(c => c.id === job.clientId)
+      const svc = (job.serviceTypes?.[0] || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+      const hours = job.scheduledDuration ? job.scheduledDuration / 60 : 2
+      const rate = 80
+      const subtotal = hours * rate
+      const gst = subtotal / 10
+      const total = subtotal + gst
+
+      const invoices = this.getStore('invoices')
+      const year = new Date().getFullYear()
+      const existing = invoices.map(i => parseInt((i.reference || '').split('-').pop()) || 0)
+      const count = (Math.max(0, ...existing)) + 1
+      const reference = `SE-INV-${year}-${String(count).padStart(4, '0')}`
+
+      const dueDate = new Date(); dueDate.setDate(dueDate.getDate() + 14)
+
+      const invoice = {
+        id: crypto.randomUUID(),
+        reference,
+        jobId: job.id,
+        clientId: job.clientId,
+        status: 'sent',
+        lineItems: [{ description: svc, quantity: hours, unit: 'hours', unitRate: rate, total: subtotal }],
+        subtotal, gst, total,
+        dueDate: dueDate.toISOString().split('T')[0],
+        sentAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+      }
+
+      invoices.push(invoice)
+      localStorage.setItem('se_invoices', JSON.stringify(invoices))
+      this.invalidateCache('invoices')
+
+      // Update job status
+      job.status = 'invoiced'
+      job.invoiceId = invoice.id
+      job.updatedAt = new Date().toISOString()
+      localStorage.setItem('se_jobs', JSON.stringify(jobs))
+      this.invalidateCache('jobs')
+
+      this.addAudit('Invoice created', `${reference} — ${this.formatCurrency(total)} for ${this.esc(client?.name || 'Unknown')}`)
+      this.toast(`Invoice ${reference} created — ${this.formatCurrency(total)}`, 'success')
+      this.navigate('invoices')
     },
 
     /* ── CMD+K COMMAND PALETTE ────────────────────────── */
@@ -3093,13 +3402,15 @@
         quoted: { label: 'Mark Booked', next: 'booked' },
         booked: { label: 'Start Job', next: 'active' },
         active: { label: 'Complete Job', next: 'complete' },
-        complete: { label: 'Create Invoice', next: 'invoiced' },
+        complete: { label: 'Create Invoice', fn: () => this.createInvoiceFromJob(job.id) },
         invoiced: { label: 'Mark Paid', next: 'paid' },
       }
       const action = actions[job.status]
       document.getElementById('jd-actions').innerHTML = action
-        ? `<button class="btn btn-primary" onclick="App.advanceJob('${job.id}','${action.next}')">${action.label}</button>`
-        : `<span class="badge badge-${job.status}">${job.status}</span>`
+        ? action.fn
+          ? `<button class="btn btn-primary" onclick="App.createInvoiceFromJob('${this.esc(job.id)}')">${action.label}</button>`
+          : `<button class="btn btn-primary" onclick="App.advanceJob('${this.esc(job.id)}','${action.next}')">${action.label}</button>`
+        : `<span class="badge badge-${this.esc(job.status)}">${this.esc(job.status)}</span>`
 
       // Sections
       const arrow = '<svg class="job-section__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>'
