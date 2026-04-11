@@ -856,10 +856,8 @@
             </div>
             <div>
               <h3 class="label mb-4">Cairns Weather</h3>
-              <div class="card p-5">
-                <div class="text-display-md" style="color:var(--se-gold-500)">31°</div>
-                <div class="text-sm text-secondary mt-1">Partly cloudy</div>
-                <div class="text-xs text-muted mt-2">Tropical — plan for afternoon rain</div>
+              <div class="card p-5" id="dash-weather">
+                <div class="skeleton skeleton-stat"></div>
               </div>
             </div>
           </div>
@@ -1655,6 +1653,7 @@
       this.setupNavigation()
       this.setupFirstRun()
       this.initCommandPalette()
+      this.initInlineValidation()
 
       // Connectivity monitoring
       window.addEventListener('online', () => this.updateConnectivity(true))
@@ -1903,6 +1902,82 @@
       } else {
         activityContainer.innerHTML = audit.map(a => this.activityItem(a)).join('')
       }
+
+      // Incidents banner
+      const incidents = JSON.parse(localStorage.getItem('se_incidents') || '[]')
+      if (incidents.length > 0) {
+        const latest = incidents[incidents.length - 1]
+        activityContainer.insertAdjacentHTML('afterbegin', `
+          <div style="padding:var(--se-space-4);background:var(--se-error-bg);border:1px solid var(--se-error);border-radius:var(--se-radius-lg);margin-bottom:var(--se-space-4)">
+            <div class="flex items-center gap-2 mb-2"><span style="color:var(--se-error);font-weight:600;font-size:var(--se-text-xs)">⚠ ${incidents.length} Incident Report${incidents.length > 1 ? 's' : ''}</span></div>
+            <div class="text-sm">${this.esc(latest.type)} — ${this.esc((latest.description || '').slice(0, 80))}</div>
+            <div class="text-3xs text-faint mt-1">${this.esc(latest.employeeName || 'Unknown')} · ${this.timeAgo(latest.timestamp)}</div>
+          </div>
+        `)
+      }
+
+      // Weather (real data from Open-Meteo — free, no API key)
+      this.fetchWeather()
+    },
+
+    async fetchWeather() {
+      const weatherEl = document.getElementById('dash-weather')
+      try {
+        const cached = localStorage.getItem('se_weather_cache')
+        const cacheTime = localStorage.getItem('se_weather_time')
+        // Cache for 1 hour
+        if (cached && cacheTime && (Date.now() - parseInt(cacheTime)) < 3600000) {
+          this.renderWeather(JSON.parse(cached))
+          return
+        }
+
+        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-16.92&longitude=145.78&current=temperature_2m,weathercode,windspeed_10m&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Australia%2FBrisbane&forecast_days=3')
+        if (!res.ok) throw new Error('Weather API error')
+        const data = await res.json()
+        localStorage.setItem('se_weather_cache', JSON.stringify(data))
+        localStorage.setItem('se_weather_time', String(Date.now()))
+        this.renderWeather(data)
+      } catch {
+        weatherEl.innerHTML = `<div class="text-sm text-muted">Weather unavailable</div>`
+      }
+    },
+
+    renderWeather(data) {
+      const weatherEl = document.getElementById('dash-weather')
+      const temp = Math.round(data.current?.temperature_2m || 0)
+      const wind = Math.round(data.current?.windspeed_10m || 0)
+      const code = data.current?.weathercode || 0
+
+      const weatherDesc = {
+        0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast',
+        45: 'Foggy', 51: 'Light drizzle', 53: 'Drizzle', 55: 'Heavy drizzle',
+        61: 'Light rain', 63: 'Rain', 65: 'Heavy rain', 80: 'Rain showers',
+        95: 'Thunderstorm', 96: 'Thunderstorm + hail',
+      }
+      const desc = weatherDesc[code] || 'Unknown'
+
+      const daily = data.daily || {}
+      const forecast = (daily.time || []).slice(0, 3).map((d, i) => {
+        const dayName = new Date(d).toLocaleDateString('en-AU', { weekday: 'short' })
+        const hi = Math.round(daily.temperature_2m_max?.[i] || 0)
+        const lo = Math.round(daily.temperature_2m_min?.[i] || 0)
+        const rain = daily.precipitation_probability_max?.[i] || 0
+        return `<div class="text-center"><div class="text-3xs text-faint">${dayName}</div><div class="text-sm">${hi}°/${lo}°</div>${rain > 30 ? `<div class="text-3xs" style="color:var(--se-info)">${rain}% rain</div>` : ''}</div>`
+      }).join('')
+
+      weatherEl.innerHTML = `
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <div class="text-display-md" style="color:var(--se-gold-500);font-family:var(--se-font-display)">${temp}°</div>
+            <div class="text-sm text-secondary mt-1">${this.esc(desc)}</div>
+            <div class="text-xs text-muted">Wind: ${wind} km/h</div>
+          </div>
+          <div class="text-xs text-faint">Cairns</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--se-space-4);padding-top:var(--se-space-3);border-top:1px solid var(--se-border-subtle)">
+          ${forecast}
+        </div>
+      `
     },
 
     /* ── JOBS RENDERING ────────────────────────────── */
@@ -2585,6 +2660,57 @@
       this.navigate('invoices')
     },
 
+    /* ── INLINE FORM VALIDATION ─────────────────────── */
+
+    initInlineValidation() {
+      document.addEventListener('blur', (e) => {
+        const input = e.target
+        if (!input.classList?.contains('form-input')) return
+
+        // Required field check (inputs with labels containing *)
+        const label = input.closest('.form-group')?.querySelector('.form-label')
+        if (label && label.textContent.includes('*') && !input.value.trim()) {
+          input.classList.add('form-input--error')
+          this._showFieldError(input, 'This field is required')
+        } else {
+          input.classList.remove('form-input--error')
+          this._clearFieldError(input)
+        }
+
+        // Email format
+        if (input.type === 'email' && input.value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value.trim())) {
+          input.classList.add('form-input--error')
+          this._showFieldError(input, 'Enter a valid email address')
+        }
+
+        // PIN format (6 digits)
+        if (input.id && input.id.includes('pin') && input.value && (input.value.length !== 6 || !/^\d{6}$/.test(input.value))) {
+          input.classList.add('form-input--error')
+          this._showFieldError(input, 'PIN must be exactly 6 digits')
+        }
+
+        // Phone format
+        if (input.type === 'tel' && input.value.trim() && !/^[\d\s\+\-\(\)]{8,15}$/.test(input.value.trim())) {
+          input.classList.add('form-input--error')
+          this._showFieldError(input, 'Enter a valid phone number')
+        }
+      }, true)
+    },
+
+    _showFieldError(input, msg) {
+      this._clearFieldError(input)
+      const err = document.createElement('div')
+      err.className = 'form-error'
+      err.textContent = msg
+      err.dataset.validationError = '1'
+      input.parentElement.appendChild(err)
+    },
+
+    _clearFieldError(input) {
+      const existing = input.parentElement?.querySelector('[data-validation-error]')
+      if (existing) existing.remove()
+    },
+
     /* ── CMD+K COMMAND PALETTE ────────────────────────── */
 
     _cmdkVisible: false,
@@ -3022,21 +3148,7 @@
       setTimeout(() => { if (this._map) this._map.invalidateSize() }, 200)
     },
 
-    /* ── CARBON CREDIT REGISTRATION (Item 9) ─────────── */
-
-    renderCarbonCredits() {
-      // This is accessed from within the Carbon & ESG screen
-      // Adds parcel-level planting logs for ERF methodology
-    },
-
-    /* ── SATELLITE VEGETATION MONITORING (Item 10) ────── */
-
-    renderSatellite() {
-      // Placeholder for Nearmap/Sentinel-2 integration
-      // When API keys are configured, this will show NDVI overlays
-    },
-
-    /* ── CREW TRAINING TRACKER (Item 11) ──────────────── */
+    /* ── CREW TRAINING TRACKER ──────────────────────── */
 
     renderTraining() {
       const certs = this._getComplianceData()
