@@ -997,7 +997,8 @@
       <header class="page-header">
         <h1 class="page-header__title" tabindex="-1">Documents</h1>
         <div class="page-header__actions">
-          <button class="btn btn-secondary btn-sm" onclick="App.viewSignedSwms()">View Signed SWMS</button>
+          <button class="btn btn-secondary btn-sm" onclick="App.generateIncidentReport()">Incident Report</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.viewSignedSwms()">Export SWMS</button>
         </div>
       </header>
       <div class="p-6">
@@ -3119,6 +3120,127 @@
       this.addAudit('Capability Statement generated', '')
     },
 
+    generateAIA(jobId) {
+      const job = this.getStore('jobs').find(j => j.id === jobId)
+      const client = job ? this.getStore('clients').find(c => c.id === job.clientId) : null
+
+      this.generatePdf('Arboricultural Impact Assessment (AS4970)', `
+        <div class="section"><div class="section-title">Assessment Details</div>
+          <table><tbody>
+            <tr><td style="width:40%;color:#999">Client</td><td>${this.esc(client?.name || '[Client Name]')}</td></tr>
+            <tr><td style="color:#999">Site</td><td>${this.esc(job?.siteAddress?.line1 || '[Site Address]')}</td></tr>
+            <tr><td style="color:#999">Date</td><td>${new Date().toLocaleDateString('en-AU')}</td></tr>
+            <tr><td style="color:#999">Assessor</td><td>Sam Kerr — AQF Level 3 Arboriculture</td></tr>
+            <tr><td style="color:#999">Standard</td><td>AS4970-2009 Protection of Trees on Development Sites</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">Tree Schedule</div>
+          <table><thead><tr><th>#</th><th>Species</th><th>DBH (mm)</th><th>Height (m)</th><th>TPZ (m)</th><th>SRZ (m)</th><th>Health</th><th>Retain?</th></tr></thead><tbody>
+            <tr><td>T1</td><td>[species]</td><td>[___]</td><td>[___]</td><td>[calc: DBH×12÷1000]</td><td>[calc from AS4970 Table 1]</td><td>[1-5]</td><td>[Y/N]</td></tr>
+            <tr><td>T2</td><td>[species]</td><td>[___]</td><td>[___]</td><td>[___]</td><td>[___]</td><td>[___]</td><td>[___]</td></tr>
+            <tr><td>T3</td><td>[species]</td><td>[___]</td><td>[___]</td><td>[___]</td><td>[___]</td><td>[___]</td><td>[___]</td></tr>
+          </tbody></table>
+          <p class="meta" style="margin-top:8px">TPZ = Tree Protection Zone (radius = DBH × 12). SRZ = Structural Root Zone (per AS4970 Table 1).</p>
+        </div>
+        <div class="section"><div class="section-title">Impact Assessment</div>
+          <p class="meta">[Describe proposed development/works and their potential impact on each tree. Include: encroachment into TPZ/SRZ, root severance risk, soil level changes, compaction from machinery, changes to hydrology.]</p>
+        </div>
+        <div class="section"><div class="section-title">Tree Protection Plan</div>
+          <p class="meta">The following tree protection measures are recommended per AS4970-2009:</p>
+          <table><tbody>
+            <tr><td style="color:#999">Fencing</td><td>[Protective fencing at TPZ boundary — chain mesh 1.8m height, signage "TREE PROTECTION ZONE"]</td></tr>
+            <tr><td style="color:#999">Ground Protection</td><td>[Rumble boards or geotextile + 100mm mulch within TPZ where access required]</td></tr>
+            <tr><td style="color:#999">Trunk Protection</td><td>[Hessian wrap + timber battens for trees adjacent to works]</td></tr>
+            <tr><td style="color:#999">Hold Points</td><td>[List stages requiring Project Arborist inspection before proceeding]</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">Recommendations</div>
+          <p class="meta">[Specific recommendations for tree retention, removal, transplanting, or replacement. Include conditions for DA approval.]</p>
+        </div>
+        <div class="section"><div class="section-title">Limitations</div>
+          <p class="meta">This assessment complies with AS4970-2009. It is based on a visual ground-level inspection at the date of assessment. Subsurface root investigation has not been undertaken unless noted. This report is valid for 12 months from the assessment date.</p>
+        </div>
+        <div class="section"><div class="section-title">Certification</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px">
+            <div><p class="meta">Signed: ____________________</p><p class="meta">Sam Kerr — AQF3 Arboriculture</p></div>
+            <div><p class="meta">Date: ${new Date().toLocaleDateString('en-AU')}</p><p class="meta">Steady Eco — ABN 49 553 784 085</p></div>
+          </div>
+        </div>
+      `)
+      this.addAudit('AIA (AS4970) generated', job?.reference || 'Manual')
+    },
+
+    generateVMP(jobId) {
+      const job = this.getStore('jobs').find(j => j.id === jobId)
+      const client = job ? this.getStore('clients').find(c => c.id === job.clientId) : null
+
+      this.generatePdf('Vegetation Management Plan', `
+        <div class="section"><div class="section-title">Site Details</div>
+          <table><tbody>
+            <tr><td style="width:40%;color:#999">Client</td><td>${this.esc(client?.name || '[Client Name]')}</td></tr>
+            <tr><td style="color:#999">Site</td><td>${this.esc(job?.siteAddress?.line1 || '[Site Address]')}</td></tr>
+            <tr><td style="color:#999">Prepared by</td><td>Sam Kerr — Steady Eco</td></tr>
+            <tr><td style="color:#999">Date</td><td>${new Date().toLocaleDateString('en-AU')}</td></tr>
+            <tr><td style="color:#999">Review Date</td><td>[12 months from preparation]</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">1. Objectives</div>
+          <p class="meta">[State management objectives: weed control, fire hazard reduction, revegetation, erosion control, habitat restoration, council compliance, etc.]</p>
+        </div>
+        <div class="section"><div class="section-title">2. Site Description</div>
+          <p class="meta">[Describe existing vegetation: dominant species, weed species present, condition/health, ecological values, proximity to waterways/GBR catchment, heritage/cultural significance.]</p>
+        </div>
+        <div class="section"><div class="section-title">3. Target Species</div>
+          <table><thead><tr><th>Species</th><th>Common Name</th><th>Weed Class</th><th>Control Method</th><th>Priority</th></tr></thead><tbody>
+            <tr><td>[botanical]</td><td>[common]</td><td>[restricted/category 3/etc]</td><td>[manual/herbicide/both]</td><td>[high/medium/low]</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">4. Treatment Schedule</div>
+          <table><thead><tr><th>Treatment</th><th>Method</th><th>Timing</th><th>Frequency</th></tr></thead><tbody>
+            <tr><td>Initial clearing</td><td>[manual/machine/herbicide]</td><td>[month/season]</td><td>Once</td></tr>
+            <tr><td>Follow-up 1</td><td>[method]</td><td>[3 months after initial]</td><td>Once</td></tr>
+            <tr><td>Ongoing maintenance</td><td>[method]</td><td>[quarterly/biannual]</td><td>Ongoing</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">5. Environmental Controls</div>
+          <table><tbody>
+            <tr><td style="color:#999">GBR Catchment</td><td>[If applicable: 20m buffer from waterways, sediment controls, no spray in rain]</td></tr>
+            <tr><td style="color:#999">Fauna</td><td>[Pre-clear survey protocol, fauna spotter requirements, cassowary/koala checks]</td></tr>
+            <tr><td style="color:#999">Erosion</td><td>[Sediment fencing, mulch retention, staged clearing to maintain groundcover]</td></tr>
+            <tr><td style="color:#999">Chemical Use</td><td>[APVMA registered products only, application records maintained, SDS on site]</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">6. Monitoring</div>
+          <p class="meta">[Monitoring protocol: photo monitoring points, frequency of assessment, success criteria, adaptive management triggers.]</p>
+        </div>
+      `)
+      this.addAudit('Vegetation Management Plan generated', job?.reference || 'Manual')
+    },
+
+    generateIncidentReport() {
+      const incidents = JSON.parse(localStorage.getItem('se_incidents') || '[]')
+      if (!incidents.length) { this.toast('No incidents to report', 'info'); return }
+
+      this.generatePdf('Incident & Near-Miss Register', `
+        <div class="section"><div class="section-title">Incident Summary</div>
+          <table><tbody>
+            <tr><td style="color:#999">Total Incidents</td><td>${incidents.length}</td></tr>
+            <tr><td style="color:#999">Report Period</td><td>${incidents[0]?.date || 'N/A'} to ${incidents[incidents.length - 1]?.date || 'N/A'}</td></tr>
+            <tr><td style="color:#999">Prepared by</td><td>Steady Eco — ABN 49 553 784 085</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">Incident Log</div>
+          <table><thead><tr><th>Date</th><th>Type</th><th>Reporter</th><th>Description</th><th>Action Taken</th></tr></thead><tbody>
+            ${incidents.map(i => `<tr><td>${this.esc(i.date)}</td><td>${this.esc(i.type)}</td><td>${this.esc(i.employeeName)}</td><td>${this.esc((i.description || '').slice(0, 100))}</td><td>${this.esc((i.actionTaken || 'N/A').slice(0, 80))}</td></tr>`).join('')}
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">Corrective Actions</div>
+          <p class="meta">[Review each incident and document corrective actions taken to prevent recurrence. Update SWMS templates if required.]</p>
+        </div>
+      `)
+      this.addAudit('Incident Report generated', `${incidents.length} incidents`)
+    },
+
     generateJobCompletionReport(jobId) {
       const job = this.getStore('jobs').find(j => j.id === jobId)
       if (!job) { this.toast('Job not found', 'error'); return }
@@ -4153,6 +4275,8 @@
           <button class="btn btn-secondary btn-sm" onclick="App.generateTreeRiskAssessment('${this.esc(job.id)}')">Tree Risk Report</button>
           <button class="btn btn-secondary btn-sm" onclick="App.generateJobCompletionReport('${this.esc(job.id)}')">Completion Report</button>
           <button class="btn btn-secondary btn-sm" onclick="App.generatePhotoReport('${this.esc(job.id)}')">Photo Report</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.generateAIA('${this.esc(job.id)}')">AIA (AS4970)</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.generateVMP('${this.esc(job.id)}')">Veg Mgmt Plan</button>
           ${job.status === 'invoiced' || job.status === 'paid' ? `<button class="btn btn-ghost btn-sm" onclick="App.printInvoice('${this.esc(job.invoiceId || '')}')">View Invoice</button>` : ''}
         </div>
       `

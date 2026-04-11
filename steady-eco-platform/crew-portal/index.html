@@ -64,7 +64,19 @@
     .crew-nav__item:focus-visible { outline: 2px solid var(--se-border-focus); outline-offset: -2px; }
     .crew-nav__icon { width: 24px; height: 24px; }
 
-    .crew-content { flex: 1; padding-bottom: calc(var(--se-mobile-nav-h) + env(safe-area-inset-bottom) + var(--se-space-4)); overflow-y: auto; }
+    .crew-content { flex: 1; padding-bottom: calc(var(--se-mobile-nav-h) + 72px + env(safe-area-inset-bottom) + var(--se-space-4)); overflow-y: auto; }
+
+    /* Sticky clock bar in thumb zone */
+    .sticky-clock {
+      position: fixed; bottom: var(--se-mobile-nav-h); left: 0; right: 0;
+      padding: var(--se-space-3) var(--se-space-5);
+      padding-bottom: calc(var(--se-space-3) + env(safe-area-inset-bottom, 0px));
+      background: var(--se-bg-surface); border-top: 1px solid var(--se-border-subtle);
+      z-index: var(--se-z-above); display: none;
+    }
+    .sticky-clock.is-visible { display: flex; align-items: center; justify-content: space-between; gap: var(--se-space-3); }
+    .sticky-clock__time { font-family: var(--se-font-display); font-size: var(--se-text-display-xs); color: var(--se-green-400); }
+    .sticky-clock__btn { height: 48px; flex: 1; max-width: 200px; }
     .crew-job-card { display: flex; align-items: center; gap: var(--se-space-4); padding: var(--se-space-5); background: var(--se-bg-surface); border: 1px solid var(--se-border-subtle); border-radius: var(--se-radius-lg); cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; min-height: 72px; transition: background var(--se-duration-fast) var(--se-ease-out); }
     .crew-job-card:active { background: var(--se-bg-elevated); }
     .crew-job-card:focus-visible { outline: 2px solid var(--se-border-focus); outline-offset: 2px; }
@@ -321,6 +333,15 @@
 
   </main>
 
+  <!-- STICKY CLOCK BAR (thumb zone) -->
+  <div class="sticky-clock" id="sticky-clock">
+    <div>
+      <div class="sticky-clock__time" id="sticky-elapsed">—</div>
+      <div class="text-3xs text-faint" id="sticky-status">Not clocked in</div>
+    </div>
+    <button class="clock-btn clock-btn--in sticky-clock__btn" id="sticky-btn" onclick="Crew.clockedIn ? Crew.clockOut() : Crew.clockIn()">Clock In</button>
+  </div>
+
   <!-- BOTTOM NAV -->
   <nav class="crew-nav" aria-label="Crew navigation">
     <button class="crew-nav__item crew-nav__item--active" data-screen="home" onclick="Crew.showScreen('home')">
@@ -515,6 +536,8 @@
           const mins = Math.floor((elapsed % 3600000) / 60000)
           const el = document.getElementById('clock-info')
           if (el) el.innerHTML = `<div class="text-xs text-muted">Clocked in at ${this.clockInTime.toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' })}</div><div class="clock-info__elapsed">${hrs}h ${mins}m</div>`
+          const stickyEl = document.getElementById('sticky-elapsed')
+          if (stickyEl) stickyEl.textContent = `${hrs}h ${mins}m`
         }
       }
       update()
@@ -523,11 +546,21 @@
 
     renderClockButton() {
       const wrap = document.getElementById('clock-btn-wrap')
+      const sticky = document.getElementById('sticky-clock')
+      const stickyBtn = document.getElementById('sticky-btn')
+      const stickyStatus = document.getElementById('sticky-status')
+
       if (this.clockedIn) {
         wrap.innerHTML = `<button class="clock-btn clock-btn--out" onclick="Crew.clockOut()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>Clock Out</button>`
+        if (sticky) sticky.classList.add('is-visible')
+        if (stickyBtn) { stickyBtn.textContent = 'Clock Out'; stickyBtn.className = 'clock-btn clock-btn--out sticky-clock__btn' }
+        if (stickyStatus) stickyStatus.textContent = 'Clocked in'
       } else {
         wrap.innerHTML = `<button class="clock-btn clock-btn--in" onclick="Crew.clockIn()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="6,4 20,12 6,20"/></svg>Clock In</button>`
         document.getElementById('clock-info').innerHTML = ''
+        if (sticky) sticky.classList.remove('is-visible')
+        if (stickyBtn) { stickyBtn.textContent = 'Clock In'; stickyBtn.className = 'clock-btn clock-btn--in sticky-clock__btn' }
+        if (stickyStatus) stickyStatus.textContent = 'Not clocked in'
       }
     },
 
@@ -671,12 +704,30 @@
         </div>
         ${job.notes ? `<div class="crew-detail-section"><div class="crew-detail-section__label">Notes from Sam</div><p class="text-sm text-secondary">${this.esc(job.notes)}</p></div>` : ''}
         <div class="crew-detail-section">
+          <div class="crew-detail-section__label">Site Check-In</div>
+          <div class="flex gap-3">
+            <button class="crew-action-btn crew-action-btn--primary mt-2" style="height:56px;flex:1" onclick="Crew.siteCheckIn('${job.id}')">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M10 2C6.7 2 4 4.7 4 8c0 5 6 10 6 10s6-5 6-10c0-3.3-2.7-6-6-6z"/><circle cx="10" cy="8" r="2"/></svg>
+              Arrive at Site
+            </button>
+            <button class="btn btn-secondary mt-2" style="height:56px;flex:1" onclick="Crew.siteCheckOut('${job.id}')">Leave Site</button>
+          </div>
+          <div id="site-checkin-status-${job.id}" class="text-xs text-muted mt-2"></div>
+        </div>
+        <div class="crew-detail-section">
           <div class="crew-detail-section__label">Voice Note</div>
           <button id="voice-btn" class="crew-action-btn crew-action-btn--primary mt-2" style="height:56px" onclick="Crew._voiceRecording ? Crew.stopVoiceNote() : Crew.startVoiceNote()">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="7" y="2" width="6" height="10" rx="3"/><path d="M4 10a6 6 0 0012 0"/><path d="M10 16v2"/></svg>
             Voice Note
           </button>
           <p id="voice-output" class="text-sm text-secondary mt-3" style="min-height:24px"></p>
+        </div>
+        <div class="crew-detail-section">
+          <div class="crew-detail-section__label">Notify Client</div>
+          <div class="flex gap-3">
+            <button class="btn btn-secondary" style="flex:1;min-height:48px" onclick="Crew.notifyClient('${job.id}','on-my-way')">📱 "On My Way"</button>
+            <button class="btn btn-secondary" style="flex:1;min-height:48px" onclick="Crew.notifyClient('${job.id}','job-complete')">📱 "Job Complete"</button>
+          </div>
         </div>
         <div class="crew-detail-section">
           <div class="crew-detail-section__label">Update Status</div>
@@ -947,6 +998,74 @@
 
       const btn = document.getElementById('voice-btn')
       if (btn) { btn.textContent = 'Voice Note'; btn.classList.remove('clock-btn--out'); btn.classList.add('crew-action-btn--primary') }
+    },
+
+    /* ── GPS SITE CHECK-IN/OUT ────────────────────── */
+
+    siteCheckIn(jobId) {
+      const checkins = JSON.parse(localStorage.getItem('se_site_checkins') || '[]')
+      const entry = {
+        id: crypto.randomUUID(), jobId, employeeId: this.currentEmployee.id,
+        employeeName: this.currentEmployee.name, type: 'arrive',
+        timestamp: new Date().toISOString(), lat: null, lng: null,
+      }
+      checkins.push(entry)
+      localStorage.setItem('se_site_checkins', JSON.stringify(checkins))
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          const fresh = JSON.parse(localStorage.getItem('se_site_checkins') || '[]')
+          const e = fresh.find(c => c.id === entry.id)
+          if (e) { e.lat = pos.coords.latitude; e.lng = pos.coords.longitude; localStorage.setItem('se_site_checkins', JSON.stringify(fresh)) }
+        }, () => {})
+      }
+
+      if (navigator.vibrate) navigator.vibrate([50, 30, 50])
+      this.toast('Arrived at site — GPS recorded', 'success')
+      const status = document.getElementById('site-checkin-status-' + jobId)
+      if (status) status.textContent = '✓ Checked in at ' + new Date().toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' })
+    },
+
+    siteCheckOut(jobId) {
+      const checkins = JSON.parse(localStorage.getItem('se_site_checkins') || '[]')
+      const entry = {
+        id: crypto.randomUUID(), jobId, employeeId: this.currentEmployee.id,
+        employeeName: this.currentEmployee.name, type: 'depart',
+        timestamp: new Date().toISOString(), lat: null, lng: null,
+      }
+      checkins.push(entry)
+      localStorage.setItem('se_site_checkins', JSON.stringify(checkins))
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          const fresh = JSON.parse(localStorage.getItem('se_site_checkins') || '[]')
+          const e = fresh.find(c => c.id === entry.id)
+          if (e) { e.lat = pos.coords.latitude; e.lng = pos.coords.longitude; localStorage.setItem('se_site_checkins', JSON.stringify(fresh)) }
+        }, () => {})
+      }
+
+      this.toast('Left site — GPS recorded', 'info')
+      const status = document.getElementById('site-checkin-status-' + jobId)
+      if (status) status.textContent = '✓ Departed at ' + new Date().toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' })
+    },
+
+    /* ── CLIENT SMS NOTIFICATIONS ──────────────────── */
+
+    notifyClient(jobId, type) {
+      const job = this.getStore('jobs').find(j => j.id === jobId)
+      if (!job) return
+      const client = this.getStore('clients').find(c => c.id === job.clientId)
+      if (!client?.phone) { this.toast('No phone number for this client', 'error'); return }
+
+      const messages = {
+        'on-my-way': `Hi ${(client.name || '').split(' ')[0]}, Sam from Steady Eco here. I'm on my way to your property now. See you shortly!`,
+        'job-complete': `Hi ${(client.name || '').split(' ')[0]}, your ${(job.serviceTypes?.[0] || 'job').replace(/-/g, ' ')} is now complete. Thanks for choosing Steady Eco! — Sam`,
+      }
+
+      const msg = encodeURIComponent(messages[type] || '')
+      const phone = client.phone.replace(/\s/g, '')
+      window.open(`sms:${phone}?body=${msg}`, '_blank')
+      this.toast('SMS opened — send to notify client', 'success')
     },
 
     /* ── ONBOARDING ─────────────────────────────────── */
