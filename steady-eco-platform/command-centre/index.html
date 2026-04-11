@@ -1059,6 +1059,13 @@
         </div>
 
         <!-- Sentinel-2 NDVI — future integration -->
+        <!-- Service Metrics -->
+        <h3 class="label mb-4">Revenue by Service Type</h3>
+        <div class="data-table-wrapper mb-8">
+          <table class="data-table"><thead><tr><th>Service</th><th>Jobs</th><th>Completed</th><th>Revenue</th><th>Avg Value</th></tr></thead>
+          <tbody id="service-metrics-table"></tbody></table>
+        </div>
+
         <h3 class="label mb-4">Satellite NDVI (Future)</h3>
         <div class="card p-5 mb-8">
           <div class="grid grid-cols-3 gap-4" style="max-width:500px">
@@ -1199,7 +1206,8 @@
         <h1 class="page-header__title" tabindex="-1">Compliance</h1>
         <div class="page-header__actions">
           <button class="btn btn-primary btn-sm" onclick="App.generateCapabilityStatement()">Capability Statement</button>
-          <button class="btn btn-secondary btn-sm" onclick="App.exportCompliance()">Export Pack</button>
+          <button class="btn btn-secondary btn-sm" onclick="App.generateWHSPlan()">WHS Plan</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.exportCompliance()">Export</button>
         </div>
       </header>
       <div class="p-6">
@@ -1693,6 +1701,7 @@
       this.setupFirstRun()
       this.initCommandPalette()
       this.initInlineValidation()
+      this.initHistoryNav()
 
       // Connectivity monitoring
       window.addEventListener('online', () => this.updateConnectivity(true))
@@ -1842,6 +1851,7 @@
       })
 
       this.currentScreen = screen
+      history.pushState({ screen }, '', `#${screen}`)
 
       // Focus management
       const heading = target?.querySelector('.page-header__title, [tabindex="-1"]')
@@ -2328,6 +2338,234 @@
       const hours = Math.floor(mins / 60)
       if (hours < 24) return `${hours}h ago`
       return `${Math.floor(hours / 24)}d ago`
+    },
+
+    /* ── EQUIPMENT MAINTENANCE LOG ────────────────────── */
+
+    addMaintenanceEntry(equipId) {
+      const desc = prompt('Maintenance description (e.g. oil change, blade sharpen, service):')
+      if (!desc) return
+      const cost = parseFloat(prompt('Cost ($):') || '0')
+      const logs = JSON.parse(localStorage.getItem('se_maintenance_log') || '[]')
+      logs.push({ id: crypto.randomUUID(), equipmentId: equipId, description: desc, cost, date: new Date().toISOString().split('T')[0], createdAt: new Date().toISOString() })
+      localStorage.setItem('se_maintenance_log', JSON.stringify(logs))
+      this.addAudit('Maintenance logged', desc)
+      this.toast('Maintenance entry logged', 'success')
+      this.renderEquipment()
+    },
+
+    /* ── WASTE DISPOSAL / TIP DOCKETS ──────────────────── */
+
+    addWasteDocket(jobId) {
+      const dockets = JSON.parse(localStorage.getItem('se_waste_dockets') || '[]')
+      const facility = prompt('Disposal facility:') || 'Portsmith Transfer Station'
+      const weight = parseFloat(prompt('Weight (kg):') || '0')
+      const cost = parseFloat(prompt('Cost ($):') || '0')
+      const docketNo = prompt('Docket number:') || ''
+      dockets.push({ id: crypto.randomUUID(), jobId, facility, weight, cost, docketNo, wasteType: 'green', date: new Date().toISOString().split('T')[0], createdAt: new Date().toISOString() })
+      localStorage.setItem('se_waste_dockets', JSON.stringify(dockets))
+      this.addAudit('Waste docket logged', `${weight}kg to ${facility}`)
+      this.toast('Waste docket recorded', 'success')
+    },
+
+    /* ── CLIENT PROPERTY NOTES ─────────────────────────── */
+
+    getClientNotes(clientId) {
+      return JSON.parse(localStorage.getItem('se_comms') || '[]').filter(c => c.clientId === clientId).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''))
+    },
+
+    /* ── COUNTER ANIMATION ─────────────────────────────── */
+
+    animateCounter(element, target, duration = 600) {
+      const start = 0
+      const startTime = performance.now()
+      const isNeg = target < 0
+      const abs = Math.abs(target)
+
+      const tick = (now) => {
+        const elapsed = now - startTime
+        const progress = Math.min(elapsed / duration, 1)
+        const eased = 1 - Math.pow(1 - progress, 3) // ease-out cubic
+        const current = Math.floor(eased * abs)
+        element.textContent = (isNeg ? '-' : '') + current.toLocaleString()
+        if (progress < 1) requestAnimationFrame(tick)
+        else element.textContent = target.toLocaleString()
+      }
+      requestAnimationFrame(tick)
+    },
+
+    /* ── SERVICE TYPE METRICS ──────────────────────────── */
+
+    getServiceMetrics() {
+      const jobs = this.getStore('jobs')
+      const invoices = this.getStore('invoices')
+      const services = {}
+
+      jobs.forEach(j => {
+        const svc = j.serviceTypes?.[0] || 'other'
+        if (!services[svc]) services[svc] = { count: 0, completed: 0, revenue: 0 }
+        services[svc].count++
+        if (['complete', 'invoiced', 'paid'].includes(j.status)) services[svc].completed++
+      })
+
+      invoices.forEach(i => {
+        const job = jobs.find(j => j.id === i.jobId)
+        const svc = job?.serviceTypes?.[0] || 'other'
+        if (services[svc] && i.status === 'paid') services[svc].revenue += (i.total || 0)
+      })
+
+      return Object.entries(services).map(([slug, data]) => ({
+        service: slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+        ...data,
+        avgValue: data.completed > 0 ? data.revenue / data.completed : 0,
+      })).sort((a, b) => b.revenue - a.revenue)
+    },
+
+    /* ── CREW GPS BROADCAST TO MAP ─────────────────────── */
+
+    plotCrewLocations() {
+      if (!this._map) return
+      // Read crew locations from localStorage (written by crew portal)
+      const locations = JSON.parse(localStorage.getItem('se_crew_locations') || '[]')
+      const employees = this.getStore('employees')
+
+      // Remove old crew markers
+      if (this._crewMarkers) this._crewMarkers.forEach(m => this._map.removeLayer(m))
+      this._crewMarkers = []
+
+      locations.forEach(loc => {
+        if (!loc.lat || !loc.lng) return
+        const emp = employees.find(e => e.id === loc.empId)
+        const age = Date.now() - new Date(loc.timestamp).getTime()
+        if (age > 4 * 60 * 60 * 1000) return // ignore locations older than 4 hours
+
+        const marker = L.marker([loc.lat, loc.lng], {
+          icon: L.divIcon({
+            className: '',
+            html: `<div style="background:var(--se-green-400);width:12px;height:12px;border-radius:50%;border:2px solid #0a0f0a;box-shadow:0 0 8px rgba(74,158,63,0.5)"></div>`,
+            iconSize: [12, 12], iconAnchor: [6, 6],
+          })
+        }).addTo(this._map).bindPopup(`<strong style="font-family:DM Sans">${this.esc(emp?.name || 'Crew')}</strong><br><span style="color:#666;font-size:11px">${this.timeAgo(loc.timestamp)}</span>`)
+
+        this._crewMarkers.push(marker)
+      })
+    },
+
+    /* ── CUSTOM CONFIRM MODAL ──────────────────────────── */
+
+    customConfirm(title, message) {
+      return new Promise(resolve => {
+        const backdrop = document.createElement('div')
+        backdrop.style.cssText = 'position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:var(--se-space-6)'
+        backdrop.innerHTML = `
+          <div style="max-width:400px;width:100%;background:var(--se-bg-elevated);border:1px solid var(--se-border-default);border-radius:var(--se-radius-xl);padding:var(--se-space-6);box-shadow:var(--se-shadow-lg)">
+            <div style="font-family:var(--se-font-display);font-size:var(--se-text-display-xs);margin-bottom:var(--se-space-3)">${this.esc(title)}</div>
+            <p class="text-sm text-secondary mb-6">${this.esc(message)}</p>
+            <div class="flex gap-3 justify-end">
+              <button class="btn btn-ghost" id="confirm-cancel">Cancel</button>
+              <button class="btn btn-danger" id="confirm-ok">Confirm</button>
+            </div>
+          </div>
+        `
+        document.body.appendChild(backdrop)
+        backdrop.querySelector('#confirm-cancel').onclick = () => { backdrop.remove(); resolve(false) }
+        backdrop.querySelector('#confirm-ok').onclick = () => { backdrop.remove(); resolve(true) }
+        backdrop.addEventListener('click', (e) => { if (e.target === backdrop) { backdrop.remove(); resolve(false) } })
+      })
+    },
+
+    /* ── HISTORY API NAVIGATION ─────────────────────────── */
+
+    initHistoryNav() {
+      window.addEventListener('popstate', (e) => {
+        if (e.state?.screen) this.navigate(e.state.screen)
+      })
+    },
+
+    /* ── DOCUMENT TEMPLATES (VAULT) ────────────────────── */
+
+    generateTreeSurvey(jobId) {
+      const job = this.getStore('jobs').find(j => j.id === jobId)
+      const client = job ? this.getStore('clients').find(c => c.id === job.clientId) : null
+
+      this.generatePdf('Tree Survey Report', `
+        <div class="section"><div class="section-title">Survey Details</div>
+          <table><tbody>
+            <tr><td style="width:35%;color:#999">Client</td><td>${this.esc(client?.name || '[Client]')}</td></tr>
+            <tr><td style="color:#999">Site</td><td>${this.esc(job?.siteAddress?.line1 || '[Address]')}</td></tr>
+            <tr><td style="color:#999">Surveyor</td><td>Sam Kerr — AQF3 Arboriculture</td></tr>
+            <tr><td style="color:#999">Date</td><td>${new Date().toLocaleDateString('en-AU')}</td></tr>
+            <tr><td style="color:#999">Standard</td><td>AS4970-2009 / AS4373-2007</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">Tree Inventory</div>
+          <table><thead><tr><th>#</th><th>Species</th><th>DBH</th><th>Height</th><th>Spread</th><th>Health</th><th>Structure</th><th>ULE</th><th>Significance</th></tr></thead><tbody>
+            ${[1,2,3,4,5].map(n => `<tr><td>T${n}</td><td>[___]</td><td>[___]mm</td><td>[___]m</td><td>[___]m</td><td>[1-5]</td><td>[1-5]</td><td>[___]yrs</td><td>[L/M/H]</td></tr>`).join('')}
+          </tbody></table>
+          <p class="meta" style="margin-top:8px">Health: 1=dead 5=excellent. Structure: 1=severe defects 5=sound. ULE: Useful Life Expectancy. Significance: Low/Medium/High.</p>
+        </div>
+        <div class="section"><div class="section-title">Site Plan</div><p class="meta">[Attach site plan showing numbered tree locations]</p></div>
+        <div class="section"><div class="section-title">Recommendations</div><p class="meta">[Summary of management recommendations for the tree population]</p></div>
+      `)
+      this.addAudit('Tree Survey generated', job?.reference || 'Manual')
+    },
+
+    generateTreeValuation(jobId) {
+      const job = this.getStore('jobs').find(j => j.id === jobId)
+      const client = job ? this.getStore('clients').find(c => c.id === job.clientId) : null
+
+      this.generatePdf('Tree Valuation Report (Revised Burnley Method)', `
+        <div class="section"><div class="section-title">Valuation Details</div>
+          <table><tbody>
+            <tr><td style="width:35%;color:#999">Client</td><td>${this.esc(client?.name || '[Client]')}</td></tr>
+            <tr><td style="color:#999">Site</td><td>${this.esc(job?.siteAddress?.line1 || '[Address]')}</td></tr>
+            <tr><td style="color:#999">Valuer</td><td>Sam Kerr — AQF3 Arboriculture</td></tr>
+            <tr><td style="color:#999">Method</td><td>Revised Burnley Method (Revised Edition, Moore 1991)</td></tr>
+            <tr><td style="color:#999">Date</td><td>${new Date().toLocaleDateString('en-AU')}</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">Valuation Calculation</div>
+          <table><thead><tr><th>Factor</th><th>Value</th><th>Notes</th></tr></thead><tbody>
+            <tr><td>Base Value (replacement cost)</td><td>$[___]</td><td>Cost of nursery stock + installation</td></tr>
+            <tr><td>Installed Plant Value (installed tree of equivalent size)</td><td>$[___]</td><td>Based on trunk area ratio</td></tr>
+            <tr><td>Life Expectancy Factor</td><td>[0.0-1.0]</td><td>ULE ÷ total expected lifespan</td></tr>
+            <tr><td>Form &amp; Vigour Factor</td><td>[0.0-1.0]</td><td>Health and structural condition</td></tr>
+            <tr><td>Location Factor</td><td>[0.0-1.0]</td><td>Contribution to landscape amenity</td></tr>
+          </tbody></table>
+          <div style="margin-top:16px;padding:12px;background:#f9f9f9;border-radius:4px">
+            <p class="meta"><strong>Amenity Value = Installed Plant Value × Life Expectancy × Form &amp; Vigour × Location</strong></p>
+            <p class="meta" style="margin-top:8px;font-size:18px"><strong>Total Amenity Value: $[________]</strong></p>
+          </div>
+        </div>
+        <div class="section"><div class="section-title">Limitations</div><p class="meta">This valuation is prepared using the Revised Burnley Method. It represents the amenity value of the tree at the date of assessment. Market value, timber value, and environmental services value are not included unless noted.</p></div>
+      `)
+      this.addAudit('Tree Valuation generated', job?.reference || 'Manual')
+    },
+
+    generateWHSPlan() {
+      this.generatePdf('WHS Management Plan', `
+        <div class="section"><p style="font-size:15px;line-height:1.6">This WHS Management Plan documents how Steady Eco manages workplace health and safety in compliance with the Work Health and Safety Act 2011 (QLD) and WHS Regulation 2011.</p></div>
+        <div class="section"><div class="section-title">1. WHS Policy</div><p class="meta">Steady Eco is committed to providing a safe and healthy workplace for all workers, subcontractors, and visitors. We will: identify hazards and assess risks; implement control measures per the hierarchy of controls; consult workers on safety matters; provide training and supervision; maintain equipment in safe condition; investigate incidents and implement corrective actions.</p></div>
+        <div class="section"><div class="section-title">2. Roles &amp; Responsibilities</div>
+          <table><tbody>
+            <tr><td style="color:#999;width:30%">PCBU (Sam Kerr)</td><td>Ensure safety systems, provide resources, review performance, lead by example</td></tr>
+            <tr><td style="color:#999">Employees</td><td>Follow SWMS, report hazards, wear PPE, participate in toolbox talks</td></tr>
+            <tr><td style="color:#999">Subcontractors</td><td>Comply with site rules, provide own PPE, hold current qualifications</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">3. Hazard Management</div><p class="meta">Hazards are managed through: SWMS (9 templates covering all service types), pre-start checklists (daily), site-specific risk assessments, toolbox talks, incident reporting and investigation. All SWMS are signed digitally before work commences.</p></div>
+        <div class="section"><div class="section-title">4. Training &amp; Competency</div><p class="meta">All workers hold: AQF3 Arboriculture (minimum), current First Aid (HLTAID011), White Card (CPCCWHS1001), Chainsaw certification (TLIC0003). Training records maintained digitally with expiry tracking and 60-day renewal alerts.</p></div>
+        <div class="section"><div class="section-title">5. Incident Management</div><p class="meta">All incidents, near-misses, and hazards reported via the Crew Portal (mobile app with photo + GPS capture). Notifiable incidents reported to Workplace Health &amp; Safety Queensland per WHS Act s38. Investigation completed within 48 hours. Corrective actions documented and SWMS updated if required.</p></div>
+        <div class="section"><div class="section-title">6. Emergency Procedures</div><p class="meta">Emergency contacts displayed on all vehicles. First aid kit on every job. Aerial rescue plan for all climbing work. Evacuation procedure for fire/cyclone. Emergency tree removal SWMS for storm response.</p></div>
+        <div class="section"><div class="section-title">7. Review</div><p class="meta">This plan is reviewed annually or after any notifiable incident. Last review: ${new Date().toLocaleDateString('en-AU')}. Next review: ${new Date(Date.now() + 365 * 86400000).toLocaleDateString('en-AU')}.</p></div>
+        <div class="section"><div class="section-title">Authorised</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px">
+            <div><p class="meta">Signed: ____________________</p><p class="meta">Sam Kerr — Owner/PCBU</p></div>
+            <div><p class="meta">Date: ${new Date().toLocaleDateString('en-AU')}</p><p class="meta">Steady Eco — ABN 49 553 784 085</p></div>
+          </div>
+        </div>
+      `)
+      this.addAudit('WHS Management Plan generated', '')
     },
 
     /* ── SCHEDULE BOARD ──────────────────────────────── */
@@ -3433,8 +3671,19 @@
     /* ── REPORTS RENDERING ─────────────────────────────── */
 
     renderReports() {
-      // Render map
-      setTimeout(() => this.renderMap(), 100)
+      // Render map + crew locations
+      setTimeout(() => { this.renderMap(); this.plotCrewLocations() }, 100)
+
+      // Service metrics table
+      const svcMetrics = this.getServiceMetrics()
+      const svcTable = document.getElementById('service-metrics-table')
+      if (svcTable) {
+        if (!svcMetrics.length) {
+          svcTable.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-6">Complete jobs to see service metrics</td></tr>`
+        } else {
+          svcTable.innerHTML = svcMetrics.map(s => `<tr><td>${this.esc(s.service)}</td><td>${s.count}</td><td>${s.completed}</td><td>${this.formatCurrency(s.revenue)}</td><td>${this.formatCurrency(s.avgValue)}</td></tr>`).join('')
+        }
+      }
 
       // Investor metrics
       const m = this.renderInvestor()
@@ -4277,6 +4526,9 @@
           <button class="btn btn-secondary btn-sm" onclick="App.generatePhotoReport('${this.esc(job.id)}')">Photo Report</button>
           <button class="btn btn-ghost btn-sm" onclick="App.generateAIA('${this.esc(job.id)}')">AIA (AS4970)</button>
           <button class="btn btn-ghost btn-sm" onclick="App.generateVMP('${this.esc(job.id)}')">Veg Mgmt Plan</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.generateTreeSurvey('${this.esc(job.id)}')">Tree Survey</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.generateTreeValuation('${this.esc(job.id)}')">Tree Valuation</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.addWasteDocket('${this.esc(job.id)}')">Waste Docket</button>
           ${job.status === 'invoiced' || job.status === 'paid' ? `<button class="btn btn-ghost btn-sm" onclick="App.printInvoice('${this.esc(job.invoiceId || '')}')">View Invoice</button>` : ''}
         </div>
       `
@@ -4475,12 +4727,13 @@
       this.toast('Data exported', 'success')
     },
 
-    clearData() {
-      if (!window.confirm('This will permanently delete ALL jobs, clients, quotes, invoices, and employees. Are you sure?')) return
-      if (!window.confirm('FINAL WARNING: This cannot be undone. Type "yes" mentally and click OK.')) return
+    async clearData() {
+      const confirmed = await this.customConfirm('Delete All Data', 'This will permanently delete ALL jobs, clients, quotes, invoices, and employees. This cannot be undone.')
+      if (!confirmed) return
 
-      const keys = ['se_jobs', 'se_clients', 'se_quotes', 'se_invoices', 'se_employees', 'se_timesheets', 'se_audit']
+      const keys = ['se_jobs', 'se_clients', 'se_quotes', 'se_invoices', 'se_employees', 'se_timesheets', 'se_audit', 'se_expenses', 'se_recurring', 'se_equipment']
       keys.forEach(k => localStorage.removeItem(k))
+      this._cache = {}
       this.toast('All data cleared', 'warning')
       this.navigate('dashboard')
     },

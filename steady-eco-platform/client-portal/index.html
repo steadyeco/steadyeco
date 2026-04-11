@@ -738,6 +738,27 @@
       const svc = this.esc((job.serviceTypes?.[0] || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()))
       const date = job.scheduledStart ? new Date(job.scheduledStart).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : 'TBC'
       const desc = job.description ? this.esc(job.description.length > 100 ? job.description.slice(0, 100) + '...' : job.description) : ''
+
+      // Job progress bar
+      const statuses = ['new','quoted','booked','active','complete','invoiced','paid']
+      const currentIdx = statuses.indexOf(job.status)
+      const progress = currentIdx >= 0 ? Math.round(((currentIdx + 1) / statuses.length) * 100) : 0
+
+      // Photos from crew
+      let photoHtml = ''
+      const employees = this.getStore('employees')
+      let jobPhotos = []
+      employees.forEach(emp => {
+        const photos = JSON.parse(localStorage.getItem('se_photos_' + emp.id) || '[]')
+        jobPhotos.push(...photos.filter(p => p.jobId === job.id))
+      })
+      if (jobPhotos.length > 0) {
+        photoHtml = `<div style="display:flex;gap:var(--se-space-2);margin-top:var(--se-space-3);overflow-x:auto">
+          ${jobPhotos.slice(0, 4).map(p => `<img src="${p.data}" alt="${this.esc(p.tag)}" style="width:56px;height:56px;object-fit:cover;border-radius:var(--se-radius-sm);border:1px solid var(--se-border-subtle);flex-shrink:0">`).join('')}
+          ${jobPhotos.length > 4 ? `<div style="width:56px;height:56px;background:var(--se-bg-surface);border-radius:var(--se-radius-sm);display:flex;align-items:center;justify-content:center;font-size:var(--se-text-xs);color:var(--se-text-muted);flex-shrink:0">+${jobPhotos.length - 4}</div>` : ''}
+        </div>`
+      }
+
       return `
         <div class="card p-5">
           <div class="flex justify-between items-start">
@@ -748,6 +769,10 @@
             </div>
             <span class="badge badge-${this.esc(job.status)}">${this.esc(job.status)}</span>
           </div>
+          <div style="margin-top:var(--se-space-3);height:3px;background:var(--se-border-subtle);border-radius:2px;overflow:hidden">
+            <div style="height:100%;width:${progress}%;background:var(--se-green-600);border-radius:2px;transition:width 300ms var(--se-ease-out)"></div>
+          </div>
+          ${photoHtml}
         </div>
       `
     },
