@@ -1568,6 +1568,42 @@
             </div>
           </div>
 
+          <!-- Rate Cards -->
+          <div class="settings-section">
+            <h3 class="settings-section__title">Rate Cards ($/hr by client type)</h3>
+            <div class="grid grid-cols-3 gap-4" style="max-width:500px">
+              <div class="form-group">
+                <label class="form-label" for="rate-residential">Residential</label>
+                <input class="form-input" id="rate-residential" type="number" min="0" step="5" placeholder="80">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="rate-commercial">Commercial</label>
+                <input class="form-input" id="rate-commercial" type="number" min="0" step="5" placeholder="95">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="rate-government">Government</label>
+                <input class="form-input" id="rate-government" type="number" min="0" step="5" placeholder="110">
+              </div>
+            </div>
+            <button class="btn btn-primary btn-sm mt-4" onclick="App.saveRateCards()" style="align-self:flex-start">Save Rates</button>
+          </div>
+
+          <!-- Bank Details (for invoices) -->
+          <div class="settings-section">
+            <h3 class="settings-section__title">Bank Details (for invoices)</h3>
+            <div class="grid grid-cols-2 gap-4" style="max-width:400px">
+              <div class="form-group">
+                <label class="form-label" for="set-bsb">BSB</label>
+                <input class="form-input" id="set-bsb" type="text" placeholder="XXX-XXX">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="set-acct">Account Number</label>
+                <input class="form-input" id="set-acct" type="text" placeholder="XXXXXXXX">
+              </div>
+            </div>
+            <button class="btn btn-primary btn-sm mt-4" onclick="App.saveBankDetails()" style="align-self:flex-start">Save Bank Details</button>
+          </div>
+
           <!-- Data -->
           <div class="settings-section">
             <h3 class="settings-section__title">Data</h3>
@@ -2017,6 +2053,7 @@
     /* ── JOBS RENDERING ────────────────────────────── */
 
     renderJobs(filter = 'all') {
+      this.showSkeleton('jobs-list', 'card', 3)
       const jobs = this.getStore('jobs')
       const filtered = filter === 'all' ? jobs : jobs.filter(j => j.status === filter)
       const container = document.getElementById('jobs-list')
@@ -2032,6 +2069,7 @@
     /* ── QUOTES / CLIENTS / EMPLOYEES / INVOICES ──── */
 
     renderQuotes() {
+      this.showSkeleton('quotes-list', 'card', 3)
       const quotes = this.getStore('quotes')
       const container = document.getElementById('quotes-list')
       if (!quotes.length) {
@@ -2051,6 +2089,7 @@
     },
 
     renderClients() {
+      this.showSkeleton('clients-list', 'card', 3)
       const clients = this.getStore('clients')
       const container = document.getElementById('clients-list')
       if (!clients.length) {
@@ -2071,6 +2110,7 @@
     },
 
     renderEmployees() {
+      this.showSkeleton('employees-list', 'card', 3)
       const employees = this.getStore('employees')
       const container = document.getElementById('employees-list')
       if (!employees.length) {
@@ -2099,6 +2139,7 @@
     },
 
     renderInvoices() {
+      this.showSkeleton('invoices-list', 'card', 3)
       const invoices = this.getStore('invoices')
       const container = document.getElementById('invoices-list')
       if (!invoices.length) {
@@ -2694,7 +2735,20 @@
       this.navigate('invoices')
     },
 
-    /* ── INLINE FORM VALIDATION ─────────────────────── */
+    /* ── SKELETON LOADING HELPER ────────────────────── */
+
+    showSkeleton(containerId, type = 'card', count = 3) {
+      const el = document.getElementById(containerId)
+      if (!el) return
+      const skeletons = {
+        card: '<div class="skeleton skeleton-card mb-3" style="height:80px"></div>',
+        stat: '<div class="skeleton skeleton-stat"></div>',
+        text: '<div class="skeleton skeleton-text mb-2"></div><div class="skeleton skeleton-text mb-2"></div><div class="skeleton skeleton-text" style="width:60%"></div>',
+      }
+      el.innerHTML = Array(count).fill(skeletons[type] || skeletons.card).join('')
+    },
+
+    /* ── INLINE FORM VALIDATION ────────────────────── */
 
     initInlineValidation() {
       document.addEventListener('blur', (e) => {
@@ -3103,7 +3157,7 @@
             <div class="total-row" style="border-top:2px solid #eee;padding-top:8px;margin-top:4px"><span class="total-label">Total (incl. GST)</span><span class="grand">${this.formatCurrency(inv.total)}</span></div>
           </div>
         </div>
-        <div class="section"><div class="section-title">Payment</div><p class="meta">Due: ${inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('en-AU') : 'On receipt'}</p><p class="meta">BSB: XXX-XXX · Account: XXXXXXXX (configure in Settings)</p></div>
+        <div class="section"><div class="section-title">Payment</div><p class="meta">Due: ${inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('en-AU') : 'On receipt'}</p><p class="meta">BSB: ${this.esc((JSON.parse(localStorage.getItem('se_bank') || '{}')).bsb || 'Set in Settings')} · Account: ${this.esc((JSON.parse(localStorage.getItem('se_bank') || '{}')).account || 'Set in Settings')}</p></div>
       `
       this.generatePdf(`Invoice ${inv.reference}`, content)
     },
@@ -3187,6 +3241,48 @@
         { name: 'First Aid Certificate', provider: 'St John Ambulance', expiry: '15 Aug 2026', status: 'current' },
         { name: 'White Card (Construction)', provider: 'Safe Work Australia', expiry: 'No expiry', status: 'current' },
       ]
+    },
+
+    /* ── EXPENSES ──────────────────────────────────────── */
+
+    addExpense(jobId) {
+      const desc = document.getElementById('jd-exp-desc').value.trim()
+      const amount = parseFloat(document.getElementById('jd-exp-amount').value)
+      if (!desc || isNaN(amount) || amount <= 0) { this.toast('Enter description and amount', 'error'); return }
+
+      const expenses = JSON.parse(localStorage.getItem('se_expenses') || '[]')
+      expenses.push({ id: crypto.randomUUID(), jobId, description: desc, amount, date: new Date().toISOString(), createdBy: 'Sam' })
+      localStorage.setItem('se_expenses', JSON.stringify(expenses))
+
+      document.getElementById('jd-exp-desc').value = ''
+      document.getElementById('jd-exp-amount').value = ''
+      this.renderJobExpenses(jobId)
+      this.addAudit('Expense logged', `${desc} — ${this.formatCurrency(amount)}`)
+      this.toast(`${this.formatCurrency(amount)} expense logged`, 'success')
+    },
+
+    renderJobExpenses(jobId) {
+      const expenses = JSON.parse(localStorage.getItem('se_expenses') || '[]').filter(e => e.jobId === jobId)
+      const el = document.getElementById('jd-expenses')
+      if (!el) return
+
+      if (!expenses.length) {
+        el.innerHTML = `<p class="text-xs text-muted mb-3">No expenses logged for this job.</p>`
+        return
+      }
+
+      const total = expenses.reduce((s, e) => s + (e.amount || 0), 0)
+      el.innerHTML = expenses.map(e => `
+        <div class="flex justify-between items-center py-2" style="border-bottom:1px solid var(--se-border-subtle)">
+          <span class="text-sm">${this.esc(e.description)}</span>
+          <span class="text-sm font-medium">${this.formatCurrency(e.amount)}</span>
+        </div>
+      `).join('') + `
+        <div class="flex justify-between items-center py-2 mt-1">
+          <span class="text-sm font-medium">Total Expenses</span>
+          <span class="text-md font-medium" style="color:var(--se-gold-500)">${this.formatCurrency(total)}</span>
+        </div>
+      `
     },
 
     /* ── REPORTS RENDERING ─────────────────────────────── */
@@ -3887,6 +3983,19 @@
         </div>
         <div class="job-section">
           <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')">
+            <span class="job-section__title">Expenses</span>${arrow}
+          </div>
+          <div class="job-section__body">
+            <div id="jd-expenses"></div>
+            <div class="flex gap-3 mt-3">
+              <input class="form-input" id="jd-exp-desc" type="text" placeholder="e.g. Fuel, tip fee, materials..." style="flex:1">
+              <input class="form-input" id="jd-exp-amount" type="number" placeholder="$" style="width:80px" min="0" step="0.01">
+              <button class="btn btn-secondary btn-sm" onclick="App.addExpense('${this.esc(job.id)}')">Add</button>
+            </div>
+          </div>
+        </div>
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')">
             <span class="job-section__title">Notes</span>${arrow}
           </div>
           <div class="job-section__body">
@@ -3896,6 +4005,7 @@
       `
 
       overlay.classList.add('is-open')
+      this.renderJobExpenses(job.id)
     },
 
     closeJobDetail() {
@@ -3923,6 +4033,17 @@
       // Load existing API key
       const key = localStorage.getItem('se_ai_key') || ''
       document.getElementById('set-api-key').value = key
+
+      // Load rate cards
+      const rates = JSON.parse(localStorage.getItem('se_rate_cards') || '{}')
+      document.getElementById('rate-residential').value = rates.residential || ''
+      document.getElementById('rate-commercial').value = rates.commercial || ''
+      document.getElementById('rate-government').value = rates.government || ''
+
+      // Load bank details
+      const bank = JSON.parse(localStorage.getItem('se_bank') || '{}')
+      document.getElementById('set-bsb').value = bank.bsb || ''
+      document.getElementById('set-acct').value = bank.account || ''
     },
 
     async changePin() {
@@ -3953,6 +4074,32 @@
       const key = document.getElementById('set-api-key').value.trim()
       localStorage.setItem('se_ai_key', key)
       this.toast(key ? 'API key saved' : 'API key cleared', 'success')
+    },
+
+    saveRateCards() {
+      const rates = {
+        residential: parseFloat(document.getElementById('rate-residential').value) || 80,
+        commercial: parseFloat(document.getElementById('rate-commercial').value) || 95,
+        government: parseFloat(document.getElementById('rate-government').value) || 110,
+      }
+      localStorage.setItem('se_rate_cards', JSON.stringify(rates))
+      this.toast('Rate cards saved', 'success')
+    },
+
+    getRateForClient(clientId) {
+      const client = this.getStore('clients').find(c => c.id === clientId)
+      const rates = JSON.parse(localStorage.getItem('se_rate_cards') || '{}')
+      const type = client?.type || 'residential'
+      return rates[type] || 80
+    },
+
+    saveBankDetails() {
+      const bank = {
+        bsb: document.getElementById('set-bsb').value.trim(),
+        account: document.getElementById('set-acct').value.trim(),
+      }
+      localStorage.setItem('se_bank', JSON.stringify(bank))
+      this.toast('Bank details saved', 'success')
     },
 
     saveBusinessDetails() {

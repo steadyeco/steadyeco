@@ -738,7 +738,25 @@
 
     renderPhotos() {
       const grid = document.getElementById('photo-grid')
-      grid.innerHTML = this.photos.map(p => `<div class="photo-thumb"><img src="${p.data}" alt="${this.esc(p.tag)} photo"></div>`).join('')
+      if (!this.photos.length) {
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:var(--se-space-8)"><p class="text-sm text-muted">No photos yet. Tap "Take Photo" above.</p></div>`
+        return
+      }
+      grid.innerHTML = this.photos.map((p, i) => `
+        <div class="photo-thumb" style="position:relative">
+          <img src="${p.data}" alt="${this.esc(p.tag)} photo">
+          <button onclick="Crew.deletePhoto(${i})" style="position:absolute;top:4px;right:4px;width:24px;height:24px;background:rgba(0,0,0,0.7);border:none;border-radius:50%;color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center" aria-label="Delete photo">&times;</button>
+          <span style="position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,0.6);color:#fff;font-size:10px;padding:2px 6px;border-radius:4px">${this.esc(p.tag)}</span>
+        </div>
+      `).join('')
+    },
+
+    deletePhoto(index) {
+      if (!confirm('Delete this photo?')) return
+      this.photos.splice(index, 1)
+      localStorage.setItem(`se_photos_${this.currentEmployee.id}`, JSON.stringify(this.photos))
+      this.renderPhotos()
+      this.toast('Photo deleted', 'info')
     },
 
     /* ── SWMS ──────────────────────────────────────── */
