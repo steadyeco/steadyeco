@@ -641,6 +641,44 @@
     .job-section.is-open .job-section__body {
       display: block;
     }
+
+    /* ══ DESIGN POLISH ══ */
+
+    /* Button ripple */
+    .btn { position: relative; overflow: hidden; }
+    .btn::after { content:''; position:absolute; inset:0; background:radial-gradient(circle, rgba(255,255,255,0.12) 10%, transparent 10.01%); transform:scale(10); opacity:0; transition:transform 0.5s, opacity 0.5s; pointer-events:none; }
+    .btn:active::after { transform:scale(0); opacity:1; transition:0s; }
+
+    /* Screen crossfade */
+    .screen { opacity: 0; transition: opacity 0.2s ease-out; }
+    .screen.is-active { opacity: 1; }
+
+    /* Staggered list entry */
+    @keyframes se-card-enter { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .card-job, .card-client, .equip-card, .card.card-interactive { animation: se-card-enter 0.3s ease-out both; }
+    .flex.flex-col.gap-3 > :nth-child(2) > .card-job, .flex.flex-col.gap-3 > :nth-child(2) { animation-delay: 40ms; }
+    .flex.flex-col.gap-3 > :nth-child(3) { animation-delay: 80ms; }
+    .flex.flex-col.gap-3 > :nth-child(4) { animation-delay: 120ms; }
+    .flex.flex-col.gap-3 > :nth-child(5) { animation-delay: 160ms; }
+
+    /* Blur-glass sidebar */
+    .sidebar { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+
+    /* Monospace numbers */
+    .card-stat__value, .carbon-value, .quick-stat__value { font-variant-numeric: tabular-nums; }
+
+    /* Input focus glow */
+    .form-input:focus { box-shadow: 0 0 0 3px rgba(74,158,63,0.15); }
+
+    /* Schedule mobile single-day */
+    @media (max-width: 768px) {
+      .schedule-grid--mobile { display:flex; flex-direction:column; gap:var(--se-space-3); background:none; border:none; }
+      .schedule-grid--mobile .schedule-header, .schedule-grid--mobile .schedule-crew { display:none; }
+    }
+
+    /* Empty schedule cell plus */
+    .schedule-cell--empty::after { content:'+'; display:flex; align-items:center; justify-content:center; height:100%; color:var(--se-text-faint); font-size:var(--se-text-lg); opacity:0.3; }
+    .schedule-cell--empty:hover::after { opacity:0.7; }
   </style>
 </head>
 <body>
@@ -887,6 +925,7 @@
         </div>
       </header>
       <div class="p-6">
+        <div class="form-group mb-4"><input class="form-input" type="search" placeholder="Search jobs by client, reference, service..." oninput="App.renderJobs(document.querySelector('#jobs-filter .filter-chip.is-active')?.dataset.filter||'all',this.value)" style="max-width:400px"></div>
         <div class="filter-bar mb-6" id="jobs-filter">
           <button class="filter-chip is-active" data-filter="all">All</button>
           <button class="filter-chip" data-filter="active">Active</button>
@@ -910,6 +949,7 @@
         </div>
       </header>
       <div class="p-6">
+        <div class="form-group mb-4"><input class="form-input" type="search" placeholder="Search quotes..." oninput="App.renderQuotes(this.value)" style="max-width:400px"></div>
         <div id="quotes-list" class="flex flex-col gap-3"></div>
       </div>
     </div>
@@ -923,6 +963,7 @@
         </div>
       </header>
       <div class="p-6">
+        <div class="form-group mb-4"><input class="form-input" type="search" placeholder="Search clients..." oninput="App.renderClients(this.value)" style="max-width:400px"></div>
         <div id="clients-list" class="flex flex-col gap-3"></div>
       </div>
     </div>
@@ -935,7 +976,10 @@
           <button class="btn btn-primary btn-sm" onclick="App.navigate('new-employee')">Add Employee</button>
         </div>
       </header>
-      <div class="p-6"><div id="employees-list" class="flex flex-col gap-3"></div></div>
+      <div class="p-6">
+        <div class="form-group mb-4"><input class="form-input" type="search" placeholder="Search employees..." oninput="App.renderEmployees(this.value)" style="max-width:400px"></div>
+        <div id="employees-list" class="flex flex-col gap-3"></div>
+      </div>
     </div>
 
     <!-- ══ NEW EMPLOYEE SCREEN ══ -->
@@ -993,7 +1037,10 @@
     <!-- ══ INVOICES SCREEN ══ -->
     <div class="screen" id="screen-invoices">
       <header class="page-header"><h1 class="page-header__title">Invoices</h1></header>
-      <div class="p-6"><div id="invoices-list" class="flex flex-col gap-3"></div></div>
+      <div class="p-6">
+        <div class="form-group mb-4"><input class="form-input" type="search" placeholder="Search invoices..." oninput="App.renderInvoices(this.value)" style="max-width:400px"></div>
+        <div id="invoices-list" class="flex flex-col gap-3"></div>
+      </div>
     </div>
 
     <!-- ══ DOCUMENTS SCREEN ══ -->
@@ -1011,7 +1058,11 @@
         <h3 class="label mb-4">Insurance &amp; Certifications</h3>
         <div class="compliance-grid mb-8" id="docs-certs"></div>
         <h3 class="label mb-4">Signed SWMS Records</h3>
-        <div class="data-table-wrapper"><table class="data-table"><thead><tr><th>SWMS</th><th>Employee</th><th>Date</th><th>Location</th></tr></thead><tbody id="docs-signed"></tbody></table></div>
+        <div class="data-table-wrapper mb-8"><table class="data-table"><thead><tr><th>SWMS</th><th>Employee</th><th>Date</th><th>Location</th></tr></thead><tbody id="docs-signed"></tbody></table></div>
+        <h3 class="label mb-4">Employee Induction Pack</h3>
+        <div class="flex flex-col gap-3 mb-8" id="docs-induction"></div>
+        <h3 class="label mb-4">Regeneration &amp; Carbon Documents</h3>
+        <div class="flex flex-col gap-3 mb-8" id="docs-regen"></div>
       </div>
     </div>
 
@@ -1085,9 +1136,15 @@
         <div class="card p-6">
           <div class="text-md font-medium mb-2">White-Label Opportunity</div>
           <p class="text-sm text-secondary mb-4">Offer the Steady Eco platform to other FNQ land management operators as a monthly subscription. They get scheduling, quoting, crew management, and compliance. You get recurring revenue and a network effect.</p>
-          <div class="grid grid-cols-2 gap-4" style="max-width:400px">
+          <div class="grid grid-cols-2 gap-4 mb-6" style="max-width:400px">
             <div><div class="text-xs text-faint">Target MRR</div><div class="text-display-xs" style="font-family:var(--se-font-display);color:var(--se-gold-500)">$5,000</div><div class="text-3xs text-faint">50 operators × $99/mo</div></div>
             <div><div class="text-xs text-faint">TAM (QLD)</div><div class="text-display-xs" style="font-family:var(--se-font-display);color:var(--se-gold-500)">2,400+</div><div class="text-3xs text-faint">land management businesses</div></div>
+          </div>
+          <h4 class="label mb-3">Pricing Tiers</h4>
+          <div class="grid grid-cols-3 gap-4" style="max-width:700px">
+            <div class="card p-5 text-center"><div class="text-display-xs" style="font-family:var(--se-font-display);color:var(--se-green-400)">$99</div><div class="text-xs text-faint">/month</div><div class="text-md font-medium mt-3 mb-2">Starter</div><div class="text-xs text-muted">1 crew member</div><div class="text-xs text-muted">50 jobs/month</div><div class="text-xs text-muted">Basic reports</div></div>
+            <div class="card p-5 text-center" style="border-color:var(--se-gold-500)"><div class="text-display-xs" style="font-family:var(--se-font-display);color:var(--se-gold-500)">$199</div><div class="text-xs text-faint">/month</div><div class="text-md font-medium mt-3 mb-2">Pro</div><div class="text-xs text-muted">5 crew members</div><div class="text-xs text-muted">Unlimited jobs</div><div class="text-xs text-muted">Full compliance suite</div></div>
+            <div class="card p-5 text-center"><div class="text-display-xs" style="font-family:var(--se-font-display);color:var(--se-green-400)">$399</div><div class="text-xs text-faint">/month</div><div class="text-md font-medium mt-3 mb-2">Enterprise</div><div class="text-xs text-muted">Unlimited crew</div><div class="text-xs text-muted">Custom branding</div><div class="text-xs text-muted">Multi-tenant + API</div></div>
           </div>
         </div>
       </div>
@@ -1101,6 +1158,7 @@
           <button class="btn btn-ghost btn-sm" id="schedule-prev" onclick="App.scheduleNav(-1)">&larr; Prev</button>
           <span class="text-sm text-secondary" id="schedule-week-label">This Week</span>
           <button class="btn btn-ghost btn-sm" id="schedule-next" onclick="App.scheduleNav(1)">Next &rarr;</button>
+          <button class="btn btn-secondary btn-sm" onclick="App.optimizeRoute()">Optimize Route</button>
         </div>
       </header>
       <div class="p-6" style="overflow-x:auto">
@@ -1200,7 +1258,9 @@
 
         <!-- ESG overview -->
         <h3 class="label mb-4">ESG Scorecard</h3>
-        <div class="grid grid-cols-3 gap-4" id="esg-scorecard" style="max-width:600px"></div>
+        <div class="grid grid-cols-3 gap-4 mb-8" id="esg-scorecard" style="max-width:600px"></div>
+        <h3 class="label mb-4">ACCU Carbon Credit Tracking</h3>
+        <div class="card p-6 mb-8" id="accu-panel"></div>
       </div>
     </div>
 
@@ -1232,7 +1292,10 @@
 
         <!-- Hazardous Tree Risk Register -->
         <h3 class="label mb-4">Hazardous Tree Risk Register</h3>
-        <div class="data-table-wrapper" id="tree-risk-panel"></div>
+        <div class="data-table-wrapper mb-8" id="tree-risk-panel"></div>
+        <h3 class="label mb-4">Reef Restoration Log</h3>
+        <div class="data-table-wrapper mb-4" id="reef-log-panel"></div>
+        <button class="btn btn-secondary btn-sm" onclick="App.addReefEntry()">Log Restoration Activity</button>
       </div>
     </div>
 
@@ -1449,6 +1512,7 @@
           <!-- Step 3: Line items + pricing -->
           <div class="quote-panel" id="qp-3" style="display:none">
             <h2 class="quote-step-title">Scope & Pricing</h2>
+            <button class="btn btn-ghost btn-sm mb-4" onclick="App.aiEstimate()" style="color:var(--se-gold-500)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="vertical-align:middle;margin-right:4px"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1"/></svg> Cassowary: Estimate from past jobs</button>
             <div id="q-line-items"></div>
             <button class="btn btn-ghost btn-sm mt-4" onclick="App.addLineItem()">+ Add line item</button>
             <div class="mt-6" id="q-totals"></div>
@@ -1664,11 +1728,22 @@
       <svg class="mobile-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 4h14v16l-7-3.5L5 20V4z"/></svg>
       Quotes
     </a>
-    <a href="#" class="mobile-nav__item" data-screen="settings">
-      <svg class="mobile-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l2.8 2.8M16.2 16.2L19 19M5 19l2.8-2.8M16.2 7.8L19 5"/></svg>
+    <a href="#" class="mobile-nav__item" onclick="event.preventDefault();App.toggleMobileMenu()">
+      <svg class="mobile-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
       More
     </a>
   </nav>
+
+  <!-- MOBILE FULL-SCREEN MENU -->
+  <div id="mobile-menu-overlay" style="display:none;position:fixed;inset:0;z-index:998;background:var(--se-bg-base);overflow-y:auto;padding:env(safe-area-inset-top) 0 calc(var(--se-mobile-nav-h) + env(safe-area-inset-bottom)) 0">
+    <div style="padding:var(--se-space-6)">
+      <div class="flex justify-between items-center mb-6">
+        <div class="text-display-xs" style="font-family:var(--se-font-display)">Menu</div>
+        <button class="btn btn-ghost btn-sm" onclick="App.toggleMobileMenu()">Close</button>
+      </div>
+      <div class="flex flex-col gap-1" id="mobile-menu-items"></div>
+    </div>
+  </div>
 
 </div>
 
@@ -1685,7 +1760,19 @@
 
   /* ── CONSTANTS ─────────────────────────────────────── */
 
-  const OWNER_PIN_KEY = 'se_owner_pin'
+  const TENANT_ID = 'se'
+  const TENANT_CONFIG = {
+    businessName: 'Steady Eco',
+    abn: '49 553 784 085',
+    phone: '0456 190 202',
+    email: 'sam@steadyeco.com',
+    location: 'Freshwater, Cairns QLD 4870',
+    owner: 'Sam Kerr',
+    serviceRadius: '100km from Cairns',
+    qualifications: 'AQF Level 3 Arboriculture',
+  }
+
+  const OWNER_PIN_KEY = `${TENANT_ID}_owner_pin`
   const DEFAULT_PIN = '000000' // First-time setup
 
   /* ── APP CONTROLLER ────────────────────────────────── */
@@ -1754,7 +1841,7 @@
         }
 
         if (val === 'biometric') {
-          // Future: WebAuthn integration
+          this.toast('Biometric login coming soon', 'info')
           return
         }
 
@@ -1887,6 +1974,7 @@
         case 'timesheets': this.renderTimesheets(); break
         case 'new-recurring': this.renderNewRecurring(); break
         case 'new-equipment': break
+        case 'cassowary': this.renderAiSuggestions(); break
       }
     },
 
@@ -2087,10 +2175,11 @@
 
     /* ── JOBS RENDERING ────────────────────────────── */
 
-    renderJobs(filter = 'all') {
+    renderJobs(filter = 'all', search = '') {
       this.showSkeleton('jobs-list', 'card', 3)
       const jobs = this.getStore('jobs')
-      const filtered = filter === 'all' ? jobs : jobs.filter(j => j.status === filter)
+      let filtered = filter === 'all' ? jobs : jobs.filter(j => j.status === filter)
+      if (search) { const q = search.toLowerCase(); filtered = filtered.filter(j => (j.reference||'').toLowerCase().includes(q) || this.getClientName(j.clientId).toLowerCase().includes(q) || (j.serviceTypes||[]).join(' ').toLowerCase().includes(q) || (j.siteAddress?.line1||'').toLowerCase().includes(q)) }
       const container = document.getElementById('jobs-list')
 
       if (filtered.length === 0) {
@@ -2103,9 +2192,10 @@
 
     /* ── QUOTES / CLIENTS / EMPLOYEES / INVOICES ──── */
 
-    renderQuotes() {
+    renderQuotes(search = '') {
       this.showSkeleton('quotes-list', 'card', 3)
-      const quotes = this.getStore('quotes')
+      let quotes = this.getStore('quotes')
+      if (search) { const q = search.toLowerCase(); quotes = quotes.filter(qo => (qo.reference||'').toLowerCase().includes(q) || this.getClientName(qo.clientId).toLowerCase().includes(q) || (qo.status||'').toLowerCase().includes(q)) }
       const container = document.getElementById('quotes-list')
       if (!quotes.length) {
         container.innerHTML = `<div class="empty-state" style="padding:var(--se-space-12)"><p class="empty-state__title">No quotes yet</p><p class="empty-state__description">Build a quote to send to your next client.</p><div class="empty-state__action"><button class="btn btn-primary btn-sm" onclick="App.navigate('new-quote')">New Quote</button></div></div>`
@@ -2123,9 +2213,10 @@
       `).join('')
     },
 
-    renderClients() {
+    renderClients(search = '') {
       this.showSkeleton('clients-list', 'card', 3)
-      const clients = this.getStore('clients')
+      let clients = this.getStore('clients')
+      if (search) { const q = search.toLowerCase(); clients = clients.filter(c => (c.name||'').toLowerCase().includes(q) || (c.phone||'').toLowerCase().includes(q) || (c.email||'').toLowerCase().includes(q) || (c.type||'').toLowerCase().includes(q)) }
       const container = document.getElementById('clients-list')
       if (!clients.length) {
         container.innerHTML = `<div class="empty-state" style="padding:var(--se-space-12)"><p class="empty-state__title">No clients yet</p><p class="empty-state__description">Add your first client to start building your network.</p><div class="empty-state__action"><button class="btn btn-primary btn-sm" onclick="App.navigate('new-client')">Add Client</button></div></div>`
@@ -2142,9 +2233,10 @@
       `).join('')
     },
 
-    renderEmployees() {
+    renderEmployees(search = '') {
       this.showSkeleton('employees-list', 'card', 3)
-      const employees = this.getStore('employees')
+      let employees = this.getStore('employees')
+      if (search) { const q = search.toLowerCase(); employees = employees.filter(e => (e.name||'').toLowerCase().includes(q) || (e.role||'').toLowerCase().includes(q) || (e.phone||'').toLowerCase().includes(q)) }
       const container = document.getElementById('employees-list')
       if (!employees.length) {
         container.innerHTML = `<div class="empty-state" style="padding:var(--se-space-12)"><p class="empty-state__title">No employees yet</p><p class="empty-state__description">Add your crew so they can clock in and manage jobs from their phones.</p><div class="empty-state__action"><button class="btn btn-primary btn-sm" onclick="App.navigate('new-employee')">Add Employee</button></div></div>`
@@ -2171,26 +2263,89 @@
       container.innerHTML += `<div class="mt-6 p-4 bg-surface rounded-lg border-subtle text-center"><p class="text-xs text-muted mb-2">Employees log in at the Crew Portal</p><p class="text-sm"><a href="../crew-portal/" target="_blank" class="text-green" style="color:var(--se-green-400)">Open Crew Portal →</a></p></div>`
     },
 
-    renderInvoices() {
+    renderInvoices(search = '') {
       this.showSkeleton('invoices-list', 'card', 3)
-      const invoices = this.getStore('invoices')
+      let invoices = this.getStore('invoices')
+      if (search) { const q = search.toLowerCase(); invoices = invoices.filter(i => (i.reference||'').toLowerCase().includes(q) || this.getClientName(i.clientId).toLowerCase().includes(q) || (i.status||'').toLowerCase().includes(q)) }
       const container = document.getElementById('invoices-list')
       if (!invoices.length) {
         container.innerHTML = `<div class="empty-state" style="padding:var(--se-space-12)"><p class="empty-state__title">No invoices yet</p><p class="empty-state__description">Complete a job and create an invoice to get paid.</p></div>`
         return
       }
       container.innerHTML = invoices.map(i => `
-        <div class="card card-interactive p-5 flex justify-between items-center" onclick="App.printInvoice('${this.esc(i.id)}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
-          <div>
+        <div class="card card-interactive p-5 flex justify-between items-center" role="button" tabindex="0">
+          <div onclick="App.printInvoice('${this.esc(i.id)}')" style="flex:1;cursor:pointer">
             <div class="text-md font-medium">${this.esc(i.reference || 'Draft')}</div>
             <div class="text-sm text-secondary">${this.esc(this.getClientName(i.clientId))}</div>
           </div>
-          <div class="text-right">
-            <div class="text-md font-medium">${this.formatCurrency(i.total || 0)}</div>
-            <span class="badge badge-${this.esc(i.status || 'draft')}">${this.esc(i.status || 'Draft')}</span>
+          <div class="flex items-center gap-3">
+            <div class="text-right" onclick="App.printInvoice('${this.esc(i.id)}')" style="cursor:pointer">
+              <div class="text-md font-medium">${this.formatCurrency(i.total || 0)}</div>
+              <span class="badge badge-${this.esc(i.status || 'draft')}">${this.esc(i.status || 'Draft')}</span>
+            </div>
+            ${i.status === 'sent' || i.status === 'overdue' ? `<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();App.markInvoicePaid('${this.esc(i.id)}')">Mark Paid</button>` : ''}
           </div>
         </div>
       `).join('')
+    },
+
+    markInvoicePaid(invoiceId) {
+      const invoices = this.getStore('invoices')
+      const inv = invoices.find(i => i.id === invoiceId)
+      if (!inv) return
+      inv.status = 'paid'
+      inv.paidAt = new Date().toISOString()
+      localStorage.setItem('se_invoices', JSON.stringify(invoices))
+      this.invalidateCache('invoices')
+      this.addAudit('Invoice paid', `${inv.reference} — ${this.formatCurrency(inv.total)}`)
+      this.toast(`${inv.reference} marked as paid`, 'success')
+      this.renderInvoices()
+    },
+
+    /* ── MOBILE MENU ──────────────────────────────── */
+
+    toggleMobileMenu() {
+      const overlay = document.getElementById('mobile-menu-overlay')
+      const isOpen = overlay.style.display !== 'none'
+      overlay.style.display = isOpen ? 'none' : 'block'
+      if (!isOpen) {
+        const items = [
+          ['dashboard','Dashboard'], ['jobs','Jobs'], ['quotes','Quotes'], ['clients','Clients'],
+          ['employees','Employees'], ['invoices','Invoices'], ['schedule','Schedule'], ['recurring','Recurring'],
+          ['equipment','Equipment'], ['documents','Documents'], ['timesheets','Timesheets'],
+          ['reports','Reports'], ['carbon','Carbon & ESG'], ['compliance','Compliance'],
+          ['settings','Settings'], ['cassowary','Ask Cassowary'],
+        ]
+        document.getElementById('mobile-menu-items').innerHTML = items.map(([screen, label]) => `
+          <button class="btn btn-ghost" style="justify-content:flex-start;width:100%;min-height:48px;font-size:var(--se-text-md)" onclick="App.navigate('${screen}');App.toggleMobileMenu()">${label}</button>
+        `).join('')
+      }
+    },
+
+    /* ── CASSOWARY AI SUGGESTION CHIPS ──────────── */
+
+    renderAiSuggestions() {
+      const container = document.getElementById('ai-messages')
+      if (!container || container.children.length > 0) return
+      const chips = [
+        "What's my revenue this week?",
+        "How many jobs are active?",
+        "Draft a follow-up for stale quotes",
+        "Show my top clients",
+        "What equipment needs servicing?",
+      ]
+      container.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:40vh;gap:var(--se-space-6)">
+          <div style="text-align:center">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="var(--se-gold-500)" stroke-width="1.5" style="margin:0 auto var(--se-space-4)"><circle cx="24" cy="24" r="18"/><path d="M24 16v8l5 3"/></svg>
+            <div class="text-display-xs" style="font-family:var(--se-font-display);color:var(--se-text-primary)">Ask Cassowary Anything</div>
+            <p class="text-sm text-muted mt-2">Your AI business assistant — powered by Claude</p>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:var(--se-space-2);justify-content:center;max-width:500px">
+            ${chips.map(c => `<button class="filter-chip" onclick="document.getElementById('ai-input').value='${c}';App.sendAiMessage()" style="cursor:pointer">${c}</button>`).join('')}
+          </div>
+        </div>
+      `
     },
 
     /* ── CASSOWARY AI ──────────────────────────────── */
@@ -2599,10 +2754,11 @@
 
     /* ── EQUIPMENT MAINTENANCE LOG ────────────────────── */
 
-    addMaintenanceEntry(equipId) {
-      const desc = prompt('Maintenance description (e.g. oil change, blade sharpen, service):')
+    async addMaintenanceEntry(equipId) {
+      const desc = await this.customPrompt('Log Maintenance', 'Description (e.g. oil change, blade sharpen, service):', 'Maintenance description')
       if (!desc) return
-      const cost = parseFloat(prompt('Cost ($):') || '0')
+      const costStr = await this.customPrompt('Maintenance Cost', 'Enter cost in dollars:', '0')
+      const cost = parseFloat(costStr || '0')
       const logs = JSON.parse(localStorage.getItem('se_maintenance_log') || '[]')
       logs.push({ id: crypto.randomUUID(), equipmentId: equipId, description: desc, cost, date: new Date().toISOString().split('T')[0], createdAt: new Date().toISOString() })
       localStorage.setItem('se_maintenance_log', JSON.stringify(logs))
@@ -2613,12 +2769,15 @@
 
     /* ── WASTE DISPOSAL / TIP DOCKETS ──────────────────── */
 
-    addWasteDocket(jobId) {
+    async addWasteDocket(jobId) {
       const dockets = JSON.parse(localStorage.getItem('se_waste_dockets') || '[]')
-      const facility = prompt('Disposal facility:') || 'Portsmith Transfer Station'
-      const weight = parseFloat(prompt('Weight (kg):') || '0')
-      const cost = parseFloat(prompt('Cost ($):') || '0')
-      const docketNo = prompt('Docket number:') || ''
+      const facility = await this.customPrompt('Waste Disposal', 'Disposal facility:', 'Portsmith Transfer Station') || 'Portsmith Transfer Station'
+      const weightStr = await this.customPrompt('Waste Weight', 'Weight in kilograms:', '0')
+      if (!weightStr) return
+      const weight = parseFloat(weightStr || '0')
+      const costStr = await this.customPrompt('Disposal Cost', 'Cost in dollars:', '0')
+      const cost = parseFloat(costStr || '0')
+      const docketNo = await this.customPrompt('Docket Number', 'Enter docket number (optional):', '') || ''
       dockets.push({ id: crypto.randomUUID(), jobId, facility, weight, cost, docketNo, wasteType: 'green', date: new Date().toISOString().split('T')[0], createdAt: new Date().toISOString() })
       localStorage.setItem('se_waste_dockets', JSON.stringify(dockets))
       this.addAudit('Waste docket logged', `${weight}kg to ${facility}`)
@@ -2728,6 +2887,33 @@
         backdrop.querySelector('#confirm-cancel').onclick = () => { backdrop.remove(); resolve(false) }
         backdrop.querySelector('#confirm-ok').onclick = () => { backdrop.remove(); resolve(true) }
         backdrop.addEventListener('click', (e) => { if (e.target === backdrop) { backdrop.remove(); resolve(false) } })
+      })
+    },
+
+    /* ── CUSTOM PROMPT MODAL ──────────────────────────── */
+
+    customPrompt(title, message, placeholder = '') {
+      return new Promise(resolve => {
+        const backdrop = document.createElement('div')
+        backdrop.style.cssText = 'position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:var(--se-space-6)'
+        backdrop.innerHTML = `
+          <div style="max-width:400px;width:100%;background:var(--se-bg-elevated);border:1px solid var(--se-border-default);border-radius:var(--se-radius-xl);padding:var(--se-space-6);box-shadow:var(--se-shadow-lg)">
+            <div style="font-family:var(--se-font-display);font-size:var(--se-text-display-xs);margin-bottom:var(--se-space-3)">${this.esc(title)}</div>
+            <p class="text-sm text-secondary mb-4">${this.esc(message)}</p>
+            <input class="form-input mb-6" id="prompt-input" type="text" placeholder="${this.esc(placeholder)}" autofocus>
+            <div class="flex gap-3 justify-end">
+              <button class="btn btn-ghost" id="prompt-cancel">Cancel</button>
+              <button class="btn btn-primary" id="prompt-ok">OK</button>
+            </div>
+          </div>
+        `
+        document.body.appendChild(backdrop)
+        const input = backdrop.querySelector('#prompt-input')
+        setTimeout(() => input.focus(), 50)
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { backdrop.remove(); resolve(input.value.trim() || null) } })
+        backdrop.querySelector('#prompt-cancel').onclick = () => { backdrop.remove(); resolve(null) }
+        backdrop.querySelector('#prompt-ok').onclick = () => { backdrop.remove(); resolve(input.value.trim() || null) }
+        backdrop.addEventListener('click', (e) => { if (e.target === backdrop) { backdrop.remove(); resolve(null) } })
       })
     },
 
@@ -3018,6 +3204,9 @@
         <div class="carbon-card"><div class="carbon-value" style="font-size:var(--se-text-display-sm);color:var(--se-success)">A</div><div class="carbon-label">Social</div><div class="text-xs text-muted mt-2">Local FNQ employment</div></div>
         <div class="carbon-card"><div class="carbon-value" style="font-size:var(--se-text-display-sm);color:var(--se-success)">A</div><div class="carbon-label">Governance</div><div class="text-xs text-muted mt-2">Full audit trail, SWMS compliance</div></div>
       `
+
+      // ACCU tracking
+      this._renderACCUPanel()
     },
 
     generateEsgReport() {
@@ -3174,6 +3363,10 @@
           </tr>
         `).join('')
       }
+
+      // Induction + Regen docs
+      this._renderInductionDocs()
+      this._renderRegenDocs()
     },
 
     viewSignedSwms() {
@@ -3858,6 +4051,9 @@
         </div>
       `
 
+      // Reef restoration log
+      this._renderReefLog()
+
       // Tree risk register
       document.getElementById('tree-risk-panel').innerHTML = `
         <table class="data-table">
@@ -4168,8 +4364,8 @@
 
     /* ── CLIENT COMMUNICATION LOG (PHANTOM P2) ────────── */
 
-    addCommNote(clientId) {
-      const note = prompt('Add note for this client:')
+    async addCommNote(clientId) {
+      const note = await this.customPrompt('Client Note', 'Add a note for this client:', 'e.g. Called re: follow-up, prefers mornings...')
       if (!note) return
       const comms = JSON.parse(localStorage.getItem('se_comms') || '[]')
       comms.push({ id: crypto.randomUUID(), clientId, type: 'note', text: note, createdAt: new Date().toISOString(), createdBy: 'Sam' })
@@ -4994,6 +5190,247 @@
       this._cache = {}
       this.toast('All data cleared', 'warning')
       this.navigate('dashboard')
+    },
+
+    /* ── ROUTE OPTIMIZATION ──────────────────────────── */
+
+    optimizeRoute() {
+      const today = new Date().toISOString().split('T')[0]
+      const jobs = this.getStore('jobs').filter(j => j.scheduledStart?.startsWith(today) && j.siteAddress?.line1)
+      if (!jobs.length) { this.toast('No jobs with addresses scheduled today', 'info'); return }
+      const origin = 'Freshwater,+Cairns+QLD+4870'
+      const waypoints = jobs.map(j => encodeURIComponent(j.siteAddress.line1)).join('/')
+      window.open(`https://www.google.com/maps/dir/${origin}/${waypoints}/${origin}`, '_blank')
+      this.toast(`Route with ${jobs.length} stops opened in Maps`, 'success')
+    },
+
+    /* ── AI QUOTE ESTIMATOR ──────────────────────────── */
+
+    aiEstimate() {
+      const services = this.quoteData.services
+      if (!services.length) { this.toast('Select services first', 'error'); return }
+      const jobs = this.getStore('jobs').filter(j => ['complete','paid','invoiced'].includes(j.status))
+      const invoices = this.getStore('invoices').filter(i => i.status === 'paid')
+      let estimated = 0; let count = 0
+      services.forEach(svc => {
+        const matching = jobs.filter(j => j.serviceTypes?.includes(svc))
+        matching.forEach(j => { const inv = invoices.find(i => i.jobId === j.id); if (inv) { estimated += inv.total; count++ } })
+      })
+      const avgRate = count > 0 ? Math.round((estimated / count) * 100) / 100 : 80
+      const clientRate = this.getRateForClient(this.quoteData.clientId)
+      this.quoteData.lineItems.forEach(li => { if (li.unitRate === clientRate) li.unitRate = Math.max(clientRate, Math.round(avgRate / 1.1 / 5) * 5) })
+      this.renderLineItems()
+      this.toast(`Estimated from ${count} past jobs — avg ${this.formatCurrency(avgRate)} per job`, 'success')
+    },
+
+    /* ── ACCU PROJECT TRACKING ───────────────────────── */
+
+    async addACCUProject() {
+      const name = await this.customPrompt('Register ACCU Project', 'Project name:', 'e.g. Newlands Revegetation')
+      if (!name) return
+      const area = await this.customPrompt('Project Area', 'Area in hectares:', '10')
+      const method = await this.customPrompt('Methodology', 'Environmental Plantings or Human-Induced Regeneration:', 'Environmental Plantings')
+      const credits = await this.customPrompt('Estimated Credits', 'Estimated ACCUs per year:', '50')
+      const projects = JSON.parse(localStorage.getItem('se_accu_projects') || '[]')
+      projects.push({ id: crypto.randomUUID(), name, area: parseFloat(area||'0'), methodology: method||'Environmental Plantings', estimatedCredits: parseInt(credits||'0'), status: 'draft', createdAt: new Date().toISOString() })
+      localStorage.setItem('se_accu_projects', JSON.stringify(projects))
+      this.addAudit('ACCU project registered', name)
+      this.toast('ACCU project registered', 'success')
+      this.renderCarbon()
+    },
+
+    /* ── REEF RESTORATION LOG ────────────────────────── */
+
+    async addReefEntry() {
+      const site = await this.customPrompt('Reef Restoration', 'Site name/location:', 'e.g. Barron River riparian zone')
+      if (!site) return
+      const activity = await this.customPrompt('Activity Type', 'Activity (riparian planting, sediment control, weed removal, water quality monitoring):', 'riparian planting')
+      const area = await this.customPrompt('Area Treated', 'Area in m²:', '500')
+      const logs = JSON.parse(localStorage.getItem('se_reef_log') || '[]')
+      logs.push({ id: crypto.randomUUID(), site, activity: activity||'riparian planting', area: parseFloat(area||'0'), date: new Date().toISOString().split('T')[0], createdAt: new Date().toISOString() })
+      localStorage.setItem('se_reef_log', JSON.stringify(logs))
+      this.addAudit('Reef restoration logged', `${site} — ${activity}`)
+      this.toast('Restoration activity logged', 'success')
+      this.renderCompliance()
+    },
+
+    /* ── INDUCTION DOCUMENTS (10) ────────────────────── */
+
+    generateEmployeeInfoForm() {
+      this.generatePdf('Employee Information Form', `<div class="section"><div class="section-title">Personal Details</div><table><tbody><tr><td style="width:35%;color:#999">Full Name</td><td>________________________________</td></tr><tr><td style="color:#999">Date of Birth</td><td>____/____/________</td></tr><tr><td style="color:#999">Address</td><td>________________________________</td></tr><tr><td style="color:#999">Suburb/City</td><td>________________ Postcode: ______</td></tr><tr><td style="color:#999">Phone</td><td>________________________________</td></tr><tr><td style="color:#999">Email</td><td>________________________________</td></tr></tbody></table></div><div class="section"><div class="section-title">Tax &amp; Superannuation</div><table><tbody><tr><td style="width:35%;color:#999">Tax File Number</td><td>________________________________</td></tr><tr><td style="color:#999">Super Fund Name</td><td>________________________________</td></tr><tr><td style="color:#999">Super Member No.</td><td>________________________________</td></tr><tr><td style="color:#999">USI</td><td>________________________________</td></tr></tbody></table></div><div class="section"><div class="section-title">Bank Details (Payroll)</div><table><tbody><tr><td style="width:35%;color:#999">BSB</td><td>______-______</td></tr><tr><td style="color:#999">Account Number</td><td>________________________________</td></tr><tr><td style="color:#999">Account Name</td><td>________________________________</td></tr></tbody></table></div><div class="section"><div class="section-title">Emergency Contacts</div><table><thead><tr><th>#</th><th>Name</th><th>Relationship</th><th>Phone</th></tr></thead><tbody><tr><td>1</td><td>________________</td><td>________________</td><td>________________</td></tr><tr><td>2</td><td>________________</td><td>________________</td><td>________________</td></tr></tbody></table></div><div class="section"><div class="section-title">Medical</div><p class="meta">Do you have any medical conditions, allergies, or medications that may affect your ability to work safely?</p><p class="meta" style="margin-top:8px">________________________________________________________________________________________________</p></div><div class="section"><div class="section-title">Declaration</div><p class="meta">I declare that the information provided is true and correct.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px"><div><p class="meta">Signed: ____________________</p></div><div><p class="meta">Date: ____/____/________</p></div></div></div>`)
+      this.addAudit('Employee Info Form generated', '')
+    },
+
+    generateEmploymentContract() {
+      this.generatePdf('Employment Contract — Letter of Offer', `<div class="section"><p style="font-size:14px;line-height:1.8">Dear ________________________________,</p><p style="font-size:14px;line-height:1.8;margin-top:12px">${TENANT_CONFIG.businessName} is pleased to offer you employment on the following terms under the Fair Work Act 2009 (Cth) and the Gardening and Landscaping Services Award 2020 (MA000101).</p></div><div class="section"><div class="section-title">Position Details</div><table><tbody><tr><td style="width:35%;color:#999">Position</td><td>________________________________</td></tr><tr><td style="color:#999">Start Date</td><td>____/____/________</td></tr><tr><td style="color:#999">Employment Type</td><td>☐ Full-time ☐ Part-time ☐ Casual</td></tr><tr><td style="color:#999">Probation Period</td><td>6 months</td></tr><tr><td style="color:#999">Ordinary Hours</td><td>38 hours per week (full-time)</td></tr><tr><td style="color:#999">Hourly Rate</td><td>$________/hr (above Award minimum)</td></tr><tr><td style="color:#999">Location</td><td>${TENANT_CONFIG.location}</td></tr><tr><td style="color:#999">Reports To</td><td>${TENANT_CONFIG.owner}</td></tr></tbody></table></div><div class="section"><div class="section-title">Leave Entitlements (NES)</div><table><tbody><tr><td style="color:#999">Annual Leave</td><td>4 weeks per year (pro-rata)</td></tr><tr><td style="color:#999">Personal/Carer's Leave</td><td>10 days per year</td></tr><tr><td style="color:#999">Compassionate Leave</td><td>2 days per occasion</td></tr><tr><td style="color:#999">Long Service Leave</td><td>Per QLD Industrial Relations Act 2016</td></tr></tbody></table></div><div class="section"><div class="section-title">Notice Period</div><p class="meta">During probation: 1 week. After probation: as per NES (1–4 weeks based on length of service).</p></div><div class="section"><div class="section-title">Policies</div><p class="meta">You agree to comply with all company policies including WHS, Code of Conduct, Drug &amp; Alcohol, Confidentiality, and Vehicle Use agreements provided as part of your induction pack.</p></div><div class="section"><div class="section-title">Acceptance</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px"><div><p class="meta">Employee Signature: ____________________</p><p class="meta">Date: ____/____/________</p></div><div><p class="meta">Employer: ${TENANT_CONFIG.owner}</p><p class="meta">${TENANT_CONFIG.businessName} — ABN ${TENANT_CONFIG.abn}</p></div></div></div>`)
+      this.addAudit('Employment Contract generated', '')
+    },
+
+    generateCodeOfConduct() {
+      this.generatePdf('Code of Conduct', `<div class="section"><p style="font-size:14px;line-height:1.6">${TENANT_CONFIG.businessName} expects all employees to maintain the highest standards of professional conduct. This code applies to all work performed, whether on client sites, in vehicles, or in any capacity representing the business.</p></div><div class="section"><div class="section-title">1. Professional Standards</div><p class="meta">Present yourself professionally at all times. Arrive on time. Communicate respectfully with clients, colleagues, and the public. Represent ${TENANT_CONFIG.businessName} with integrity.</p></div><div class="section"><div class="section-title">2. Health &amp; Safety</div><p class="meta">Comply with all SWMS, wear required PPE, report hazards immediately, and exercise your right to cease unsafe work under the WHS Act 2011 (QLD).</p></div><div class="section"><div class="section-title">3. Environmental Responsibility</div><p class="meta">Follow zero-waste-to-landfill policy. Respect native vegetation and wildlife. Comply with GBR catchment requirements. Report environmental incidents.</p></div><div class="section"><div class="section-title">4. Confidentiality</div><p class="meta">Do not disclose client information, pricing, or business strategies. See Confidentiality Agreement for full details.</p></div><div class="section"><div class="section-title">5. Social Media</div><p class="meta">Do not post client properties, work sites, or internal business information without written permission.</p></div><div class="section"><div class="section-title">6. Drug &amp; Alcohol</div><p class="meta">Zero tolerance policy. See Drug &amp; Alcohol Policy for full details.</p></div><div class="section"><div class="section-title">7. Consequences of Breach</div><p class="meta">Breaches may result in counselling, written warning, suspension, or termination depending on severity. Serious misconduct (violence, theft, intoxication) may result in immediate termination.</p></div><div class="section"><div class="section-title">Acknowledgement</div><p class="meta">I have read, understood, and agree to comply with this Code of Conduct.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px"><div><p class="meta">Signed: ____________________</p></div><div><p class="meta">Date: ____/____/________</p></div></div></div>`)
+      this.addAudit('Code of Conduct generated', '')
+    },
+
+    generateWHSInduction() {
+      const items = ['WHS policy explained and understood','Hazard identification and reporting procedures','Emergency procedures and muster points','First aid kit locations and trained first aiders','PPE requirements for each job type','SWMS system explained — sign before each job','Incident reporting process (Crew Portal)','Right to cease unsafe work (WHS Act s84)','Manual handling techniques','Working at heights procedures','Electrical safety and powerline awareness','Heat stress management and hydration','Vehicle and equipment pre-start procedures','Chemical handling and SDS locations','Fire extinguisher locations and use']
+      this.generatePdf('WHS Induction Checklist', `<div class="section"><p class="meta">Complete this checklist during employee induction. All items must be explained and acknowledged. Reference: Work Health and Safety Act 2011 (QLD), WHS Regulation 2011.</p></div><div class="section"><div class="section-title">Induction Items</div><table><thead><tr><th style="width:60%">Item</th><th>Completed ✓</th><th>Date</th></tr></thead><tbody>${items.map(item => `<tr><td>${item}</td><td style="text-align:center">☐</td><td>____/____/____</td></tr>`).join('')}</tbody></table></div><div class="section"><div class="section-title">Acknowledgement</div><p class="meta">I confirm all above items have been explained to me and I understand my WHS obligations.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px"><div><p class="meta">Employee: ____________________</p><p class="meta">Date: ____/____/________</p></div><div><p class="meta">Inducted by: ${TENANT_CONFIG.owner}</p><p class="meta">${TENANT_CONFIG.businessName}</p></div></div></div>`)
+      this.addAudit('WHS Induction Checklist generated', '')
+    },
+
+    generateEquipmentIssueRegister() {
+      const items = ['Hard hat (AS/NZS 1801)','Safety glasses (AS/NZS 1337)','Hearing protection (AS/NZS 1270)','Steel-cap boots (AS/NZS 2210)','Hi-vis vest','Chainsaw chaps','Climbing harness','Work gloves','Sun protection (hat)','P2 dust mask']
+      this.generatePdf('Equipment Issue Register', `<div class="section"><p class="meta">Record all PPE and equipment issued to employees. Equipment must be inspected before issue and upon return.</p></div><div class="section"><div class="section-title">Employee: ________________________________</div><table><thead><tr><th>Item</th><th>Serial/Size</th><th>Condition</th><th>Date Issued</th><th>Employee Signature</th><th>Return Date</th></tr></thead><tbody>${items.map(item => `<tr><td>${item}</td><td>________</td><td>☐New ☐Good ☐Fair</td><td>____/____</td><td>____________</td><td>____/____</td></tr>`).join('')}<tr><td>________________</td><td>________</td><td>☐New ☐Good ☐Fair</td><td>____/____</td><td>____________</td><td>____/____</td></tr></tbody></table></div>`)
+      this.addAudit('Equipment Issue Register generated', '')
+    },
+
+    generateTrainingRecord() {
+      const courses = ['White Card (CPCCWHS1001)','First Aid (HLTAID011)','Chainsaw Operator (TLIC0003)','AQF3 Arboriculture','Traffic Control (TC)','Elevated Work Platform','Chemical Handling (AHCCHM307)','Aerial Rescue']
+      this.generatePdf('Training Record', `<div class="section"><p class="meta">Employee: ________________________________ &nbsp;&nbsp; Start Date: ____/____/________</p></div><div class="section"><div class="section-title">Qualifications &amp; Training</div><table><thead><tr><th>Course/Qualification</th><th>Provider</th><th>Date Completed</th><th>Expiry</th><th>Certificate No.</th></tr></thead><tbody>${courses.map(c => `<tr><td>${c}</td><td>________________</td><td>____/____/____</td><td>____/____/____</td><td>________________</td></tr>`).join('')}</tbody></table></div><div class="section"><div class="section-title">Toolbox Talks Attended</div><table><thead><tr><th>Topic</th><th>Date</th><th>Presenter</th><th>Signature</th></tr></thead><tbody>${[1,2,3,4,5].map(() => `<tr><td>________________</td><td>____/____</td><td>________________</td><td>________________</td></tr>`).join('')}</tbody></table></div>`)
+      this.addAudit('Training Record generated', '')
+    },
+
+    generateConfidentiality() {
+      this.generatePdf('Confidentiality Agreement', `<div class="section"><p style="font-size:14px;line-height:1.6">This agreement is between ${TENANT_CONFIG.businessName} (ABN ${TENANT_CONFIG.abn}) and the employee named below.</p></div><div class="section"><div class="section-title">Confidential Information</div><p class="meta">You agree not to disclose, during or after employment, any information relating to: client contact details, property information, and service history; pricing, quotes, and rate cards; business strategies, financial information, and trade secrets; employee records and payroll data; proprietary systems, processes, and intellectual property.</p></div><div class="section"><div class="section-title">Obligations</div><p class="meta">You must: keep all confidential information secure; not copy or remove business records without permission; return all materials upon termination; report any suspected breaches immediately.</p></div><div class="section"><div class="section-title">Duration</div><p class="meta">This obligation survives the termination of your employment and continues indefinitely.</p></div><div class="section"><div class="section-title">Consequences of Breach</div><p class="meta">Breach of this agreement may result in disciplinary action including termination, and ${TENANT_CONFIG.businessName} reserves the right to seek legal remedies.</p></div><div class="section"><div class="section-title">Acceptance</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px"><div><p class="meta">Employee: ____________________</p><p class="meta">Date: ____/____/________</p></div><div><p class="meta">Employer: ${TENANT_CONFIG.owner}</p><p class="meta">${TENANT_CONFIG.businessName}</p></div></div></div>`)
+      this.addAudit('Confidentiality Agreement generated', '')
+    },
+
+    generateVehicleUse() {
+      this.generatePdf('Vehicle Use Agreement', `<div class="section"><p class="meta">This policy applies to all employees operating ${TENANT_CONFIG.businessName} vehicles or using personal vehicles for work purposes.</p></div><div class="section"><div class="section-title">Requirements</div><table><tbody><tr><td style="color:#999">License</td><td>Valid QLD driver's license required at all times. Report any suspensions immediately.</td></tr><tr><td style="color:#999">Pre-Start</td><td>Complete vehicle inspection before each use (tyres, fluids, lights, load security).</td></tr><tr><td style="color:#999">Personal Use</td><td>No personal use without written permission from ${TENANT_CONFIG.owner}.</td></tr><tr><td style="color:#999">Passengers</td><td>Only authorised employees as passengers. No hitchhikers.</td></tr><tr><td style="color:#999">GPS Tracking</td><td>Company vehicles are GPS-tracked for safety and fleet management.</td></tr><tr><td style="color:#999">Fuel Cards</td><td>Fuel cards for work fuel only. Receipts must be retained.</td></tr></tbody></table></div><div class="section"><div class="section-title">Zero Tolerance</div><p class="meta">No driving under the influence of alcohol or drugs. Immediate termination applies. No using mobile phones while driving (hands-free only). Report ALL accidents/incidents immediately regardless of fault.</p></div><div class="section"><div class="section-title">Acknowledgement</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px"><div><p class="meta">Signed: ____________________</p><p class="meta">License No: ________________</p></div><div><p class="meta">Date: ____/____/________</p></div></div></div>`)
+      this.addAudit('Vehicle Use Agreement generated', '')
+    },
+
+    generateDrugAlcohol() {
+      this.generatePdf('Drug & Alcohol Policy', `<div class="section"><p style="font-size:14px;line-height:1.6">${TENANT_CONFIG.businessName} maintains a zero tolerance policy for drug and alcohol use in the workplace, in accordance with the Work Health and Safety Act 2011 (QLD).</p></div><div class="section"><div class="section-title">Policy</div><p class="meta">No employee shall: attend work under the influence of alcohol or illicit drugs; consume alcohol or drugs during work hours including breaks; possess illicit substances on work sites or in company vehicles; operate equipment while impaired by any substance including prescription medication that affects ability to work safely.</p></div><div class="section"><div class="section-title">Prescription Medication</div><p class="meta">Employees taking prescription medication that may impair work ability must disclose this to ${TENANT_CONFIG.owner} before commencing work. A fit-for-duty assessment may be required.</p></div><div class="section"><div class="section-title">Testing</div><p class="meta">${TENANT_CONFIG.businessName} reserves the right to conduct: pre-employment testing; random workplace testing; post-incident testing; reasonable cause testing.</p></div><div class="section"><div class="section-title">Consequences</div><table><tbody><tr><td style="color:#999">First Offence</td><td>Immediate stand-down. Formal written warning. Mandatory counselling.</td></tr><tr><td style="color:#999">Second Offence</td><td>Termination of employment.</td></tr><tr><td style="color:#999">Serious Misconduct</td><td>Immediate termination (e.g. operating machinery while impaired).</td></tr></tbody></table></div><div class="section"><div class="section-title">Support</div><p class="meta">Employees experiencing substance issues are encouraged to seek help. Contact: Lifeline 13 11 14, Beyond Blue 1300 22 4636, or discuss confidentially with ${TENANT_CONFIG.owner}.</p></div><div class="section"><div class="section-title">Acknowledgement</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px"><div><p class="meta">Signed: ____________________</p></div><div><p class="meta">Date: ____/____/________</p></div></div></div>`)
+      this.addAudit('Drug & Alcohol Policy generated', '')
+    },
+
+    generateFairWork() {
+      this.generatePdf('Fair Work Information Statement', `<div class="section"><p style="font-size:14px;line-height:1.6">Under the Fair Work Act 2009, ${TENANT_CONFIG.businessName} is required to provide all new employees with the Fair Work Information Statement. This document summarises your key workplace rights.</p></div><div class="section"><div class="section-title">National Employment Standards (NES)</div><table><tbody><tr><td style="color:#999">Maximum Hours</td><td>38 hours/week (full-time) + reasonable additional hours</td></tr><tr><td style="color:#999">Annual Leave</td><td>4 weeks per year (paid, pro-rata for part-time)</td></tr><tr><td style="color:#999">Personal/Carer's Leave</td><td>10 days per year (paid)</td></tr><tr><td style="color:#999">Compassionate Leave</td><td>2 days per occasion (paid)</td></tr><tr><td style="color:#999">Community Service Leave</td><td>Unpaid (except jury service — 10 days paid)</td></tr><tr><td style="color:#999">Long Service Leave</td><td>Per QLD Industrial Relations Act 2016</td></tr><tr><td style="color:#999">Parental Leave</td><td>12 months unpaid + government-funded paid parental leave</td></tr><tr><td style="color:#999">Public Holidays</td><td>Entitled to be absent on public holidays (paid if would normally work)</td></tr></tbody></table></div><div class="section"><div class="section-title">Modern Award</div><p class="meta">Your employment is covered by the Gardening and Landscaping Services Award 2020 (MA000101). This sets minimum pay rates, allowances, penalty rates, and overtime. Full award available at: fairwork.gov.au</p></div><div class="section"><div class="section-title">Notice of Termination</div><table><tbody><tr><td style="color:#999">&lt; 1 year service</td><td>1 week notice</td></tr><tr><td style="color:#999">1–3 years</td><td>2 weeks</td></tr><tr><td style="color:#999">3–5 years</td><td>3 weeks</td></tr><tr><td style="color:#999">5+ years</td><td>4 weeks (+1 week if over 45 with 2+ years)</td></tr></tbody></table></div><div class="section"><div class="section-title">Fair Work Ombudsman</div><p class="meta">For information about your workplace rights: fairwork.gov.au or call 13 13 94.</p><p class="meta" style="margin-top:8px">Fair Work Commission (disputes/unfair dismissal): fwc.gov.au or call 1300 799 675.</p></div>`)
+      this.addAudit('Fair Work Statement generated', '')
+    },
+
+    /* ── REGEN DOCUMENTS (11) ────────────────────────── */
+
+    generateACCUApplication() {
+      this.generatePdf('ACCU Newlands Application', `<div class="section"><div class="section-title">Project Registration — Clean Energy Regulator</div><p class="meta">Carbon Credits (Carbon Farming Initiative) Act 2011</p></div><div class="section"><div class="section-title">Proponent Details</div><table><tbody><tr><td style="width:35%;color:#999">Proponent</td><td>${TENANT_CONFIG.businessName}</td></tr><tr><td style="color:#999">ABN</td><td>${TENANT_CONFIG.abn}</td></tr><tr><td style="color:#999">Contact</td><td>${TENANT_CONFIG.owner} — ${TENANT_CONFIG.phone}</td></tr><tr><td style="color:#999">Address</td><td>${TENANT_CONFIG.location}</td></tr></tbody></table></div><div class="section"><div class="section-title">Project Details</div><table><tbody><tr><td style="width:35%;color:#999">Project Name</td><td>________________________________</td></tr><tr><td style="color:#999">Project Area (ha)</td><td>________</td></tr><tr><td style="color:#999">Methodology</td><td>☐ Environmental Plantings ☐ Human-Induced Regeneration</td></tr><tr><td style="color:#999">Crediting Period</td><td>25 years (permanent)</td></tr><tr><td style="color:#999">Start Date</td><td>____/____/________</td></tr><tr><td style="color:#999">Estimated Annual Abatement</td><td>________ tCO₂e</td></tr><tr><td style="color:#999">Land Tenure</td><td>☐ Freehold ☐ Leasehold ☐ Crown ☐ Other</td></tr><tr><td style="color:#999">Lot/Plan Description</td><td>________________________________</td></tr></tbody></table></div><div class="section"><div class="section-title">Eligible Interest Holder Consent</div><p class="meta">All eligible interest holders must provide written consent. Attach signed consent forms.</p><table><thead><tr><th>Name</th><th>Interest Type</th><th>Consent Date</th></tr></thead><tbody><tr><td>________________</td><td>________________</td><td>____/____/____</td></tr></tbody></table></div><div class="section"><div class="section-title">Declaration</div><p class="meta">I declare that all information provided is true and correct. I understand that providing false information is an offence under the Carbon Credits Act 2011.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px"><div><p class="meta">Signed: ____________________</p><p class="meta">${TENANT_CONFIG.owner}</p></div><div><p class="meta">Date: ${new Date().toLocaleDateString('en-AU')}</p></div></div></div>`)
+      this.addAudit('ACCU Application generated', '')
+    },
+
+    generateCarbonAreaMap() {
+      this.generatePdf('Carbon Estimation Area Map', `<div class="section"><div class="section-title">Project Boundary</div><table><tbody><tr><td style="color:#999">Project Name</td><td>________________________________</td></tr><tr><td style="color:#999">Total Area (ha)</td><td>________</td></tr><tr><td style="color:#999">Datum</td><td>GDA2020 / MGA Zone 55</td></tr></tbody></table></div><div class="section"><div class="section-title">Boundary Coordinates</div><table><thead><tr><th>Point</th><th>Easting</th><th>Northing</th><th>Latitude</th><th>Longitude</th></tr></thead><tbody>${[1,2,3,4,5,6].map(n => `<tr><td>${n}</td><td>________</td><td>________</td><td>________</td><td>________</td></tr>`).join('')}</tbody></table></div><div class="section"><div class="section-title">Vegetation Type</div><table><tbody><tr><td style="color:#999">RE Code</td><td>__________ (QLD Regional Ecosystem)</td></tr><tr><td style="color:#999">Vegetation Class</td><td>☐ Wet tropics ☐ Dry tropics ☐ Woodland ☐ Riparian</td></tr><tr><td style="color:#999">Existing Cover (%)</td><td>________%</td></tr></tbody></table></div><div class="section"><div class="section-title">Excluded Areas</div><p class="meta">[Mark any areas excluded from the Carbon Estimation Area: roads, buildings, waterways, existing mature vegetation, infrastructure easements]</p></div><div class="section"><p class="meta">[Attach: satellite/aerial image with boundary overlay, lot/plan diagram]</p></div>`)
+      this.addAudit('Carbon Area Map template generated', '')
+    },
+
+    generateRevegetationProposal() {
+      this.generatePdf('Revegetation Project Proposal', `<div class="section"><div class="section-title">Project Overview</div><table><tbody><tr><td style="color:#999">Project Name</td><td>________________________________</td></tr><tr><td style="color:#999">Location</td><td>________________________________</td></tr><tr><td style="color:#999">Area (ha)</td><td>________</td></tr><tr><td style="color:#999">Prepared by</td><td>${TENANT_CONFIG.owner} — ${TENANT_CONFIG.businessName}</td></tr></tbody></table></div><div class="section"><div class="section-title">Objectives</div><p class="meta">[State: carbon sequestration, biodiversity restoration, erosion control, habitat connectivity, GBR catchment water quality improvement]</p></div><div class="section"><div class="section-title">Native Species Selection (FNQ)</div><table><thead><tr><th>Species</th><th>Common Name</th><th>Type</th><th>Qty</th><th>Spacing</th></tr></thead><tbody><tr><td>Melaleuca leucadendra</td><td>Weeping Paperbark</td><td>Canopy</td><td>____</td><td>4m</td></tr><tr><td>Acacia mangium</td><td>Black Wattle</td><td>Pioneer</td><td>____</td><td>3m</td></tr><tr><td>Eucalyptus pellita</td><td>Red Mahogany</td><td>Canopy</td><td>____</td><td>5m</td></tr><tr><td>Casuarina cunninghamiana</td><td>River Oak</td><td>Riparian</td><td>____</td><td>3m</td></tr><tr><td>Allocasuarina littoralis</td><td>Black She-oak</td><td>Understorey</td><td>____</td><td>2m</td></tr><tr><td>Callistemon viminalis</td><td>Weeping Bottlebrush</td><td>Understorey</td><td>____</td><td>2m</td></tr></tbody></table><p class="meta" style="margin-top:8px">All tube stock sourced from local FNQ provenance nurseries.</p></div><div class="section"><div class="section-title">Planting Methodology</div><p class="meta">Site preparation: slash existing weeds, apply glyphosate (if applicable), rip planting lines. Planting: tube stock in 50mm pots, planted with water crystals and slow-release fertiliser. Mulch ring 500mm diameter around each plant. Tree guards where wallaby pressure expected.</p></div><div class="section"><div class="section-title">Timeline</div><table><thead><tr><th>Phase</th><th>Timing</th><th>Activity</th></tr></thead><tbody><tr><td>1</td><td>Month 1–2</td><td>Site preparation, weed control, ripping</td></tr><tr><td>2</td><td>Month 3–4 (wet season)</td><td>Planting</td></tr><tr><td>3</td><td>Month 6</td><td>First maintenance — weed, replace losses</td></tr><tr><td>4</td><td>Month 12</td><td>First monitoring assessment</td></tr><tr><td>5</td><td>Ongoing</td><td>Quarterly maintenance for 3 years</td></tr></tbody></table></div>`)
+      this.addAudit('Revegetation Proposal generated', '')
+    },
+
+    generateBiodiversityReport() {
+      this.generatePdf('Biodiversity Monitoring Report', `<div class="section"><div class="section-title">Survey Details</div><table><tbody><tr><td style="color:#999">Site ID</td><td>________________________________</td></tr><tr><td style="color:#999">Survey Date</td><td>${new Date().toLocaleDateString('en-AU')}</td></tr><tr><td style="color:#999">Surveyor</td><td>${TENANT_CONFIG.owner}</td></tr><tr><td style="color:#999">Weather</td><td>________________________________</td></tr></tbody></table></div><div class="section"><div class="section-title">Flora Species</div><table><thead><tr><th>Species</th><th>Common Name</th><th>Abundance</th><th>Health</th><th>Notes</th></tr></thead><tbody>${[1,2,3,4,5].map(() => `<tr><td>________________</td><td>________________</td><td>☐R ☐O ☐F ☐C ☐A</td><td>[1-5]</td><td>________</td></tr>`).join('')}</tbody></table><p class="meta" style="margin-top:4px">Abundance: R=Rare, O=Occasional, F=Frequent, C=Common, A=Abundant</p></div><div class="section"><div class="section-title">Fauna Observed</div><table><thead><tr><th>Species</th><th>Type</th><th>Count</th><th>Evidence</th><th>Conservation Status</th></tr></thead><tbody><tr><td>Southern Cassowary</td><td>Bird</td><td>____</td><td>☐Visual ☐Scat ☐Tracks</td><td>Endangered</td></tr><tr><td>Spectacled Flying Fox</td><td>Mammal</td><td>____</td><td>☐Visual ☐Roost</td><td>Vulnerable</td></tr><tr><td>Tree Kangaroo</td><td>Mammal</td><td>____</td><td>☐Visual ☐Scat</td><td>Endangered</td></tr><tr><td>________________</td><td>________</td><td>____</td><td>________________</td><td>________</td></tr></tbody></table></div><div class="section"><div class="section-title">Habitat Assessment</div><table><tbody><tr><td style="color:#999">Vegetation Condition</td><td>☐Excellent ☐Good ☐Moderate ☐Poor ☐Very Poor</td></tr><tr><td style="color:#999">Weed Incursion</td><td>☐None ☐Low ☐Moderate ☐High ☐Severe</td></tr><tr><td style="color:#999">Canopy Cover</td><td>________%</td></tr><tr><td style="color:#999">Habitat Connectivity</td><td>☐Connected ☐Partially ☐Isolated</td></tr><tr><td style="color:#999">Water Quality</td><td>☐Clear ☐Slightly turbid ☐Turbid</td></tr></tbody></table></div>`)
+      this.addAudit('Biodiversity Report generated', '')
+    },
+
+    generateWeedManagementPlan() {
+      this.generatePdf('Weed Management Plan', `<div class="section"><div class="section-title">Site Details</div><table><tbody><tr><td style="color:#999">Site</td><td>________________________________</td></tr><tr><td style="color:#999">Area (ha)</td><td>________</td></tr><tr><td style="color:#999">Prepared by</td><td>${TENANT_CONFIG.owner} — ${TENANT_CONFIG.businessName}</td></tr></tbody></table></div><div class="section"><div class="section-title">Target Species (FNQ Priority Weeds)</div><table><thead><tr><th>Species</th><th>Common Name</th><th>Weed Class</th><th>Control Method</th><th>Priority</th></tr></thead><tbody><tr><td>Sphagneticola trilobata</td><td>Singapore Daisy</td><td>Category 3</td><td>Manual + herbicide</td><td>High</td></tr><tr><td>Cryptostegia grandiflora</td><td>Rubber Vine</td><td>Restricted (Cat 3)</td><td>Cut-stump + herbicide</td><td>High</td></tr><tr><td>Lantana camara</td><td>Lantana</td><td>Category 3</td><td>Slashing + herbicide</td><td>High</td></tr><tr><td>Megathyrsus maximus</td><td>Guinea Grass</td><td>Not declared</td><td>Slash + spot spray</td><td>Medium</td></tr><tr><td>Annona glabra</td><td>Pond Apple</td><td>Restricted (Cat 3)</td><td>Cut-stump</td><td>Medium</td></tr></tbody></table></div><div class="section"><div class="section-title">Treatment Schedule</div><table><thead><tr><th>Treatment</th><th>Method</th><th>Timing</th><th>Chemicals</th><th>Frequency</th></tr></thead><tbody><tr><td>Initial clearing</td><td>Slash + spot spray</td><td>Dry season</td><td>Glyphosate 360g/L</td><td>Once</td></tr><tr><td>Follow-up 1</td><td>Spot spray regrowth</td><td>+3 months</td><td>Glyphosate / Metsulfuron</td><td>Once</td></tr><tr><td>Follow-up 2</td><td>Manual removal + spray</td><td>+6 months</td><td>As required</td><td>Once</td></tr><tr><td>Maintenance</td><td>Monitoring + spot treat</td><td>Quarterly</td><td>As required</td><td>Ongoing</td></tr></tbody></table></div><div class="section"><div class="section-title">GBR Catchment Controls</div><p class="meta">20m buffer from all waterways — no spraying. Use only APVMA-registered products. No spraying in rain or wind &gt;15km/h. Chemical application records maintained per QLD Chemical Usage Act 1992.</p></div>`)
+      this.addAudit('Weed Management Plan generated', '')
+    },
+
+    generateErosionPlan() {
+      this.generatePdf('Erosion & Sediment Control Plan', `<div class="section"><div class="section-title">Site Details</div><table><tbody><tr><td style="color:#999">Site</td><td>________________________________</td></tr><tr><td style="color:#999">Slope</td><td>________% grade</td></tr><tr><td style="color:#999">Soil Type</td><td>☐Clay ☐Loam ☐Sand ☐Gravel</td></tr><tr><td style="color:#999">Drainage</td><td>☐To waterway ☐Internal ☐Stormwater</td></tr></tbody></table></div><div class="section"><div class="section-title">Control Measures</div><table><tbody><tr><td style="color:#999">Silt Fencing</td><td>Installed downslope of all clearing areas. Inspected daily during rain events.</td></tr><tr><td style="color:#999">Mulch Application</td><td>Minimum 75mm depth on all cleared areas within 48 hours of clearing.</td></tr><tr><td style="color:#999">Staged Clearing</td><td>Clear in stages ≤0.5ha to maintain groundcover and reduce exposed soil.</td></tr><tr><td style="color:#999">Drainage</td><td>Diversion drains around cleared areas. Level spreaders to prevent concentration.</td></tr><tr><td style="color:#999">Revegetation</td><td>Fast-growing native groundcover within 14 days of clearing completion.</td></tr><tr><td style="color:#999">Cyclone Prep</td><td>All silt fences reinforced. Exposed soil mulched or covered before cyclone season (Nov–Apr).</td></tr></tbody></table></div><div class="section"><div class="section-title">GBR Best Management Practice</div><p class="meta">This plan follows the Reef 2050 Water Quality Improvement Plan and QLD Best Management Practice guidelines for sediment management in GBR catchments.</p></div><div class="section"><div class="section-title">Monitoring</div><p class="meta">Inspect erosion controls: after every rainfall event &gt;20mm, weekly during construction/clearing, monthly during maintenance. Photo monitoring at fixed points. Record any sediment discharge incidents.</p></div>`)
+      this.addAudit('Erosion & Sediment Control Plan generated', '')
+    },
+
+    generatePlantingRegister() {
+      this.generatePdf('Native Species Planting Register', `<div class="section"><div class="section-title">Project: ________________________________ &nbsp;&nbsp; Date: ${new Date().toLocaleDateString('en-AU')}</div></div><div class="section"><table><thead><tr><th>Species</th><th>Qty</th><th>Provenance</th><th>Date Planted</th><th>GPS (lat, lng)</th><th>Density</th><th>Method</th><th>3mo %</th><th>6mo %</th><th>12mo %</th></tr></thead><tbody>${[1,2,3,4,5,6,7,8,9,10].map(() => `<tr><td>________________</td><td>____</td><td>________</td><td>____/____</td><td>________, ________</td><td>____/ha</td><td>☐Tube ☐Seed</td><td>____%</td><td>____%</td><td>____%</td></tr>`).join('')}</tbody></table></div><div class="section"><div class="section-title">Summary</div><table><tbody><tr><td style="color:#999">Total Planted</td><td>________</td></tr><tr><td style="color:#999">Species Count</td><td>________</td></tr><tr><td style="color:#999">Area Planted (ha)</td><td>________</td></tr><tr><td style="color:#999">Average Density</td><td>________/ha</td></tr></tbody></table></div>`)
+      this.addAudit('Planting Register generated', '')
+    },
+
+    generateSurvivalReport() {
+      this.generatePdf('Survival Rate Monitoring Report', `<div class="section"><div class="section-title">Monitoring Details</div><table><tbody><tr><td style="color:#999">Project</td><td>________________________________</td></tr><tr><td style="color:#999">Assessment Date</td><td>${new Date().toLocaleDateString('en-AU')}</td></tr><tr><td style="color:#999">Assessment Period</td><td>☐3 month ☐6 month ☐12 month ☐24 month</td></tr><tr><td style="color:#999">Assessor</td><td>${TENANT_CONFIG.owner}</td></tr></tbody></table></div><div class="section"><div class="section-title">Plot Data</div><table><thead><tr><th>Plot ID</th><th>Total Planted</th><th>Alive</th><th>Dead</th><th>Survival %</th><th>Avg Height (cm)</th><th>Canopy Cover %</th><th>Weed Competition %</th></tr></thead><tbody>${[1,2,3,4,5].map(n => `<tr><td>P${n}</td><td>______</td><td>______</td><td>______</td><td>______%</td><td>______</td><td>______%</td><td>______%</td></tr>`).join('')}</tbody></table></div><div class="section"><div class="section-title">Overall Summary</div><table><tbody><tr><td style="color:#999">Total Planted</td><td>________</td></tr><tr><td style="color:#999">Total Alive</td><td>________</td></tr><tr><td style="color:#999">Overall Survival Rate</td><td>________%</td></tr><tr><td style="color:#999">Target (ACCU requirement)</td><td>≥70% at 12 months</td></tr><tr><td style="color:#999">Status</td><td>☐On Track ☐Infill Required ☐Below Target</td></tr></tbody></table></div><div class="section"><div class="section-title">Recommendations</div><p class="meta">[Infill planting schedule, weed control requirements, irrigation needs, pest management, fencing repairs]</p></div>`)
+      this.addAudit('Survival Rate Report generated', '')
+    },
+
+    generatePhotoProtocol() {
+      this.generatePdf('Photographic Monitoring Protocol', `<div class="section"><div class="section-title">Project: ________________________________</div><p class="meta">Photo monitoring provides visual evidence of revegetation progress for ACCU reporting and client documentation.</p></div><div class="section"><div class="section-title">Photo Point Schedule</div><table><thead><tr><th>Point ID</th><th>GPS Lat</th><th>GPS Lng</th><th>Bearing (°)</th><th>Height (m)</th><th>Baseline</th><th>3mo</th><th>6mo</th><th>12mo</th><th>Annual</th></tr></thead><tbody>${['PP1','PP2','PP3','PP4','PP5'].map(id => `<tr><td>${id}</td><td>________</td><td>________</td><td>______°</td><td>1.5m</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td><td>☐</td></tr>`).join('')}</tbody></table></div><div class="section"><div class="section-title">Photography Standards</div><table><tbody><tr><td style="color:#999">Camera</td><td>Minimum 12MP. Include GPS metadata.</td></tr><tr><td style="color:#999">Conditions</td><td>Consistent time of day (morning preferred). Avoid harsh midday shadows.</td></tr><tr><td style="color:#999">Format</td><td>Landscape orientation. Include reference object (scale pole) in frame.</td></tr><tr><td style="color:#999">Naming</td><td>[ProjectID]_[PointID]_[Date]_[Bearing].jpg</td></tr></tbody></table></div>`)
+      this.addAudit('Photo Monitoring Protocol generated', '')
+    },
+
+    generateCulturalHeritage() {
+      this.generatePdf('Cultural Heritage Assessment', `<div class="section"><p style="font-size:14px;line-height:1.6">This assessment is conducted in accordance with the Aboriginal Cultural Heritage Act 2003 (QLD) and the duty of care guidelines. All land management activities must respect and protect Aboriginal cultural heritage.</p></div><div class="section"><div class="section-title">Site Details</div><table><tbody><tr><td style="color:#999">Site</td><td>________________________________</td></tr><tr><td style="color:#999">Local Government Area</td><td>Cairns Regional Council</td></tr><tr><td style="color:#999">Assessor</td><td>${TENANT_CONFIG.owner} — ${TENANT_CONFIG.businessName}</td></tr><tr><td style="color:#999">Date</td><td>${new Date().toLocaleDateString('en-AU')}</td></tr></tbody></table></div><div class="section"><div class="section-title">Traditional Owner Groups (FNQ)</div><table><tbody><tr><td style="color:#999">Cairns–Palm Cove</td><td>Yirrganydji</td></tr><tr><td style="color:#999">Cairns–Gordonvale</td><td>Gimuy Walubara Yidinji</td></tr><tr><td style="color:#999">Kuranda–Barron Gorge</td><td>Djabugay</td></tr><tr><td style="color:#999">Daintree–Cooktown</td><td>Eastern Kuku Yalanji</td></tr><tr><td style="color:#999">Atherton Tablelands</td><td>Jirrbal / Ngadjon-Jii</td></tr></tbody></table></div><div class="section"><div class="section-title">Cultural Heritage Search</div><table><tbody><tr><td style="color:#999">DATSIP Database Search</td><td>☐ Completed — Reference: ________</td></tr><tr><td style="color:#999">Known Sites within 1km</td><td>☐ None ☐ Yes: ________________________________</td></tr><tr><td style="color:#999">Traditional Owner Consultation</td><td>☐ Not required ☐ Completed: ____/____/____</td></tr></tbody></table></div><div class="section"><div class="section-title">Management Recommendations</div><p class="meta">[Note any exclusion zones, monitoring requirements, cultural awareness training, or stop-work triggers for unexpected finds]</p></div><div class="section"><div class="section-title">Unexpected Finds Protocol</div><p class="meta">If cultural heritage material is discovered during work: STOP WORK immediately. Do not disturb the area. Contact the relevant Traditional Owner group. Notify DATSIP. Do not resume work until advised.</p></div>`)
+      this.addAudit('Cultural Heritage Assessment generated', '')
+    },
+
+    generateReef2050() {
+      const jobs = this.getStore('jobs').filter(j => ['complete','paid','invoiced'].includes(j.status))
+      this.generatePdf('Reef 2050 Compliance Report', `<div class="section"><div class="section-title">Reporting Period</div><table><tbody><tr><td style="color:#999">Business</td><td>${TENANT_CONFIG.businessName} — ABN ${TENANT_CONFIG.abn}</td></tr><tr><td style="color:#999">Report Date</td><td>${new Date().toLocaleDateString('en-AU')}</td></tr><tr><td style="color:#999">Catchment Area</td><td>Wet Tropics — Barron River to Johnstone River</td></tr></tbody></table></div><div class="section"><div class="section-title">Reef 2050 Plan Actions</div><table><thead><tr><th>Action</th><th>Status</th><th>Evidence</th></tr></thead><tbody><tr><td>Sediment reduction from land clearing</td><td>Compliant</td><td>Erosion plans on all jobs &gt;0.5ha</td></tr><tr><td>Riparian zone protection</td><td>Compliant</td><td>20m buffer zones maintained</td></tr><tr><td>Chemical use minimisation</td><td>Compliant</td><td>APVMA products only, records maintained</td></tr><tr><td>Mulch retention / zero waste to landfill</td><td>Compliant</td><td>All green waste chipped or removed</td></tr><tr><td>Native vegetation restoration</td><td>In Progress</td><td>Revegetation projects registered</td></tr></tbody></table></div><div class="section"><div class="section-title">Operational Statistics</div><table><tbody><tr><td style="color:#999">Jobs in GBR Catchment</td><td>${jobs.length}</td></tr><tr><td style="color:#999">Sediment Incidents</td><td>0</td></tr><tr><td style="color:#999">Chemical Spill Incidents</td><td>0</td></tr><tr><td style="color:#999">Waterway Contamination</td><td>0</td></tr></tbody></table></div><div class="section"><div class="section-title">Continuous Improvement</div><p class="meta">[Document improvements made: new sediment controls, training, equipment upgrades, community engagement]</p></div>`)
+      this.addAudit('Reef 2050 Compliance Report generated', '')
+    },
+
+    /* ── RENDER INDUCTION + REGEN IN DOCUMENTS ──────── */
+
+    _renderInductionDocs() {
+      const docs = [
+        { name: 'Employee Information Form', fn: 'generateEmployeeInfoForm' },
+        { name: 'Employment Contract / Letter of Offer', fn: 'generateEmploymentContract' },
+        { name: 'Code of Conduct', fn: 'generateCodeOfConduct' },
+        { name: 'WHS Induction Checklist', fn: 'generateWHSInduction' },
+        { name: 'Equipment Issue Register', fn: 'generateEquipmentIssueRegister' },
+        { name: 'Training Record', fn: 'generateTrainingRecord' },
+        { name: 'Confidentiality Agreement', fn: 'generateConfidentiality' },
+        { name: 'Vehicle Use Agreement', fn: 'generateVehicleUse' },
+        { name: 'Drug & Alcohol Policy', fn: 'generateDrugAlcohol' },
+        { name: 'Fair Work Information Statement', fn: 'generateFairWork' },
+      ]
+      const el = document.getElementById('docs-induction')
+      if (el) el.innerHTML = docs.map(d => `<div class="card p-5 flex justify-between items-center"><div><div class="text-md font-medium">${this.esc(d.name)}</div><div class="text-xs text-muted mt-1">Employee induction document</div></div><button class="btn btn-secondary btn-sm" onclick="App.${d.fn}()">Generate</button></div>`).join('')
+    },
+
+    _renderRegenDocs() {
+      const docs = [
+        { name: 'ACCU Newlands Application', fn: 'generateACCUApplication' },
+        { name: 'Carbon Estimation Area Map', fn: 'generateCarbonAreaMap' },
+        { name: 'Revegetation Project Proposal', fn: 'generateRevegetationProposal' },
+        { name: 'Biodiversity Monitoring Report', fn: 'generateBiodiversityReport' },
+        { name: 'Weed Management Plan', fn: 'generateWeedManagementPlan' },
+        { name: 'Erosion & Sediment Control Plan', fn: 'generateErosionPlan' },
+        { name: 'Native Species Planting Register', fn: 'generatePlantingRegister' },
+        { name: 'Survival Rate Monitoring Report', fn: 'generateSurvivalReport' },
+        { name: 'Photographic Monitoring Protocol', fn: 'generatePhotoProtocol' },
+        { name: 'Cultural Heritage Assessment', fn: 'generateCulturalHeritage' },
+        { name: 'Reef 2050 Compliance Report', fn: 'generateReef2050' },
+      ]
+      const el = document.getElementById('docs-regen')
+      if (el) el.innerHTML = docs.map(d => `<div class="card p-5 flex justify-between items-center"><div><div class="text-md font-medium">${this.esc(d.name)}</div><div class="text-xs text-muted mt-1">Regeneration / carbon document</div></div><button class="btn btn-secondary btn-sm" onclick="App.${d.fn}()">Generate</button></div>`).join('')
+    },
+
+    /* ── REEF LOG RENDERING ──────────────────────────── */
+
+    _renderReefLog() {
+      const logs = JSON.parse(localStorage.getItem('se_reef_log') || '[]')
+      const el = document.getElementById('reef-log-panel')
+      if (!el) return
+      if (!logs.length) { el.innerHTML = '<table class="data-table"><tbody><tr><td class="text-center text-muted py-6">No reef restoration activities logged yet.</td></tr></tbody></table>'; return }
+      el.innerHTML = `<table class="data-table"><thead><tr><th>Date</th><th>Site</th><th>Activity</th><th>Area (m²)</th></tr></thead><tbody>${logs.sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(l => `<tr><td>${this.esc(l.date)}</td><td>${this.esc(l.site)}</td><td>${this.esc(l.activity)}</td><td>${l.area}</td></tr>`).join('')}</tbody></table>`
+    },
+
+    /* ── ACCU PANEL RENDERING ────────────────────────── */
+
+    _renderACCUPanel() {
+      const el = document.getElementById('accu-panel')
+      if (!el) return
+      const projects = JSON.parse(localStorage.getItem('se_accu_projects') || '[]')
+      const totalCredits = projects.reduce((s, p) => s + (p.estimatedCredits || 0), 0)
+      el.innerHTML = `
+        <div class="grid grid-cols-3 gap-4 mb-6" style="max-width:500px">
+          <div class="carbon-card"><div class="carbon-value" style="font-size:var(--se-text-display-sm)">${projects.length}</div><div class="carbon-label">Projects</div></div>
+          <div class="carbon-card"><div class="carbon-value" style="font-size:var(--se-text-display-sm)">${totalCredits}</div><div class="carbon-label">Est. ACCUs/yr</div></div>
+          <div class="carbon-card"><div class="carbon-value" style="font-size:var(--se-text-display-sm);color:var(--se-gold-500)">${this.formatCurrency(totalCredits * 30)}</div><div class="carbon-label">Est. Value</div></div>
+        </div>
+        ${projects.length ? `<div class="data-table-wrapper mb-4"><table class="data-table"><thead><tr><th>Project</th><th>Area (ha)</th><th>Methodology</th><th>Est. ACCUs/yr</th><th>Status</th></tr></thead><tbody>${projects.map(p => `<tr><td>${this.esc(p.name)}</td><td>${p.area}</td><td>${this.esc(p.methodology)}</td><td>${p.estimatedCredits}</td><td><span class="badge badge-${p.status === 'registered' ? 'active' : 'quoted'}">${this.esc(p.status)}</span></td></tr>`).join('')}</tbody></table></div>` : '<p class="text-sm text-muted mb-4">No ACCU projects registered. Generate an ACCU Application from Documents to get started.</p>'}
+        <button class="btn btn-primary btn-sm" onclick="App.addACCUProject()">Register New Project</button>
+        <p class="text-xs text-faint mt-3">ACCU price estimate: $30/credit (CER spot rate). Actual price varies at auction.</p>
+      `
     },
 
     /* ── TOAST HELPER ──────────────────────────────── */

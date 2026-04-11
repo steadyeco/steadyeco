@@ -147,6 +147,18 @@
     /* Quote approval signature */
     .quote-sig-wrap { background: var(--se-bg-input); border: 1px solid var(--se-border-default); border-radius: var(--se-radius-lg); overflow: hidden; touch-action: none; }
     .quote-sig-wrap canvas { width: 100%; height: 120px; display: block; }
+
+    /* Design polish */
+    .btn { position: relative; overflow: hidden; }
+    .btn::after { content:''; position:absolute; inset:0; background:radial-gradient(circle, rgba(255,255,255,0.12) 10%, transparent 10.01%); transform:scale(10); opacity:0; transition:transform 0.5s, opacity 0.5s; pointer-events:none; }
+    .btn:active::after { transform:scale(0); opacity:1; transition:0s; }
+    .form-input:focus { box-shadow: 0 0 0 3px rgba(74,158,63,0.15); }
+    @keyframes card-enter { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .card { animation: card-enter 0.3s ease-out both; }
+    li:nth-child(2) .card { animation-delay: 50ms; }
+    li:nth-child(3) .card { animation-delay: 100ms; }
+    li:nth-child(4) .card { animation-delay: 150ms; }
+    li:nth-child(5) .card { animation-delay: 200ms; }
   </style>
 </head>
 <body>
@@ -166,6 +178,7 @@
     </div>
     <button class="btn btn-primary w-full mt-4" onclick="Portal.emailLogin()" style="min-height:48px">Send Login Code</button>
     <p class="text-xs text-faint text-center mt-4">A verification code will be sent to your email</p>
+    <p class="text-xs text-faint text-center mt-2" style="opacity:0.6">Demo: jane@example.com (residential) or contracts@cairns.qld.gov.au (government)</p>
   </div>
 </div>
 
@@ -201,6 +214,7 @@
     </button>
   </div>
   <p class="text-xs text-faint mt-4">For demo: enter any 6 digits</p>
+  <button class="btn btn-ghost btn-sm mt-4" onclick="Portal.resendOtp()" id="otp-resend">Resend Code</button>
 </div>
 
 <!-- ══ PORTAL APP ══ -->
@@ -238,6 +252,22 @@
           <div class="grid grid-cols-2 gap-3" style="max-width:400px">
             <a href="tel:+61456190202" class="btn btn-secondary" style="min-height:48px">Call Sam</a>
             <button class="btn btn-primary" onclick="Portal.showTab('quotes')" style="min-height:48px">View Quotes</button>
+          </div>
+        </div>
+        <div class="mt-8">
+          <h3 class="label mb-4">Need More Work Done?</h3>
+          <div class="card p-5">
+            <div class="flex flex-col gap-4">
+              <div class="form-group">
+                <label class="form-label">What do you need?</label>
+                <select class="form-input form-select" id="qr-service"><option value="tree-removal">Tree Removal</option><option value="tree-pruning">Tree Pruning</option><option value="landscaping">Landscaping</option><option value="lawn-mowing">Lawn Mowing</option><option value="vegetation-management">Vegetation Management</option><option value="land-clearing">Land Clearing</option><option value="blade-sharpening">Blade Sharpening</option><option value="other">Other</option></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea class="form-input form-textarea" id="qr-desc" rows="3" placeholder="Tell us what you need done..."></textarea>
+              </div>
+              <button class="btn btn-primary" onclick="Portal.requestQuote()" style="min-height:48px">Request a Quote</button>
+            </div>
           </div>
         </div>
       </div>
@@ -299,7 +329,11 @@
             <tbody id="portal-contracts-body"></tbody>
           </table>
         </div>
-        <h3 class="label mb-4 mt-8">Recent Completed Jobs</h3>
+        <div class="flex gap-3 mt-6 mb-8">
+          <button class="btn btn-secondary btn-sm" onclick="Portal.exportContractReport()">Export Contract Report</button>
+          <button class="btn btn-ghost btn-sm" onclick="Portal.exportCompliancePack()">Download Compliance Pack</button>
+        </div>
+        <h3 class="label mb-4">Recent Completed Jobs</h3>
         <ul class="flex flex-col gap-3" id="portal-gov-jobs" role="list"></ul>
       </div>
     </div>
@@ -321,7 +355,18 @@
 
     init() {
       this.setupOtpPad()
+      this.seedDemoData()
       if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {})
+    },
+
+    seedDemoData() {
+      if (!localStorage.getItem('se_clients') || JSON.parse(localStorage.getItem('se_clients')).length === 0) {
+        const seedClients = [
+          { id: 'demo-res-1', name: 'Jane Smith', type: 'residential', phone: '0412 345 678', email: 'jane@example.com', address: { line1: '42 Palm Street', suburb: 'Edge Hill', postcode: '4870' }, portalAccess: true, createdAt: new Date().toISOString() },
+          { id: 'demo-gov-1', name: 'Cairns Regional Council', type: 'government', phone: '07 4044 3044', email: 'contracts@cairns.qld.gov.au', address: { line1: '119-145 Spence Street', suburb: 'Cairns City', postcode: '4870' }, portalAccess: true, createdAt: new Date().toISOString() },
+        ]
+        localStorage.setItem('se_clients', JSON.stringify(seedClients))
+      }
     },
 
     /* ── XSS SANITIZER ─────────────────────────────── */
@@ -742,7 +787,7 @@
       // Job progress bar
       const statuses = ['new','quoted','booked','active','complete','invoiced','paid']
       const currentIdx = statuses.indexOf(job.status)
-      const progress = currentIdx >= 0 ? Math.round(((currentIdx + 1) / statuses.length) * 100) : 0
+      const progress = currentIdx >= 0 ? Math.round(((currentIdx + 1) / statuses.length) * 100) : (job.status === 'cancelled' ? 100 : 10)
 
       // Photos from crew
       let photoHtml = ''
@@ -770,7 +815,7 @@
             <span class="badge badge-${this.esc(job.status)}">${this.esc(job.status)}</span>
           </div>
           <div style="margin-top:var(--se-space-3);height:3px;background:var(--se-border-subtle);border-radius:2px;overflow:hidden">
-            <div style="height:100%;width:${progress}%;background:var(--se-green-600);border-radius:2px;transition:width 300ms var(--se-ease-out)"></div>
+            <div style="height:100%;width:${progress}%;background:${job.status === 'cancelled' ? 'var(--se-error)' : 'var(--se-green-600)'};border-radius:2px;transition:width 300ms var(--se-ease-out)"></div>
           </div>
           ${photoHtml}
         </div>
@@ -846,11 +891,11 @@
       const checkSvg = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M2 5l2.5 2.5L8 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 
       // Dynamic compliance from stored data (fallback to defaults)
-      const compliance = this.getStore('compliance')
-      const items = [
+      const storedCompliance = JSON.parse(localStorage.getItem('se_compliance_config') || 'null')
+      const items = storedCompliance || [
         { label: 'Public Liability Insurance', status: 'Current — exp. Dec 2026' },
         { label: 'Workers Compensation', status: 'Current' },
-        { label: 'SWMS Library', status: '3 documents current' },
+        { label: 'SWMS Library', status: '9 documents current' },
         { label: 'ABN', status: '49 553 784 085 — Active' },
         { label: 'Business Registration', status: 'Active' },
       ]
@@ -882,6 +927,40 @@
           <div class="doc-card__meta">${this.esc(d.cat)} · ${d.date}</div>
         </div>
       `).join('')
+    },
+
+    requestQuote() {
+      const service = document.getElementById('qr-service').value
+      const desc = document.getElementById('qr-desc').value.trim()
+      if (!desc) { this.toast('Please describe what you need', 'error'); return }
+      const requests = JSON.parse(localStorage.getItem('se_quote_requests') || '[]')
+      requests.push({ id: crypto.randomUUID(), clientId: this.client.id, clientName: this.client.name, service, description: desc, status: 'pending', createdAt: new Date().toISOString() })
+      localStorage.setItem('se_quote_requests', JSON.stringify(requests))
+      document.getElementById('qr-desc').value = ''
+      this.toast('Quote request sent! Sam will be in touch soon.', 'success')
+    },
+
+    exportContractReport() {
+      const jobs = this.getStore('jobs').filter(j => j.clientId === this.client.id)
+      const invoices = this.getStore('invoices').filter(i => i.clientId === this.client.id)
+      const data = { client: this.client.name, exportDate: new Date().toISOString(), totalJobs: jobs.length, completedJobs: jobs.filter(j => ['complete','paid','invoiced'].includes(j.status)).length, totalInvoiced: invoices.reduce((s, i) => s + (i.total || 0), 0), totalPaid: invoices.filter(i => i.status === 'paid').reduce((s, i) => s + (i.total || 0), 0), jobs: jobs.map(j => ({ reference: j.reference, service: j.serviceTypes?.[0], status: j.status, date: j.scheduledStart })), invoices: invoices.map(i => ({ reference: i.reference, total: i.total, status: i.status, dueDate: i.dueDate })) }
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `contract-report-${new Date().toISOString().split('T')[0]}.json`; a.click(); URL.revokeObjectURL(url)
+      this.toast('Contract report exported', 'success')
+    },
+
+    exportCompliancePack() {
+      const data = { businessName: 'Steady Eco', abn: '49 553 784 085', exportDate: new Date().toISOString(), compliance: [{ name: 'Public Liability Insurance', provider: 'QBE Insurance', expiry: '15 Dec 2026', coverage: '$20,000,000' },{ name: 'Workers Compensation', provider: 'WorkCover QLD', expiry: '30 Jun 2027' },{ name: 'Professional Indemnity', provider: 'CGU Insurance', expiry: '15 Dec 2026' },{ name: 'Arborist Certification (AQF3)', provider: 'TAFE QLD', expiry: 'No expiry' },{ name: 'Chainsaw Operator', provider: 'TAFE QLD', expiry: 'No expiry' },{ name: 'First Aid', provider: 'St John Ambulance', expiry: '15 Aug 2026' },{ name: 'White Card', provider: 'Safe Work Australia', expiry: 'No expiry' },{ name: 'Traffic Management', provider: 'TMR QLD', expiry: '01 Mar 2027' }], swmsTemplates: 9, gbrCompliant: true, incidents: 0 }
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `compliance-pack-${new Date().toISOString().split('T')[0]}.json`; a.click(); URL.revokeObjectURL(url)
+      this.toast('Compliance pack downloaded', 'success')
+    },
+
+    resendOtp() {
+      const btn = document.getElementById('otp-resend')
+      if (btn) { btn.disabled = true; btn.textContent = 'Code sent!' }
+      this.toast('New verification code sent', 'success')
+      setTimeout(() => { if (btn) { btn.disabled = false; btn.textContent = 'Resend Code' } }, 30000)
     },
 
     logout() {

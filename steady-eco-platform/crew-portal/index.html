@@ -121,6 +121,16 @@
     .profile-avatar { width: 80px; height: 80px; border-radius: var(--se-radius-full); background: var(--se-green-900); color: var(--se-gold-500); display: flex; align-items: center; justify-content: center; font-family: var(--se-font-ui); font-size: var(--se-text-display-sm); font-weight: 600; }
     .profile-name { font-family: var(--se-font-display); font-size: var(--se-text-display-sm); color: var(--se-text-primary); }
     .profile-role { font-size: var(--se-text-xs); color: var(--se-text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+
+    /* Design polish */
+    @keyframes clockin-pulse { 0% { box-shadow: 0 0 0 0 rgba(74,158,63,0.5); } 70% { box-shadow: 0 0 0 20px rgba(74,158,63,0); } 100% { box-shadow: 0 0 0 0 rgba(74,158,63,0); } }
+    .clock-btn--in:active { animation: clockin-pulse 0.6s ease-out; }
+    .crew-action-btn { position: relative; overflow: hidden; }
+    .crew-action-btn::after { content:''; position:absolute; inset:0; background:radial-gradient(circle, rgba(255,255,255,0.15) 10%, transparent 10.01%); transform:scale(10); opacity:0; transition:transform 0.5s, opacity 0.5s; pointer-events:none; }
+    .crew-action-btn:active::after { transform:scale(0); opacity:1; transition:0s; }
+    .form-input:focus { box-shadow: 0 0 0 3px rgba(74,158,63,0.15); }
+    @keyframes crew-card-enter { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .crew-job-card { animation: crew-card-enter 0.3s ease-out both; }
   </style>
 </head>
 <body>
@@ -212,6 +222,12 @@
     <div class="crew-header"><div class="crew-header__name" tabindex="-1">Job Photos</div><div></div></div>
     <div class="crew-content px-5 py-4">
       <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none" onchange="Crew.handlePhoto(this)" aria-hidden="true">
+      <div class="form-group mb-4">
+        <label class="form-label">Assign to Job</label>
+        <select class="form-input form-select" id="camera-job-select" onchange="Crew.currentJobId=this.value||null" style="min-height:44px">
+          <option value="">No job selected</option>
+        </select>
+      </div>
       <div class="photo-tags mb-4" role="radiogroup" aria-label="Photo type">
         <button class="photo-tag is-active" data-tag="before" onclick="Crew.setPhotoTag(this)" role="radio" aria-checked="true">Before</button>
         <button class="photo-tag" data-tag="during" onclick="Crew.setPhotoTag(this)" role="radio" aria-checked="false">During</button>
@@ -256,7 +272,7 @@
 
   <!-- PRE-START CHECKLIST -->
   <div class="screen" id="screen-prestart">
-    <div class="crew-header"><div class="crew-header__name" tabindex="-1">Pre-Start Checklist</div><div></div></div>
+    <div class="crew-header"><div class="crew-header__name" tabindex="-1">Pre-Start Checklist</div><div><button class="btn btn-ghost btn-sm" onclick="Crew.showScreen('home')">Back</button></div></div>
     <div class="crew-content px-5 py-4">
       <p class="text-xs text-muted mb-4">Complete this checklist before starting work today. Required by WHS Act 2011 (QLD).</p>
       <div id="prestart-items" class="flex flex-col gap-3"></div>
@@ -462,7 +478,7 @@
         if (!key) return
         const val = key.dataset.key
         if (val === 'delete') { this.pin = this.pin.slice(0, -1); this.updatePinDots(); return }
-        if (val === 'biometric') return
+        if (val === 'biometric') { this.toast('Biometric login not yet available', 'info'); return }
         if (this.pin.length >= 6) return
         this.pin += val
         this.updatePinDots()
@@ -641,6 +657,8 @@
       this.clockedIn = false
       this.clockInTime = null
       localStorage.removeItem(`se_clockin_${this.currentEmployee.id}`)
+      const stickyEl = document.getElementById('sticky-elapsed')
+      if (stickyEl) stickyEl.textContent = '—'
 
       if (navigator.vibrate) navigator.vibrate([50, 50, 50])
       this.renderClockButton()
@@ -772,6 +790,7 @@
           canvas.height = img.height * scale
           canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
           const compressed = canvas.toDataURL('image/jpeg', 0.7)
+          if (!this.currentJobId) this.toast('Photo not linked to a job — select one above', 'warning')
           this.photos.push({
             id: crypto.randomUUID(), data: compressed, tag: this.photoTag,
             jobId: this.currentJobId, timestamp: new Date().toISOString()
@@ -802,12 +821,32 @@
       `).join('')
     },
 
-    deletePhoto(index) {
-      if (!confirm('Delete this photo?')) return
+    async deletePhoto(index) {
+      const confirmed = await this.customConfirm('Delete Photo', 'Are you sure you want to delete this photo?')
+      if (!confirmed) return
       this.photos.splice(index, 1)
       localStorage.setItem(`se_photos_${this.currentEmployee.id}`, JSON.stringify(this.photos))
       this.renderPhotos()
       this.toast('Photo deleted', 'info')
+    },
+
+    customConfirm(title, message) {
+      return new Promise(resolve => {
+        const backdrop = document.createElement('div')
+        backdrop.style.cssText = 'position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:var(--se-space-6)'
+        backdrop.innerHTML = `<div style="max-width:360px;width:100%;background:var(--se-bg-elevated);border:1px solid var(--se-border-default);border-radius:var(--se-radius-xl);padding:var(--se-space-6)"><div style="font-family:var(--se-font-display);font-size:var(--se-text-display-xs);margin-bottom:var(--se-space-3)">${this.esc(title)}</div><p class="text-sm text-secondary mb-6">${this.esc(message)}</p><div class="flex gap-3 justify-end"><button class="btn btn-ghost" id="cc-cancel">Cancel</button><button class="btn btn-danger" id="cc-ok">Confirm</button></div></div>`
+        document.body.appendChild(backdrop)
+        backdrop.querySelector('#cc-cancel').onclick = () => { backdrop.remove(); resolve(false) }
+        backdrop.querySelector('#cc-ok').onclick = () => { backdrop.remove(); resolve(true) }
+        backdrop.addEventListener('click', (e) => { if (e.target === backdrop) { backdrop.remove(); resolve(false) } })
+      })
+    },
+
+    _populateCameraJobs() {
+      const select = document.getElementById('camera-job-select')
+      if (!select || !this.currentEmployee) return
+      const jobs = this.getStore('jobs').filter(j => j.assignedEmployees?.includes(this.currentEmployee.id) || j.assignedEmployees?.length === 0)
+      select.innerHTML = '<option value="">No job selected</option>' + jobs.map(j => `<option value="${j.id}" ${j.id === this.currentJobId ? 'selected' : ''}>${this.esc(this.getClientName(j.clientId))} — ${this.esc((j.serviceTypes?.[0]||'').replace(/-/g,' '))}</option>`).join('')
     },
 
     /* ── SWMS ──────────────────────────────────────── */
@@ -991,6 +1030,7 @@
           localStorage.setItem('se_jobs', JSON.stringify(jobs))
           this.invalidateCache('jobs')
           this.toast('Voice note saved to job', 'success')
+          if (document.getElementById('screen-crew-job')?.classList.contains('is-active')) this.openJob(this.currentJobId)
         }
       } else if (note) {
         this.toast('Voice note: ' + note.slice(0, 50), 'success')
@@ -1204,9 +1244,11 @@
       input.value = ''
     },
 
-    submitIncident() {
+    async submitIncident() {
       const desc = document.getElementById('inc-desc').value.trim()
       if (!desc) { this.toast('Please describe what happened', 'error'); return }
+      const confirmed = await this.customConfirm('Submit Incident Report', 'This will be logged and sent to Sam immediately. Continue?')
+      if (!confirmed) return
 
       const incident = {
         id: crypto.randomUUID(),
@@ -1282,7 +1324,7 @@
       if (screen === 'home') this.renderTodayJobs()
       if (screen === 'my-jobs') this.renderAllJobs()
       if (screen === 'swms') this.renderSwmsList()
-      if (screen === 'camera') this.renderPhotos()
+      if (screen === 'camera') { this.renderPhotos(); this._populateCameraJobs() }
       if (screen === 'prestart') this.renderPrestart()
       if (screen === 'profile') this.renderProfile()
     },
