@@ -1196,7 +1196,8 @@
       <header class="page-header">
         <h1 class="page-header__title" tabindex="-1">Compliance</h1>
         <div class="page-header__actions">
-          <button class="btn btn-secondary btn-sm" onclick="App.exportCompliance()">Export Compliance Pack</button>
+          <button class="btn btn-primary btn-sm" onclick="App.generateCapabilityStatement()">Capability Statement</button>
+          <button class="btn btn-secondary btn-sm" onclick="App.exportCompliance()">Export Pack</button>
         </div>
       </header>
       <div class="p-6">
@@ -2890,6 +2891,166 @@
       this.generatePdf(`Quote ${quote.reference}`, content)
     },
 
+    /* ── DOCUMENT TEMPLATES ─────────────────────────── */
+
+    generateTreeRiskAssessment(jobId) {
+      const job = this.getStore('jobs').find(j => j.id === jobId)
+      const client = job ? this.getStore('clients').find(c => c.id === job.clientId) : null
+
+      this.generatePdf('Tree Risk Assessment Report', `
+        <div class="section"><div class="section-title">Assessment Details</div>
+          <table><tbody>
+            <tr><td style="width:40%;color:#999">Client</td><td>${this.esc(client?.name || '[Client Name]')}</td></tr>
+            <tr><td style="color:#999">Site Address</td><td>${this.esc(job?.siteAddress?.line1 || '[Site Address]')}</td></tr>
+            <tr><td style="color:#999">Assessment Date</td><td>${new Date().toLocaleDateString('en-AU')}</td></tr>
+            <tr><td style="color:#999">Assessor</td><td>Sam Kerr — AQF Level 3 Arboriculture</td></tr>
+            <tr><td style="color:#999">Reference</td><td>${this.esc(job?.reference || 'SE-TRA-' + new Date().getFullYear())}</td></tr>
+            <tr><td style="color:#999">Methodology</td><td>ISA TRAQ (Tree Risk Assessment Qualification) / AS4373</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">Tree Details</div>
+          <table><thead><tr><th>Item</th><th>Detail</th></tr></thead><tbody>
+            <tr><td>Species</td><td>[Enter species — common + botanical name]</td></tr>
+            <tr><td>DBH (trunk diameter at 1.4m)</td><td>[____] mm</td></tr>
+            <tr><td>Height (estimated)</td><td>[____] m</td></tr>
+            <tr><td>Crown Spread</td><td>[____] m</td></tr>
+            <tr><td>Health Rating (1-5)</td><td>[____] (1=dead, 5=excellent)</td></tr>
+            <tr><td>Structure Rating (1-5)</td><td>[____] (1=severe defects, 5=sound)</td></tr>
+            <tr><td>Useful Life Expectancy</td><td>[____] years</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">Risk Assessment Matrix</div>
+          <table><thead><tr><th>Part</th><th>Defect/Condition</th><th>Likelihood of Failure</th><th>Consequence</th><th>Risk Rating</th></tr></thead><tbody>
+            <tr><td>Roots</td><td>[describe]</td><td>[improbable/possible/probable/imminent]</td><td>[negligible/minor/significant/severe]</td><td>[low/moderate/high/extreme]</td></tr>
+            <tr><td>Trunk</td><td>[describe]</td><td>[____]</td><td>[____]</td><td>[____]</td></tr>
+            <tr><td>Scaffold branches</td><td>[describe]</td><td>[____]</td><td>[____]</td><td>[____]</td></tr>
+            <tr><td>Crown</td><td>[describe]</td><td>[____]</td><td>[____]</td><td>[____]</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">Recommendations</div>
+          <p class="meta">[Enter specific management recommendations — e.g., remove, prune to reduce risk, monitor, install cable brace, no action required]</p>
+          <p class="meta" style="margin-top:12px"><strong>Urgency:</strong> [Immediate / Within 30 days / Within 12 months / Monitor only]</p>
+        </div>
+        <div class="section"><div class="section-title">Limitations</div>
+          <p class="meta">This assessment is a visual ground-level inspection in accordance with ISA TRAQ methodology. It does not include aerial inspection, root excavation, or resistograph testing unless specifically noted. Trees are dynamic living organisms and conditions can change. This assessment represents conditions at the date of inspection only.</p>
+        </div>
+        <div class="section"><div class="section-title">Certification</div>
+          <p class="meta">I certify that this tree risk assessment has been conducted in accordance with ISA TRAQ methodology and AS4373-2007 Pruning of Amenity Trees.</p>
+          <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:24px">
+            <div><p class="meta">Signed: ____________________</p><p class="meta">Sam Kerr — AQF3 Arboriculture</p></div>
+            <div><p class="meta">Date: ${new Date().toLocaleDateString('en-AU')}</p><p class="meta">Steady Eco — ABN 49 553 784 085</p></div>
+          </div>
+        </div>
+      `)
+      this.addAudit('Tree Risk Assessment generated', job?.reference || 'Manual')
+    },
+
+    generateCapabilityStatement() {
+      const jobs = this.getStore('jobs')
+      const completed = jobs.filter(j => ['complete', 'invoiced', 'paid'].includes(j.status)).length
+      const clients = this.getStore('clients')
+      const equipment = this.getStore('equipment')
+
+      this.generatePdf('Capability Statement', `
+        <div class="section">
+          <p style="font-size:16px;line-height:1.6">Steady Eco is a professional land management and environmental services company based in Cairns, Far North Queensland. With 7 years of hands-on trade experience, we deliver tree work, landscaping, mowing, vegetation management, land clearing, and chipper blade sharpening across the full FNQ region.</p>
+        </div>
+        <div class="section"><div class="section-title">Company Details</div>
+          <table><tbody>
+            <tr><td style="width:40%;color:#999">Business Name</td><td>Steady Eco</td></tr>
+            <tr><td style="color:#999">ABN</td><td>49 553 784 085</td></tr>
+            <tr><td style="color:#999">Principal</td><td>Sam Kerr</td></tr>
+            <tr><td style="color:#999">Location</td><td>Freshwater, Cairns QLD 4870</td></tr>
+            <tr><td style="color:#999">Phone</td><td>0456 190 202</td></tr>
+            <tr><td style="color:#999">Website</td><td>steadyeco.com</td></tr>
+            <tr><td style="color:#999">Service Radius</td><td>100km from Cairns — Palm Cove to Gordonvale, Atherton to Mission Beach</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">Services</div>
+          <table><thead><tr><th>Service</th><th>Capability</th></tr></thead><tbody>
+            <tr><td>Tree Removal</td><td>Complete removal, sectional dismantling, stump grinding, chipper processing</td></tr>
+            <tr><td>Tree Pruning</td><td>Crown reduction, deadwooding, canopy lift, formative pruning (AS4373)</td></tr>
+            <tr><td>Landscaping</td><td>Garden design, installation, renovation, ongoing maintenance</td></tr>
+            <tr><td>Lawn Mowing</td><td>Ride-on and push mowing, edging, residential and commercial</td></tr>
+            <tr><td>Vegetation Management</td><td>Land clearing, weed control, fire breaks, council corridor maintenance</td></tr>
+            <tr><td>Blade Sharpening</td><td>Chipper/mulcher blade sharpening to factory spec — only service in FNQ</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">Equipment</div>
+          <table><thead><tr><th>Item</th><th>Type</th></tr></thead><tbody>
+            ${equipment.map(e => `<tr><td>${this.esc(e.name)}</td><td>${this.esc(e.type)}</td></tr>`).join('')}
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">Qualifications &amp; Compliance</div>
+          <table><tbody>
+            <tr><td style="color:#999">Arborist Certification</td><td>AQF Level 3 in Arboriculture</td></tr>
+            <tr><td style="color:#999">Public Liability</td><td>$20,000,000 (current)</td></tr>
+            <tr><td style="color:#999">Workers Compensation</td><td>Current — WorkCover QLD</td></tr>
+            <tr><td style="color:#999">Professional Indemnity</td><td>Current</td></tr>
+            <tr><td style="color:#999">Chainsaw Operator</td><td>TLIC0003 certified</td></tr>
+            <tr><td style="color:#999">First Aid</td><td>Current — HLTAID011</td></tr>
+            <tr><td style="color:#999">White Card</td><td>Current — CPCCWHS1001</td></tr>
+            <tr><td style="color:#999">Traffic Controller</td><td>Current — TC ticket</td></tr>
+            <tr><td style="color:#999">WHS Management</td><td>Full SWMS library (9 templates), digital signing, pre-start checklists</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">Track Record</div>
+          <table><tbody>
+            <tr><td style="color:#999">Jobs Completed</td><td>${completed}</td></tr>
+            <tr><td style="color:#999">Total Clients</td><td>${clients.length}</td></tr>
+            <tr><td style="color:#999">Years Experience</td><td>7 years (trained under TRIMSNQ)</td></tr>
+            <tr><td style="color:#999">Incidents</td><td>Zero reportable incidents</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">Environmental Commitment</div>
+          <p class="meta">Steady Eco operates with a zero-waste-to-landfill policy for green waste. All vegetation material is chipped into mulch for reuse or removed via tipper truck. We track carbon offset metrics per job and maintain Great Barrier Reef catchment compliance across all FNQ operations.</p>
+        </div>
+      `)
+      this.addAudit('Capability Statement generated', '')
+    },
+
+    generateJobCompletionReport(jobId) {
+      const job = this.getStore('jobs').find(j => j.id === jobId)
+      if (!job) { this.toast('Job not found', 'error'); return }
+      const client = this.getStore('clients').find(c => c.id === job.clientId)
+      const svc = (job.serviceTypes?.[0] || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+      const photos = JSON.parse(localStorage.getItem('se_photos_' + (job.assignedEmployees?.[0] || '')) || '[]').filter(p => p.jobId === jobId)
+
+      this.generatePdf(`Job Completion Report — ${job.reference}`, `
+        <div class="section"><div class="section-title">Job Details</div>
+          <table><tbody>
+            <tr><td style="width:40%;color:#999">Reference</td><td>${this.esc(job.reference)}</td></tr>
+            <tr><td style="color:#999">Client</td><td>${this.esc(client?.name || 'Unknown')}</td></tr>
+            <tr><td style="color:#999">Service</td><td>${this.esc(svc)}</td></tr>
+            <tr><td style="color:#999">Site Address</td><td>${this.esc(job.siteAddress?.line1 || 'N/A')}</td></tr>
+            <tr><td style="color:#999">Date</td><td>${this.esc(job.scheduledStart || 'N/A')}</td></tr>
+            <tr><td style="color:#999">Status</td><td>${this.esc(job.status)}</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">Scope of Work</div>
+          <p class="meta">${this.esc(job.description || 'No description provided')}</p>
+        </div>
+        ${photos.length ? `<div class="section"><div class="section-title">Site Photos (${photos.length})</div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+            ${photos.map(p => `<div><img src="${p.data}" style="width:100%;border-radius:4px;border:1px solid #eee"><p class="meta" style="margin-top:4px">${this.esc(p.tag)} — ${new Date(p.timestamp).toLocaleString('en-AU')}</p></div>`).join('')}
+          </div>
+        </div>` : '<div class="section"><div class="section-title">Site Photos</div><p class="meta">No photos captured for this job.</p></div>'}
+        <div class="section"><div class="section-title">Completion Notes</div>
+          <p class="meta">${this.esc(job.notes || 'No additional notes.')}</p>
+        </div>
+        <div class="section"><div class="section-title">Waste Disposal</div>
+          <p class="meta">All green waste chipped on-site and/or removed via tipper truck. Zero waste to landfill.</p>
+        </div>
+        <div class="section"><div class="section-title">Sign-Off</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px">
+            <div><p class="meta">Completed by: ____________________</p><p class="meta">Sam Kerr — Steady Eco</p></div>
+            <div><p class="meta">Date: ${new Date().toLocaleDateString('en-AU')}</p><p class="meta">ABN 49 553 784 085</p></div>
+          </div>
+        </div>
+      `)
+      this.addAudit('Job Completion Report generated', job.reference)
+    },
+
     printInvoice(invoiceId) {
       const inv = this.getStore('invoices').find(i => i.id === invoiceId)
       if (!inv) { this.toast('Invoice not found', 'error'); return }
@@ -3645,11 +3806,20 @@
         invoiced: { label: 'Mark Paid', next: 'paid' },
       }
       const action = actions[job.status]
-      document.getElementById('jd-actions').innerHTML = action
+      const actionBtn = action
         ? action.fn
           ? `<button class="btn btn-primary" onclick="App.createInvoiceFromJob('${this.esc(job.id)}')">${action.label}</button>`
           : `<button class="btn btn-primary" onclick="App.advanceJob('${this.esc(job.id)}','${action.next}')">${action.label}</button>`
         : `<span class="badge badge-${this.esc(job.status)}">${this.esc(job.status)}</span>`
+
+      document.getElementById('jd-actions').innerHTML = `
+        <div class="flex gap-3 flex-wrap">
+          ${actionBtn}
+          <button class="btn btn-secondary btn-sm" onclick="App.generateTreeRiskAssessment('${this.esc(job.id)}')">Tree Risk Report</button>
+          <button class="btn btn-secondary btn-sm" onclick="App.generateJobCompletionReport('${this.esc(job.id)}')">Completion Report</button>
+          ${job.status === 'invoiced' || job.status === 'paid' ? `<button class="btn btn-ghost btn-sm" onclick="App.printInvoice('${this.esc(job.invoiceId || '')}')">View Invoice</button>` : ''}
+        </div>
+      `
 
       // Sections
       const arrow = '<svg class="job-section__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>'
