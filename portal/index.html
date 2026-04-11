@@ -230,11 +230,14 @@
           <h3 class="label mb-4">Recent Invoices</h3>
           <ul class="flex flex-col gap-3" id="portal-invoices" role="list"></ul>
         </div>
+        <!-- Review prompt -->
+        <div class="mb-8" id="portal-review-prompt"></div>
+
         <div>
           <h3 class="label mb-4">Quick Actions</h3>
           <div class="grid grid-cols-2 gap-3" style="max-width:400px">
             <a href="tel:+61456190202" class="btn btn-secondary" style="min-height:48px">Call Sam</a>
-            <button class="btn btn-primary" onclick="Portal.showTab('invoices')" style="min-height:48px">View Invoices</button>
+            <button class="btn btn-primary" onclick="Portal.showTab('quotes')" style="min-height:48px">View Quotes</button>
           </div>
         </div>
       </div>
@@ -492,6 +495,52 @@
       } else {
         invContainer.innerHTML = invoices.map(i => `<li>${this.invoiceCard(i)}</li>`).join('')
       }
+
+      // Review prompt
+      this.renderReviewPrompt()
+    },
+
+    /* ── REVIEW PROMPT ──────────────────────────────── */
+
+    renderReviewPrompt() {
+      const container = document.getElementById('portal-review-prompt')
+      if (!container || !this.client) return
+
+      const reviews = JSON.parse(localStorage.getItem('se_review_prompts') || '[]')
+      const pending = reviews.filter(r => r.clientId === this.client.id && !r.completed)
+
+      if (!pending.length) { container.innerHTML = ''; return }
+
+      const review = pending[0]
+      container.innerHTML = `
+        <div class="card p-5" style="border-color:var(--se-gold-500);background:var(--se-gold-050)">
+          <div class="text-md font-medium mb-2" style="color:var(--se-gold-500)">How was your experience?</div>
+          <p class="text-sm text-secondary mb-4">Your feedback on job ${this.esc(review.jobRef)} helps us improve.</p>
+          <div class="flex gap-2 mb-4" id="review-stars">
+            ${[1,2,3,4,5].map(n => `<button onclick="Portal.submitRating('${review.id}', ${n})" style="background:none;border:none;font-size:28px;cursor:pointer;padding:4px;min-height:44px;min-width:44px;transition:transform 150ms" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" aria-label="${n} star${n>1?'s':''}">★</button>`).join('')}
+          </div>
+          <a href="https://g.page/r/steady-eco/review" target="_blank" rel="noopener" class="btn btn-gold btn-sm">Leave a Google Review →</a>
+        </div>
+      `
+    },
+
+    submitRating(reviewId, stars) {
+      const reviews = JSON.parse(localStorage.getItem('se_review_prompts') || '[]')
+      const review = reviews.find(r => r.id === reviewId)
+      if (review) {
+        review.completed = true
+        review.rating = stars
+        review.ratedAt = new Date().toISOString()
+        localStorage.setItem('se_review_prompts', JSON.stringify(reviews))
+
+        // Also save rating on the job
+        const jobs = this.getStore('jobs')
+        const job = jobs.find(j => j.id === review.jobId)
+        if (job) { job.rating = stars; localStorage.setItem('se_jobs', JSON.stringify(jobs)); this.invalidateCache('jobs') }
+      }
+
+      this.toast(stars >= 4 ? 'Thank you! We appreciate your support.' : 'Thank you for your feedback.', 'success')
+      this.renderReviewPrompt()
     },
 
     /* ── CLIENT QUOTES + APPROVAL ────────────────────── */

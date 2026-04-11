@@ -1015,6 +1015,7 @@
       <header class="page-header">
         <h1 class="page-header__title" tabindex="-1">Timesheets</h1>
         <div class="page-header__actions">
+          <button class="btn btn-primary btn-sm" onclick="App.approveAllTimesheets()">Approve All</button>
           <button class="btn btn-secondary btn-sm" onclick="App.exportTimesheets()">Export CSV</button>
         </div>
       </header>
@@ -1986,6 +1987,25 @@
         `)
       }
 
+      // Compliance expiry warnings
+      const expiryWarnings = this.checkComplianceExpiry()
+      if (expiryWarnings.length > 0) {
+        const expired = expiryWarnings.filter(w => w.severity === 'expired')
+        const critical = expiryWarnings.filter(w => w.severity === 'critical')
+        if (expired.length || critical.length) {
+          activityContainer.insertAdjacentHTML('afterbegin', `
+            <div style="padding:var(--se-space-4);background:${expired.length ? 'var(--se-error-bg)' : 'var(--se-warning-bg)'};border:1px solid ${expired.length ? 'var(--se-error)' : 'var(--se-warning)'};border-radius:var(--se-radius-lg);margin-bottom:var(--se-space-4)">
+              <div class="text-xs font-medium" style="color:${expired.length ? 'var(--se-error)' : 'var(--se-warning)'}">🛡 ${expiryWarnings.length} certification${expiryWarnings.length > 1 ? 's' : ''} need${expiryWarnings.length === 1 ? 's' : ''} attention</div>
+              ${expiryWarnings.slice(0, 3).map(w => `<div class="text-xs text-secondary mt-1">${this.esc(w.name)} — ${w.daysLeft < 0 ? 'EXPIRED' : w.daysLeft + ' days left'}</div>`).join('')}
+              <button class="btn btn-ghost btn-sm mt-2" onclick="App.navigate('compliance')">View compliance →</button>
+            </div>
+          `)
+        }
+      }
+
+      // Post-job review triggers
+      this.checkReviewTriggers()
+
       // Weather (real data from Open-Meteo — free, no API key)
       this.fetchWeather()
     },
@@ -2594,7 +2614,10 @@
           <td>${inTime}</td>
           <td>${outTime}</td>
           <td>${duration}</td>
-          <td><span class="badge ${r.clockOut ? 'badge-complete' : 'badge-active'}">${status}</span></td>
+          <td>
+            <span class="badge ${r.clockOut ? 'badge-complete' : 'badge-active'}">${status}</span>
+            ${r.clockIn?.status === 'pending' ? `<button class="btn btn-ghost btn-sm ml-2" onclick="App.approveTimesheet('${this.esc(r.clockIn.id)}')" style="font-size:10px">Approve</button>` : ''}
+          </td>
         </tr>`
       }).join('')
     },
@@ -3438,6 +3461,189 @@
       setTimeout(() => { if (this._map) this._map.invalidateSize() }, 200)
     },
 
+    /* ── POST-JOB REVIEW TRIGGER (EMPIRE P1) ────────── */
+
+    checkReviewTriggers() {
+      const jobs = this.getStore('jobs').filter(j => j.status === 'paid' && !j._reviewTriggered)
+      if (!jobs.length) return
+
+      jobs.forEach(j => {
+        const client = this.getStore('clients').find(c => c.id === j.clientId)
+        if (!client) return
+        j._reviewTriggered = true
+
+        // Show on client portal — add review prompt to their dashboard
+        const reviews = JSON.parse(localStorage.getItem('se_review_prompts') || '[]')
+        reviews.push({
+          id: crypto.randomUUID(),
+          clientId: client.id,
+          jobId: j.id,
+          jobRef: j.reference,
+          createdAt: new Date().toISOString(),
+          completed: false,
+        })
+        localStorage.setItem('se_review_prompts', JSON.stringify(reviews))
+      })
+      localStorage.setItem('se_jobs', JSON.stringify(this.getStore('jobs')))
+      this.invalidateCache('jobs')
+    },
+
+    /* ── COMPLIANCE EXPIRY ENGINE (EMPIRE P1) ─────────── */
+
+    checkComplianceExpiry() {
+      const certs = this._getComplianceData()
+      const warnings = []
+      const now = new Date()
+
+      certs.forEach(c => {
+        if (c.expiry === 'No expiry') return
+        const exp = new Date(c.expiry.replace(/(\d+)\s+(\w+)\s+(\d+)/, '$2 $1, $3'))
+        if (isNaN(exp.getTime())) return
+        const daysLeft = Math.ceil((exp - now) / 86400000)
+
+        if (daysLeft < 0) warnings.push({ ...c, daysLeft, severity: 'expired' })
+        else if (daysLeft <= 30) warnings.push({ ...c, daysLeft, severity: 'critical' })
+        else if (daysLeft <= 60) warnings.push({ ...c, daysLeft, severity: 'warning' })
+      })
+
+      return warnings
+    },
+
+    /* ── TIMESHEET APPROVAL (PHANTOM P3) ──────────────── */
+
+    approveTimesheet(tsId) {
+      const timesheets = this.getStore('timesheets')
+      const ts = timesheets.find(t => t.id === tsId)
+      if (!ts) return
+      ts.status = 'approved'
+      ts.approvedAt = new Date().toISOString()
+      ts.approvedBy = 'Sam'
+      localStorage.setItem('se_timesheets', JSON.stringify(timesheets))
+      this.invalidateCache('timesheets')
+      this.addAudit('Timesheet approved', ts.employeeId)
+      this.toast('Timesheet approved', 'success')
+      this.renderTimesheets()
+    },
+
+    approveAllTimesheets() {
+      const timesheets = this.getStore('timesheets')
+      let count = 0
+      timesheets.forEach(t => {
+        if (t.status === 'pending') { t.status = 'approved'; t.approvedAt = new Date().toISOString(); t.approvedBy = 'Sam'; count++ }
+      })
+      localStorage.setItem('se_timesheets', JSON.stringify(timesheets))
+      this.invalidateCache('timesheets')
+      if (count) { this.addAudit('Bulk timesheet approval', `${count} entries`); this.toast(`${count} timesheets approved`, 'success') }
+      else this.toast('No pending timesheets', 'info')
+      this.renderTimesheets()
+    },
+
+    /* ── CLIENT COMMUNICATION LOG (PHANTOM P2) ────────── */
+
+    addCommNote(clientId) {
+      const note = prompt('Add note for this client:')
+      if (!note) return
+      const comms = JSON.parse(localStorage.getItem('se_comms') || '[]')
+      comms.push({ id: crypto.randomUUID(), clientId, type: 'note', text: note, createdAt: new Date().toISOString(), createdBy: 'Sam' })
+      localStorage.setItem('se_comms', JSON.stringify(comms))
+      this.addAudit('Client note added', note.slice(0, 50))
+      this.toast('Note added', 'success')
+    },
+
+    /* ── CHEMICAL APPLICATION REGISTER (PHANTOM P3) ───── */
+
+    renderChemicalLog() {
+      const logs = JSON.parse(localStorage.getItem('se_chemical_log') || '[]')
+      return logs
+    },
+
+    /* ── BEFORE/AFTER PHOTO REPORT (PHANTOM P2) ──────── */
+
+    generatePhotoReport(jobId) {
+      const job = this.getStore('jobs').find(j => j.id === jobId)
+      if (!job) { this.toast('Job not found', 'error'); return }
+      const client = this.getStore('clients').find(c => c.id === job.clientId)
+
+      // Gather photos from all employees on this job
+      let allPhotos = []
+      const employees = this.getStore('employees')
+      employees.forEach(emp => {
+        const photos = JSON.parse(localStorage.getItem('se_photos_' + emp.id) || '[]')
+        allPhotos.push(...photos.filter(p => p.jobId === jobId))
+      })
+
+      const beforePhotos = allPhotos.filter(p => p.tag === 'before')
+      const afterPhotos = allPhotos.filter(p => p.tag === 'after')
+      const duringPhotos = allPhotos.filter(p => p.tag === 'during')
+      const svc = (job.serviceTypes?.[0] || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+
+      const photoSection = (title, photos) => {
+        if (!photos.length) return `<div class="section"><div class="section-title">${title}</div><p class="meta">No ${title.toLowerCase()} photos captured.</p></div>`
+        return `<div class="section"><div class="section-title">${title} (${photos.length})</div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+            ${photos.map(p => `<div><img src="${p.data}" style="width:100%;border-radius:4px;border:1px solid #eee"><p class="meta" style="margin-top:4px">${new Date(p.timestamp).toLocaleString('en-AU')}</p></div>`).join('')}
+          </div>
+        </div>`
+      }
+
+      this.generatePdf(`Before & After Report — ${job.reference}`, `
+        <div class="section"><div class="section-title">Job Details</div>
+          <table><tbody>
+            <tr><td style="width:35%;color:#999">Reference</td><td>${this.esc(job.reference)}</td></tr>
+            <tr><td style="color:#999">Client</td><td>${this.esc(client?.name || 'Unknown')}</td></tr>
+            <tr><td style="color:#999">Service</td><td>${this.esc(svc)}</td></tr>
+            <tr><td style="color:#999">Date</td><td>${this.esc(job.scheduledStart || 'N/A')}</td></tr>
+            <tr><td style="color:#999">Total Photos</td><td>${allPhotos.length}</td></tr>
+          </tbody></table>
+        </div>
+        ${photoSection('Before Photos', beforePhotos)}
+        ${photoSection('During Photos', duringPhotos)}
+        ${photoSection('After Photos', afterPhotos)}
+        <div class="section"><div class="section-title">Notes</div><p class="meta">${this.esc(job.notes || job.description || 'No notes.')}</p></div>
+      `)
+      this.addAudit('Photo report generated', job.reference)
+    },
+
+    /* ── JOB PROFITABILITY (PHANTOM P2) ───────────────── */
+
+    getJobProfitability(jobId) {
+      const job = this.getStore('jobs').find(j => j.id === jobId)
+      if (!job) return null
+
+      // Revenue: from linked invoice or quote
+      const invoice = this.getStore('invoices').find(i => i.jobId === jobId)
+      const quote = this.getStore('quotes').find(q => q.id === job.quoteId)
+      const revenue = invoice?.total || quote?.total || 0
+
+      // Costs: labour (timesheet hours × rate) + expenses
+      const timesheets = this.getStore('timesheets').filter(t => t.type === 'clock-out' && t.jobId === jobId)
+      const labourMins = timesheets.reduce((s, t) => s + (t.duration || 0), 0)
+      const rate = this.getRateForClient(job.clientId)
+      const labourCost = (labourMins / 60) * rate * 0.4 // assume 40% of rate is cost
+
+      const expenses = JSON.parse(localStorage.getItem('se_expenses') || '[]').filter(e => e.jobId === jobId)
+      const expenseCost = expenses.reduce((s, e) => s + (e.amount || 0), 0)
+
+      const totalCost = labourCost + expenseCost
+      const profit = revenue - totalCost
+      const margin = revenue > 0 ? Math.round((profit / revenue) * 100) : 0
+
+      return { revenue, labourCost, expenseCost, totalCost, profit, margin }
+    },
+
+    /* ── QUOTE TEMPLATES / SAVED LINE ITEMS (PHANTOM P2) ── */
+
+    saveLineTemplate(description, unit, unitRate) {
+      const templates = JSON.parse(localStorage.getItem('se_line_templates') || '[]')
+      templates.push({ id: crypto.randomUUID(), description, unit, unitRate, createdAt: new Date().toISOString() })
+      localStorage.setItem('se_line_templates', JSON.stringify(templates))
+      this.toast('Line item template saved', 'success')
+    },
+
+    getLineTemplates() {
+      return JSON.parse(localStorage.getItem('se_line_templates') || '[]')
+    },
+
     /* ── CREW TRAINING TRACKER ──────────────────────── */
 
     renderTraining() {
@@ -3946,6 +4152,7 @@
           ${actionBtn}
           <button class="btn btn-secondary btn-sm" onclick="App.generateTreeRiskAssessment('${this.esc(job.id)}')">Tree Risk Report</button>
           <button class="btn btn-secondary btn-sm" onclick="App.generateJobCompletionReport('${this.esc(job.id)}')">Completion Report</button>
+          <button class="btn btn-secondary btn-sm" onclick="App.generatePhotoReport('${this.esc(job.id)}')">Photo Report</button>
           ${job.status === 'invoiced' || job.status === 'paid' ? `<button class="btn btn-ghost btn-sm" onclick="App.printInvoice('${this.esc(job.invoiceId || '')}')">View Invoice</button>` : ''}
         </div>
       `
@@ -4006,6 +4213,21 @@
 
       overlay.classList.add('is-open')
       this.renderJobExpenses(job.id)
+
+      // Profitability (if job has revenue data)
+      const prof = this.getJobProfitability(job.id)
+      if (prof && prof.revenue > 0) {
+        document.getElementById('jd-actions').insertAdjacentHTML('afterend', `
+          <div class="card p-4 mt-4" style="border-color:${prof.margin >= 50 ? 'var(--se-success)' : prof.margin >= 20 ? 'var(--se-warning)' : 'var(--se-error)'}">
+            <div class="label mb-2">Job Profitability</div>
+            <div class="flex justify-between">
+              <span class="text-sm">Revenue: ${this.formatCurrency(prof.revenue)}</span>
+              <span class="text-sm">Costs: ${this.formatCurrency(prof.totalCost)}</span>
+              <span class="text-sm font-medium" style="color:${prof.margin >= 50 ? 'var(--se-success)' : prof.margin >= 20 ? 'var(--se-warning)' : 'var(--se-error)'}">Margin: ${prof.margin}%</span>
+            </div>
+          </div>
+        `)
+      }
     },
 
     closeJobDetail() {
