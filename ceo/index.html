@@ -1917,6 +1917,39 @@
         `)
       }
 
+      // Stale quotes banner (sent > 48hrs ago, not accepted/rejected)
+      const staleQuotes = this.getStore('quotes').filter(q => {
+        if (q.status !== 'sent' && q.status !== 'viewed') return false
+        const sentTime = new Date(q.sentAt || q.createdAt).getTime()
+        return (Date.now() - sentTime) > 48 * 60 * 60 * 1000
+      })
+      if (staleQuotes.length > 0) {
+        activityContainer.insertAdjacentHTML('afterbegin', `
+          <div style="padding:var(--se-space-4);background:var(--se-warning-bg);border:1px solid var(--se-warning);border-radius:var(--se-radius-lg);margin-bottom:var(--se-space-4)">
+            <div class="text-xs font-medium" style="color:var(--se-warning)">📋 ${staleQuotes.length} quote${staleQuotes.length > 1 ? 's' : ''} awaiting response (48h+)</div>
+            ${staleQuotes.slice(0, 3).map(q => `<div class="text-xs text-secondary mt-1">${this.esc(q.reference)} — ${this.esc(this.getClientName(q.clientId))} — ${this.formatCurrency(q.total)}</div>`).join('')}
+            <button class="btn btn-ghost btn-sm mt-2" onclick="App.navigate('quotes')" style="color:var(--se-warning)">Follow up →</button>
+          </div>
+        `)
+      }
+
+      // Overdue invoices banner
+      const overdueInvoices = this.getStore('invoices').filter(i => {
+        if (i.status === 'paid' || i.status === 'void') return false
+        if (!i.dueDate) return false
+        return new Date(i.dueDate) < new Date()
+      })
+      if (overdueInvoices.length > 0) {
+        const totalOverdue = overdueInvoices.reduce((s, i) => s + (i.total || 0), 0)
+        activityContainer.insertAdjacentHTML('afterbegin', `
+          <div style="padding:var(--se-space-4);background:var(--se-error-bg);border:1px solid var(--se-error);border-radius:var(--se-radius-lg);margin-bottom:var(--se-space-4)">
+            <div class="text-xs font-medium" style="color:var(--se-error)">💰 ${overdueInvoices.length} overdue invoice${overdueInvoices.length > 1 ? 's' : ''} — ${this.formatCurrency(totalOverdue)}</div>
+            ${overdueInvoices.slice(0, 3).map(i => `<div class="text-xs text-secondary mt-1">${this.esc(i.reference)} — ${this.esc(this.getClientName(i.clientId))} — ${this.formatCurrency(i.total)}</div>`).join('')}
+            <button class="btn btn-ghost btn-sm mt-2" onclick="App.navigate('invoices')" style="color:var(--se-error)">Chase payments →</button>
+          </div>
+        `)
+      }
+
       // Weather (real data from Open-Meteo — free, no API key)
       this.fetchWeather()
     },
