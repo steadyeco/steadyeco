@@ -757,6 +757,10 @@
         <svg class="sidebar__link-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l3 2"/></svg>
         Timesheets
       </a>
+      <a href="#" class="sidebar__link" data-screen="recurring">
+        <svg class="sidebar__link-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 10a6 6 0 1112 0"/><path d="M16 10a6 6 0 11-12 0"/><path d="M10 6v4l2 2"/></svg>
+        Recurring
+      </a>
       <a href="#" class="sidebar__link" data-screen="schedule">
         <svg class="sidebar__link-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="4" width="16" height="14" rx="2"/><path d="M2 8h16M6 2v4M14 2v4"/></svg>
         Schedule
@@ -2108,7 +2112,7 @@
         return
       }
       container.innerHTML = quotes.map(q => `
-        <div class="card card-interactive p-5 flex justify-between items-center">
+        <div class="card card-interactive p-5 flex justify-between items-center" onclick="App.printQuote('${this.esc(q.id)}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
           <div>
             <div class="text-md font-medium">${this.esc(q.reference || 'Draft')}</div>
             <div class="text-sm text-secondary">${this.esc(this.getClientName(q.clientId))}</div>
@@ -2127,10 +2131,8 @@
         container.innerHTML = `<div class="empty-state" style="padding:var(--se-space-12)"><p class="empty-state__title">No clients yet</p><p class="empty-state__description">Add your first client to start building your network.</p><div class="empty-state__action"><button class="btn btn-primary btn-sm" onclick="App.navigate('new-client')">Add Client</button></div></div>`
         return
       }
-      // Portal link
-      container.insertAdjacentHTML('beforeend', '')
       container.innerHTML = `<div class="mb-4 p-4 bg-surface rounded-lg border-subtle text-center"><p class="text-xs text-muted mb-2">Clients access their portal at</p><p class="text-sm"><a href="../client-portal/" target="_blank" style="color:var(--se-green-400)">Open Client Portal →</a></p></div>` + clients.map(c => `
-        <div class="card-client">
+        <div class="card-client card-interactive" onclick="App.openClientDetail('${this.esc(c.id)}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
           <div class="card-client__avatar">${this.esc(this.initials(c.name))}</div>
           <div>
             <div class="card-client__name">${this.esc(c.name)}</div>
@@ -2153,7 +2155,7 @@
         const assignedJobs = jobs.filter(j => j.assignedEmployees?.includes(e.id) && !['paid','cancelled'].includes(j.status)).length
         const hasPIN = e.pinHash ? 'PIN set' : 'No PIN'
         return `
-          <div class="card-client" style="cursor:default">
+          <div class="card-client card-interactive" onclick="App.openEmployeeDetail('${this.esc(e.id)}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
             <div class="card-client__avatar">${this.esc(this.initials(e.name))}</div>
             <div style="flex:1">
               <div class="card-client__name">${this.esc(e.name)}</div>
@@ -2178,7 +2180,7 @@
         return
       }
       container.innerHTML = invoices.map(i => `
-        <div class="card card-interactive p-5 flex justify-between items-center">
+        <div class="card card-interactive p-5 flex justify-between items-center" onclick="App.printInvoice('${this.esc(i.id)}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
           <div>
             <div class="text-md font-medium">${this.esc(i.reference || 'Draft')}</div>
             <div class="text-sm text-secondary">${this.esc(this.getClientName(i.clientId))}</div>
@@ -2338,6 +2340,261 @@
       const hours = Math.floor(mins / 60)
       if (hours < 24) return `${hours}h ago`
       return `${Math.floor(hours / 24)}d ago`
+    },
+
+    /* ── CLIENT DETAIL ──────────────────────────────── */
+
+    openClientDetail(clientId) {
+      const client = this.getStore('clients').find(c => c.id === clientId)
+      if (!client) return
+
+      const overlay = document.getElementById('job-detail-overlay')
+      const jobs = this.getStore('jobs').filter(j => j.clientId === clientId)
+      const quotes = this.getStore('quotes').filter(q => q.clientId === clientId)
+      const invoices = this.getStore('invoices').filter(i => i.clientId === clientId)
+      const comms = this.getClientNotes(clientId)
+      const totalSpend = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + (i.total || 0), 0)
+
+      document.getElementById('jd-title').textContent = this.esc(client.name)
+      document.getElementById('jd-timeline').innerHTML = ''
+      document.getElementById('jd-actions').innerHTML = `
+        <div class="flex gap-3">
+          ${client.phone ? `<a href="tel:${this.esc(client.phone.replace(/\s/g,''))}" class="btn btn-primary btn-sm">Call</a>` : ''}
+          <button class="btn btn-secondary btn-sm" onclick="App.addCommNote('${this.esc(clientId)}');App.openClientDetail('${this.esc(clientId)}')">Add Note</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.navigate('new-quote')">New Quote</button>
+        </div>
+      `
+
+      const arrow = '<svg class="job-section__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>'
+
+      document.getElementById('jd-sections').innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--se-space-4);margin-bottom:var(--se-space-6)">
+          <div class="card-stat"><span class="card-stat__label">Total Spend</span><span class="card-stat__value">${this.formatCurrency(totalSpend)}</span></div>
+          <div class="card-stat"><span class="card-stat__label">Jobs</span><span class="card-stat__value">${jobs.length}</span></div>
+          <div class="card-stat"><span class="card-stat__label">Quotes</span><span class="card-stat__value">${quotes.length}</span></div>
+        </div>
+
+        <div class="job-section is-open">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')"><span class="job-section__title">Contact Details</span>${arrow}</div>
+          <div class="job-section__body">
+            <div class="text-sm text-secondary mb-2"><strong>Type:</strong> ${this.esc(client.type || 'Residential')}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Phone:</strong> ${this.esc(client.phone || 'Not set')}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Email:</strong> ${this.esc(client.email || 'Not set')}</div>
+            ${client.address ? `<div class="text-sm text-secondary"><strong>Address:</strong> ${this.esc(client.address.line1 || '')} ${this.esc(client.address.suburb || '')} ${this.esc(client.address.postcode || '')}</div>` : ''}
+          </div>
+        </div>
+
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')"><span class="job-section__title">Job History (${jobs.length})</span>${arrow}</div>
+          <div class="job-section__body">
+            ${jobs.length ? jobs.slice(-10).reverse().map(j => `
+              <div class="flex justify-between items-center py-2" style="border-bottom:1px solid var(--se-border-subtle);cursor:pointer" onclick="App.closeJobDetail();setTimeout(()=>App.openJobDetail('${this.esc(j.id)}'),300)">
+                <div><div class="text-sm">${this.esc(j.reference)}</div><div class="text-xs text-muted">${this.esc((j.serviceTypes?.[0] || '').replace(/-/g,' '))}</div></div>
+                <span class="badge badge-${this.esc(j.status)}">${this.esc(j.status)}</span>
+              </div>
+            `).join('') : '<p class="text-sm text-muted">No jobs yet.</p>'}
+          </div>
+        </div>
+
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')"><span class="job-section__title">Quotes (${quotes.length})</span>${arrow}</div>
+          <div class="job-section__body">
+            ${quotes.length ? quotes.slice(-5).reverse().map(q => `
+              <div class="flex justify-between items-center py-2" style="border-bottom:1px solid var(--se-border-subtle)">
+                <div><div class="text-sm">${this.esc(q.reference)}</div><div class="text-xs text-muted">${this.formatCurrency(q.total)}</div></div>
+                <span class="badge badge-${this.esc(q.status)}">${this.esc(q.status)}</span>
+              </div>
+            `).join('') : '<p class="text-sm text-muted">No quotes yet.</p>'}
+          </div>
+        </div>
+
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')"><span class="job-section__title">Communication Log (${comms.length})</span>${arrow}</div>
+          <div class="job-section__body">
+            ${comms.length ? comms.slice(0, 10).map(c => `
+              <div class="py-2" style="border-bottom:1px solid var(--se-border-subtle)">
+                <div class="text-sm">${this.esc(c.text)}</div>
+                <div class="text-3xs text-faint mt-1">${this.esc(c.createdBy)} · ${this.timeAgo(c.createdAt)}</div>
+              </div>
+            `).join('') : '<p class="text-sm text-muted">No notes yet. Click "Add Note" to start a communication log.</p>'}
+          </div>
+        </div>
+      `
+
+      overlay.classList.add('is-open')
+    },
+
+    /* ── EMPLOYEE DETAIL ─────────────────────────────── */
+
+    openEmployeeDetail(empId) {
+      const emp = this.getStore('employees').find(e => e.id === empId)
+      if (!emp) return
+
+      const overlay = document.getElementById('job-detail-overlay')
+      const jobs = this.getStore('jobs').filter(j => j.assignedEmployees?.includes(empId))
+      const timesheets = this.getStore('timesheets').filter(t => t.employeeId === empId)
+      const signed = JSON.parse(localStorage.getItem('se_swms_signed') || '[]').filter(s => s.employeeId === empId)
+      const incidents = JSON.parse(localStorage.getItem('se_incidents') || '[]').filter(i => i.employeeId === empId)
+      const photos = JSON.parse(localStorage.getItem('se_photos_' + empId) || '[]')
+      const clockOuts = timesheets.filter(t => t.type === 'clock-out')
+      const totalMins = clockOuts.reduce((s, t) => s + (t.duration || 0), 0)
+      const totalHrs = Math.floor(totalMins / 60)
+      const completedJobs = jobs.filter(j => ['complete', 'invoiced', 'paid'].includes(j.status)).length
+
+      document.getElementById('jd-title').textContent = this.esc(emp.name)
+      document.getElementById('jd-timeline').innerHTML = ''
+
+      document.getElementById('jd-actions').innerHTML = `
+        <div class="flex gap-3 flex-wrap">
+          <button class="btn btn-secondary btn-sm" onclick="App.editEmployee('${this.esc(empId)}')">Edit Details</button>
+          <button class="btn btn-${emp.isActive !== false ? 'danger' : 'primary'} btn-sm" onclick="App.toggleEmployeeActive('${this.esc(empId)}')">${emp.isActive !== false ? 'Deactivate' : 'Reactivate'}</button>
+        </div>
+      `
+
+      const arrow = '<svg class="job-section__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>'
+
+      document.getElementById('jd-sections').innerHTML = `
+        <!-- Stats -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--se-space-4);margin-bottom:var(--se-space-6)">
+          <div class="card-stat"><span class="card-stat__label">Total Hours</span><span class="card-stat__value">${totalHrs}h</span></div>
+          <div class="card-stat"><span class="card-stat__label">Jobs Done</span><span class="card-stat__value">${completedJobs}</span></div>
+          <div class="card-stat"><span class="card-stat__label">Photos</span><span class="card-stat__value">${photos.length}</span></div>
+          <div class="card-stat"><span class="card-stat__label">SWMS Signed</span><span class="card-stat__value">${signed.length}</span></div>
+        </div>
+
+        <!-- Personal Info -->
+        <div class="job-section is-open">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')">
+            <span class="job-section__title">Personal Information</span>${arrow}
+          </div>
+          <div class="job-section__body">
+            <div class="text-sm text-secondary mb-2"><strong>Name:</strong> ${this.esc(emp.name)}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Role:</strong> ${this.esc(emp.role || 'Employee')}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Phone:</strong> ${this.esc(emp.phone || 'Not set')}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Email:</strong> ${this.esc(emp.email || 'Not set')}</div>
+            <div class="text-sm text-secondary mb-2"><strong>PIN:</strong> ${emp.pinHash ? 'Set ✓' : 'Not set ✗'}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Start Date:</strong> ${emp.startDate ? new Date(emp.startDate).toLocaleDateString('en-AU') : 'Not recorded'}</div>
+            ${emp.emergencyContact?.name ? `<div class="text-sm text-secondary"><strong>Emergency:</strong> ${this.esc(emp.emergencyContact.name)} — ${this.esc(emp.emergencyContact.phone || '')}</div>` : ''}
+          </div>
+        </div>
+
+        <!-- Credentials -->
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')">
+            <span class="job-section__title">Credentials & Certifications</span>${arrow}
+          </div>
+          <div class="job-section__body">
+            ${this._getComplianceData().filter(c => ['Arborist', 'Chainsaw', 'First Aid', 'White Card', 'Traffic'].some(k => c.name.includes(k))).map(c => `
+              <div class="flex justify-between items-center py-2" style="border-bottom:1px solid var(--se-border-subtle)">
+                <span class="text-sm">${this.esc(c.name)}</span>
+                <span class="text-xs" style="color:var(--se-success)">${this.esc(c.expiry)}</span>
+              </div>
+            `).join('')}
+            <p class="text-xs text-muted mt-3">Credential tracking per employee coming in next update. Currently showing company-level certs.</p>
+          </div>
+        </div>
+
+        <!-- Timesheet History -->
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')">
+            <span class="job-section__title">Timesheet History (${timesheets.length} records)</span>${arrow}
+          </div>
+          <div class="job-section__body">
+            ${timesheets.length ? `<div class="data-table-wrapper"><table class="data-table"><thead><tr><th>Date</th><th>Type</th><th>Time</th><th>Duration</th></tr></thead><tbody>
+              ${timesheets.slice(-20).reverse().map(t => `<tr><td>${this.esc(t.date || '—')}</td><td>${this.esc(t.type)}</td><td>${t.time ? new Date(t.time).toLocaleTimeString('en-AU', {hour:'numeric',minute:'2-digit'}) : '—'}</td><td>${t.duration ? Math.floor(t.duration/60)+'h '+t.duration%60+'m' : '—'}</td></tr>`).join('')}
+            </tbody></table></div>` : '<p class="text-sm text-muted">No timesheet records yet.</p>'}
+          </div>
+        </div>
+
+        <!-- SWMS Signed -->
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')">
+            <span class="job-section__title">SWMS Signed (${signed.length})</span>${arrow}
+          </div>
+          <div class="job-section__body">
+            ${signed.length ? signed.slice(-10).reverse().map(s => `
+              <div class="flex justify-between items-center py-2" style="border-bottom:1px solid var(--se-border-subtle)">
+                <span class="text-sm">${this.esc(s.swmsName || s.swmsId)}</span>
+                <span class="text-xs text-muted">${this.esc(s.date)} · ${this.esc(s.location || '—')}</span>
+              </div>
+            `).join('') : '<p class="text-sm text-muted">No SWMS signed yet.</p>'}
+          </div>
+        </div>
+
+        <!-- Jobs Assigned -->
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')">
+            <span class="job-section__title">Jobs Assigned (${jobs.length})</span>${arrow}
+          </div>
+          <div class="job-section__body">
+            ${jobs.length ? jobs.slice(-10).reverse().map(j => `
+              <div class="flex justify-between items-center py-2" style="border-bottom:1px solid var(--se-border-subtle);cursor:pointer" onclick="App.closeJobDetail();setTimeout(()=>App.openJobDetail('${this.esc(j.id)}'),300)">
+                <div><div class="text-sm">${this.esc(j.reference || 'Job')}</div><div class="text-xs text-muted">${this.esc(this.getClientName(j.clientId))}</div></div>
+                <span class="badge badge-${this.esc(j.status)}">${this.esc(j.status)}</span>
+              </div>
+            `).join('') : '<p class="text-sm text-muted">No jobs assigned yet.</p>'}
+          </div>
+        </div>
+
+        <!-- Incidents -->
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')">
+            <span class="job-section__title">Incidents Reported (${incidents.length})</span>${arrow}
+          </div>
+          <div class="job-section__body">
+            ${incidents.length ? incidents.reverse().map(i => `
+              <div class="py-2" style="border-bottom:1px solid var(--se-border-subtle)">
+                <div class="flex justify-between"><span class="text-sm font-medium" style="color:var(--se-warning)">${this.esc(i.type)}</span><span class="text-xs text-faint">${this.esc(i.date)}</span></div>
+                <p class="text-xs text-secondary mt-1">${this.esc((i.description || '').slice(0, 150))}</p>
+              </div>
+            `).join('') : '<p class="text-sm text-muted">No incidents reported. ✓</p>'}
+          </div>
+        </div>
+
+        <!-- Photos -->
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')">
+            <span class="job-section__title">Photos Taken (${photos.length})</span>${arrow}
+          </div>
+          <div class="job-section__body">
+            ${photos.length ? `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--se-space-2)">${photos.slice(-12).map(p => `<img src="${p.data}" alt="${this.esc(p.tag)}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--se-radius-sm);border:1px solid var(--se-border-subtle)">`).join('')}</div>` : '<p class="text-sm text-muted">No photos taken yet.</p>'}
+          </div>
+        </div>
+      `
+
+      overlay.classList.add('is-open')
+    },
+
+    editEmployee(empId) {
+      // Navigate to new-employee screen pre-filled (simplified edit)
+      this.closeJobDetail()
+      const emp = this.getStore('employees').find(e => e.id === empId)
+      if (!emp) return
+      this.navigate('new-employee')
+      setTimeout(() => {
+        document.getElementById('ne-name').value = emp.name || ''
+        document.getElementById('ne-role').value = emp.role || 'employee'
+        document.getElementById('ne-phone').value = emp.phone || ''
+        document.getElementById('ne-email').value = emp.email || ''
+        document.getElementById('ne-emergency-name').value = emp.emergencyContact?.name || ''
+        document.getElementById('ne-emergency-phone').value = emp.emergencyContact?.phone || ''
+        // Store the ID so save updates instead of creates
+        document.getElementById('ne-name').dataset.editId = empId
+      }, 100)
+    },
+
+    toggleEmployeeActive(empId) {
+      const employees = this.getStore('employees')
+      const emp = employees.find(e => e.id === empId)
+      if (!emp) return
+      emp.isActive = emp.isActive === false ? true : false
+      emp.updatedAt = new Date().toISOString()
+      localStorage.setItem('se_employees', JSON.stringify(employees))
+      this.invalidateCache('employees')
+      this.addAudit(emp.isActive ? 'Employee reactivated' : 'Employee deactivated', emp.name)
+      this.toast(`${this.esc(emp.name)} ${emp.isActive ? 'reactivated' : 'deactivated'}`, emp.isActive ? 'success' : 'warning')
+      this.closeJobDetail()
+      this.renderEmployees()
     },
 
     /* ── EQUIPMENT MAINTENANCE LOG ────────────────────── */
@@ -2623,7 +2880,7 @@
       const recurring = this.getStore('recurring')
       const container = document.getElementById('recurring-list')
       if (!recurring.length) {
-        container.innerHTML = `<div class="empty-state"><p class="empty-state__title">No recurring jobs</p><p class="empty-state__description">Set up automated scheduling for regular maintenance — mowing, garden upkeep, vegetation clearing.</p><div class="empty-state__action"><button class="btn btn-primary btn-sm" onclick="App.addRecurring()">Create Recurring Job</button></div></div>`
+        container.innerHTML = `<div class="empty-state"><p class="empty-state__title">No recurring jobs</p><p class="empty-state__description">Set up automated scheduling for regular maintenance — mowing, garden upkeep, vegetation clearing.</p><div class="empty-state__action"><button class="btn btn-primary btn-sm" onclick="App.navigate('new-recurring')">Create Recurring Job</button></div></div>`
         return
       }
       container.innerHTML = recurring.map(r => `
@@ -4326,11 +4583,12 @@
         'land-clearing': 'Land Clearing', 'blade-sharpening': 'Blade Sharpening', 'chipping-mulching': 'Chipping & Mulching',
       }
 
+      const clientRate = this.getRateForClient(this.quoteData.clientId)
       this.quoteData.lineItems = this.quoteData.services.map(s => ({
         description: serviceNames[s] || s,
         quantity: 1,
         unit: s === 'blade-sharpening' ? 'set' : 'hours',
-        unitRate: s === 'blade-sharpening' ? 120 : 80,
+        unitRate: s === 'blade-sharpening' ? 120 : clientRate,
       }))
 
       this.renderLineItems()
