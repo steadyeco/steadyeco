@@ -242,6 +242,67 @@
     </div>
   </div>
 
+  <!-- PRE-START CHECKLIST -->
+  <div class="screen" id="screen-prestart">
+    <div class="crew-header"><div class="crew-header__name" tabindex="-1">Pre-Start Checklist</div><div></div></div>
+    <div class="crew-content px-5 py-4">
+      <p class="text-xs text-muted mb-4">Complete this checklist before starting work today. Required by WHS Act 2011 (QLD).</p>
+      <div id="prestart-items" class="flex flex-col gap-3"></div>
+      <button class="crew-action-btn crew-action-btn--primary mt-6" id="prestart-submit" onclick="Crew.submitPrestart()" style="display:none">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 10l3 3 5-6"/></svg>
+        Submit Pre-Start
+      </button>
+      <div id="prestart-done" style="display:none" class="text-center py-8">
+        <div class="text-display-sm" style="font-family:var(--se-font-display);color:var(--se-success)">Pre-Start Complete</div>
+        <p class="text-sm text-muted mt-2">You're cleared to start work today.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- INCIDENT REPORT -->
+  <div class="screen" id="screen-incident">
+    <div class="crew-header">
+      <div class="crew-header__name" tabindex="-1">Report Incident</div>
+      <div><button class="btn btn-ghost btn-sm" onclick="Crew.showScreen('home')">Cancel</button></div>
+    </div>
+    <div class="crew-content px-5 py-4">
+      <p class="text-xs text-muted mb-4">Report any incident, near-miss, or hazard. All reports are logged and sent to Sam immediately.</p>
+      <div class="flex flex-col gap-4">
+        <div class="form-group">
+          <label class="form-label" for="inc-type">Type *</label>
+          <select class="form-input form-select" id="inc-type">
+            <option value="near-miss">Near Miss</option>
+            <option value="injury">Injury</option>
+            <option value="hazard">Hazard Identified</option>
+            <option value="equipment-damage">Equipment Damage</option>
+            <option value="environmental">Environmental</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="inc-desc">Description *</label>
+          <textarea class="form-input form-textarea" id="inc-desc" rows="4" placeholder="What happened? Be specific..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Photo Evidence</label>
+          <input type="file" id="inc-photo" accept="image/*" capture="environment" style="display:none" onchange="Crew.handleIncidentPhoto(this)">
+          <button class="photo-capture-btn" onclick="document.getElementById('inc-photo').click()" style="height:56px">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M19 16a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h3l2-2h4l2 2h3a2 2 0 012 2z"/><circle cx="10" cy="11" r="3"/></svg>
+            Add Photo
+          </button>
+          <div id="inc-photo-preview" class="mt-3"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="inc-action">Immediate Action Taken</label>
+          <textarea class="form-input form-textarea" id="inc-action" rows="2" placeholder="What did you do to address it?"></textarea>
+        </div>
+        <button class="crew-action-btn crew-action-btn--primary" onclick="Crew.submitIncident()" style="background:var(--se-error)">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 2L1 18h18L10 2z"/><path d="M10 8v4M10 14.5v.5"/></svg>
+          Submit Incident Report
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- PROFILE -->
   <div class="screen" id="screen-profile">
     <div class="crew-content">
@@ -251,6 +312,8 @@
         <div class="profile-role" id="profile-role">—</div>
       </div>
       <div class="px-5">
+        <div class="card p-5 mb-4" id="profile-stats"></div>
+        <button class="btn btn-danger w-full mb-3" onclick="Crew.showScreen('incident')" style="height:56px">Report Incident / Hazard</button>
         <button class="btn btn-secondary w-full mb-3" onclick="Crew.logout()" style="height:56px">Log Out</button>
       </div>
     </div>
@@ -468,6 +531,15 @@
     },
 
     clockIn() {
+      // Check pre-start done today
+      const today = new Date().toISOString().split('T')[0]
+      const done = JSON.parse(localStorage.getItem('se_prestart_done') || '{}')
+      if (!done[this.currentEmployee.id + '_' + today]) {
+        this.toast('Complete pre-start checklist first', 'warning')
+        this.showScreen('prestart')
+        return
+      }
+
       this.clockedIn = true
       this.clockInTime = new Date()
       localStorage.setItem(`se_clockin_${this.currentEmployee.id}`, this.clockInTime.toISOString())
@@ -673,23 +745,67 @@
     renderSwmsList() {
       const swmsTemplates = [
         { id: 'tree-removal', name: 'Tree Removal SWMS', hazards: [
-          { title: 'Falling branches', risk: 'high', control: 'Exclusion zone 1.5x tree height. Hard hat, safety glasses, steel-cap boots mandatory.' },
-          { title: 'Chainsaw kickback', risk: 'high', control: 'Only trained operators. Two-hand grip. Chain brake engaged when not cutting.' },
-          { title: 'Working at heights', risk: 'high', control: 'Harness and rope system for cuts above 3m. Ground crew maintains anchor points.' },
-          { title: 'Manual handling', risk: 'medium', control: 'Team lift for logs >20kg. Use chipper for branches. Tipper for heavy loads.' },
-          { title: 'Traffic/pedestrians', risk: 'medium', control: 'Cones and signage on road-adjacent jobs. Spotter for vehicle movements.' },
+          { title: 'Falling branches/limbs', risk: 'high', control: 'Exclusion zone 1.5x tree height. Hard hat (AS/NZS 1801), safety glasses, steel-cap boots mandatory.' },
+          { title: 'Chainsaw kickback', risk: 'high', control: 'Only operators with TLIC0003 cert. Two-hand grip. Chain brake engaged when not cutting. Chainsaw chaps worn.' },
+          { title: 'Working at heights', risk: 'high', control: 'Harness (AS/NZS 1891) and rope system for cuts above 3m. Aerial rescue plan in place. Ground crew maintains anchor points.' },
+          { title: 'Manual handling', risk: 'medium', control: 'Team lift for logs >20kg. Use chipper for branches. Tipper for heavy loads. Warm up before work.' },
+          { title: 'Traffic/pedestrians', risk: 'medium', control: 'Cones and signage per MUTCD. Spotter for vehicle movements. TC ticket holder on road-adjacent jobs.' },
+          { title: 'Electrical contact', risk: 'high', control: 'Maintain clearance from powerlines per Ergon Energy requirements. Call Ergon for isolation if within safe approach distance.' },
+          { title: 'UV/heat exposure', risk: 'high', control: 'Sunscreen SPF50+, hat, long sleeves. Water every 20 min. Start before 6am in summer. Monitor for heat stroke.' },
         ]},
         { id: 'mowing', name: 'Mowing & Landscaping SWMS', hazards: [
-          { title: 'Flying debris', risk: 'medium', control: 'Safety glasses and enclosed footwear. Check area for debris before mowing.' },
-          { title: 'Noise exposure', risk: 'medium', control: 'Hearing protection for all mowing and chipping operations.' },
-          { title: 'Heat stress', risk: 'high', control: 'Water every 20 minutes. Rest in shade every hour. Start early in summer.' },
-          { title: 'Snakes/wildlife', risk: 'medium', control: 'Visual check of work area. Wear boots. Do not reach into long grass.' },
+          { title: 'Flying debris', risk: 'medium', control: 'Safety glasses (AS/NZS 1337) and enclosed footwear. Check area for debris before mowing.' },
+          { title: 'Noise exposure', risk: 'medium', control: 'Hearing protection (AS/NZS 1270) for all mowing and chipping. Max 8hr exposure at 85dB.' },
+          { title: 'Heat stress', risk: 'high', control: 'Water every 20 minutes. Rest in shade every hour. Start early in summer. Monitor for symptoms.' },
+          { title: 'Snakes/wildlife', risk: 'medium', control: 'Visual check of work area. Wear boots. Do not reach into long grass. First aid for snake bite available.' },
+          { title: 'Ride-on rollover', risk: 'high', control: 'Do not mow slopes >15°. Mow up/down slopes not across. ROPS fitted. Seatbelt worn.' },
+          { title: 'Fuel handling', risk: 'medium', control: 'No smoking near fuel. Refuel on flat ground with engine off and cool. Spill kit available.' },
         ]},
         { id: 'vegetation', name: 'Vegetation Management SWMS', hazards: [
-          { title: 'Uneven terrain', risk: 'medium', control: 'Assess ground conditions before work. Ankle-support boots mandatory.' },
-          { title: 'Chipper operation', risk: 'high', control: 'Minimum 2m feed distance. No loose clothing. Emergency stop accessible.' },
-          { title: 'Chemical exposure', risk: 'medium', control: 'PPE for herbicide application. Read MSDS. No spraying in wind >15km/h.' },
-          { title: 'Fatigue', risk: 'medium', control: 'Maximum 8-hour days for clearing work. Mandatory breaks.' },
+          { title: 'Uneven terrain', risk: 'medium', control: 'Assess ground conditions before work. Ankle-support boots mandatory. Watch for holes/stumps.' },
+          { title: 'Chipper operation', risk: 'high', control: 'Minimum 2m feed distance. No loose clothing. Emergency stop accessible. Hearing/eye protection.' },
+          { title: 'Chemical exposure', risk: 'medium', control: 'PPE per SDS. Chemical register on site. No spraying in wind >15km/h. 48hr withholding period signs posted.' },
+          { title: 'Fatigue', risk: 'medium', control: 'Maximum 8-hour days for clearing work. Mandatory 10-min breaks every 2 hours.' },
+          { title: 'Dust inhalation', risk: 'medium', control: 'P2 dust mask in dry conditions. Work upwind of dust source. Wet down if excessive.' },
+        ]},
+        { id: 'stump-grinding', name: 'Stump Grinding SWMS', hazards: [
+          { title: 'Flying debris from grinder', risk: 'high', control: 'Full face shield + safety glasses. Exclusion zone 5m around grinder. Hearing protection mandatory.' },
+          { title: 'Underground services', risk: 'high', control: 'Dial Before You Dig (1100) completed. Visual check for service markers. No grinding within 1m of known services.' },
+          { title: 'Equipment vibration', risk: 'medium', control: 'Anti-vibration gloves. Maximum 2hr continuous operation. Rotate operators.' },
+          { title: 'Trip hazards', risk: 'medium', control: 'Clear area of roots/debris before grinding. Mark grind area with paint/stakes.' },
+        ]},
+        { id: 'pruning-climbing', name: 'Tree Pruning & Climbing SWMS', hazards: [
+          { title: 'Fall from height', risk: 'high', control: 'Climbing system inspected daily. Two tie-in points at all times. Aerial rescue plan practised. AQF3 minimum.' },
+          { title: 'Dropped tools/branches', risk: 'high', control: 'Tool lanyards on all hand tools. Lowering lines for cut branches. Ground crew in hard hats outside drop zone.' },
+          { title: 'Chainsaw at height', risk: 'high', control: 'One-hand top-handle saw only above 3m. Chain brake between cuts. Saw holster when not in use.' },
+          { title: 'Branch failure under climber', risk: 'high', control: 'Visual and tactile inspection of anchor points. Test loaded before full weight. Avoid dead wood anchors.' },
+          { title: 'Electrical contact', risk: 'high', control: 'No climbing within safe approach distance of powerlines. Call Ergon for isolation.' },
+        ]},
+        { id: 'herbicide', name: 'Herbicide Application SWMS', hazards: [
+          { title: 'Chemical contact (skin/eyes)', risk: 'high', control: 'Full PPE per SDS: chemical-resistant gloves, goggles, long sleeves, enclosed shoes. Wash station on site.' },
+          { title: 'Inhalation of spray drift', risk: 'high', control: 'P2 respirator with organic vapour cartridge. No spraying in wind >15km/h. Spray in early morning.' },
+          { title: 'Environmental contamination', risk: 'high', control: 'No spraying within 10m of waterways. GBR catchment: 20m buffer. Spill kit available. Record all applications.' },
+          { title: 'Chemical storage/transport', risk: 'medium', control: 'SDS sheets on vehicle. Chemicals in locked box. Separated from food/water. APVMA registered products only.' },
+        ]},
+        { id: 'land-clearing', name: 'Land Clearing SWMS', hazards: [
+          { title: 'Machinery rollover', risk: 'high', control: 'ROPS on all plant. Seatbelt worn. No operating on slopes >20°. Pre-start checklist completed.' },
+          { title: 'Struck by falling trees', risk: 'high', control: 'Exclusion zone 2x tree height. Operator cabin with FOPS. Spotter for felling direction.' },
+          { title: 'Underground services', risk: 'high', control: 'Dial Before You Dig completed. Service plans reviewed. Hand dig within 1m of services.' },
+          { title: 'Fauna displacement', risk: 'medium', control: 'Fauna spotter-catcher on site for clearing >0.5ha. Pre-clear survey 24hr before. Cassowary/koala checks in FNQ.' },
+          { title: 'Dust and noise', risk: 'medium', control: 'Water cart for dust suppression. Hearing protection. Notify neighbours of clearing schedule.' },
+        ]},
+        { id: 'emergency-tree', name: 'Emergency Tree Removal SWMS', hazards: [
+          { title: 'Unstable trees/hung-up limbs', risk: 'high', control: 'Dynamic risk assessment on arrival. Assume all storm-damaged trees are unstable. Do not work under hung-up limbs.' },
+          { title: 'Live electrical hazards', risk: 'high', control: 'Assume all downed lines are live. 8m exclusion zone. Call Ergon 13 10 46 before work near any wires.' },
+          { title: 'Unstable ground (flooding)', risk: 'high', control: 'Do not operate machinery on saturated ground. Check for sinkholes/washouts. No work in flowing water.' },
+          { title: 'Fatigue (extended hours)', risk: 'high', control: 'Maximum 12hr shifts in emergency. Mandatory 30-min breaks every 4 hours. Buddy system at all times.' },
+          { title: 'Public safety', risk: 'high', control: 'Barricade with hazard tape minimum 1.5x tree height. Spotter on all road-adjacent work. Coordinate with SES/QPS.' },
+        ]},
+        { id: 'powerlines', name: 'Working Near Powerlines SWMS', hazards: [
+          { title: 'Electrical contact (direct)', risk: 'high', control: 'Safe approach distances per Ergon Energy: 0.7m <1kV, 1.2m 1-33kV, 3m 33-132kV. No aluminium ladders.' },
+          { title: 'Electrical contact (indirect)', risk: 'high', control: 'Tree branches can conduct. Assume all vegetation touching lines is energised. Do not touch.' },
+          { title: 'Arc flash', risk: 'high', control: 'Arc flash possible within approach distances. FR clothing if working near HV. Isolate before work where possible.' },
+          { title: 'Equipment contact', risk: 'high', control: 'Chipper, tipper boom, crane — maintain clearances. Spotter for all elevated equipment near lines.' },
         ]},
       ]
       const signed = JSON.parse(localStorage.getItem('se_swms_signed') || '[]')
@@ -814,6 +930,149 @@
       if (btn) { btn.textContent = 'Voice Note'; btn.classList.remove('clock-btn--out'); btn.classList.add('crew-action-btn--primary') }
     },
 
+    /* ── PRE-START CHECKLIST ──────────────────────── */
+
+    _prestartItems: [
+      'Vehicle/equipment pre-start inspection completed',
+      'PPE checked and worn (hard hat, glasses, boots, hi-vis)',
+      'First aid kit present and stocked',
+      'Fire extinguisher accessible',
+      'Weather conditions assessed (heat, storms, wind)',
+      'Job site address confirmed',
+      'SWMS reviewed for today\'s work type',
+      'Emergency contacts accessible',
+      'Phone charged and GPS enabled',
+      'Fuel/oil levels checked on equipment',
+    ],
+
+    renderPrestart() {
+      const today = new Date().toISOString().split('T')[0]
+      const done = JSON.parse(localStorage.getItem('se_prestart_done') || '{}')
+      const empKey = this.currentEmployee?.id + '_' + today
+
+      if (done[empKey]) {
+        document.getElementById('prestart-items').style.display = 'none'
+        document.getElementById('prestart-submit').style.display = 'none'
+        document.getElementById('prestart-done').style.display = ''
+        return
+      }
+
+      document.getElementById('prestart-items').style.display = ''
+      document.getElementById('prestart-submit').style.display = ''
+      document.getElementById('prestart-done').style.display = 'none'
+
+      document.getElementById('prestart-items').innerHTML = this._prestartItems.map((item, i) => `
+        <label style="display:flex;align-items:center;gap:var(--se-space-3);padding:var(--se-space-4);background:var(--se-bg-surface);border:1px solid var(--se-border-subtle);border-radius:var(--se-radius-lg);cursor:pointer;min-height:56px;-webkit-tap-highlight-color:transparent" onclick="this.querySelector('input').click()">
+          <input type="checkbox" data-prestart="${i}" style="width:24px;height:24px;accent-color:var(--se-green-600);flex-shrink:0" onchange="Crew.checkPrestartComplete()">
+          <span class="text-sm">${this.esc(item)}</span>
+        </label>
+      `).join('')
+    },
+
+    checkPrestartComplete() {
+      const all = document.querySelectorAll('[data-prestart]')
+      const checked = document.querySelectorAll('[data-prestart]:checked')
+      document.getElementById('prestart-submit').style.display = checked.length === all.length ? '' : 'none'
+    },
+
+    submitPrestart() {
+      const today = new Date().toISOString().split('T')[0]
+      const done = JSON.parse(localStorage.getItem('se_prestart_done') || '{}')
+      done[this.currentEmployee.id + '_' + today] = { timestamp: new Date().toISOString(), items: this._prestartItems.length }
+      localStorage.setItem('se_prestart_done', JSON.stringify(done))
+
+      if (navigator.vibrate) navigator.vibrate([50, 30, 50])
+      this.toast('Pre-start checklist complete', 'success')
+      this.renderPrestart()
+    },
+
+    /* ── INCIDENT REPORTING ────────────────────────── */
+
+    _incidentPhoto: null,
+
+    handleIncidentPhoto(input) {
+      const file = input.files[0]
+      if (!file) return
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const img = new Image()
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          const scale = Math.min(1, 800 / img.width)
+          canvas.width = img.width * scale; canvas.height = img.height * scale
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
+          this._incidentPhoto = canvas.toDataURL('image/jpeg', 0.7)
+          document.getElementById('inc-photo-preview').innerHTML = `<div class="photo-thumb" style="width:80px;height:80px"><img src="${this._incidentPhoto}" alt="Incident photo"></div>`
+        }
+        img.src = e.target.result
+      }
+      reader.readAsDataURL(file)
+      input.value = ''
+    },
+
+    submitIncident() {
+      const desc = document.getElementById('inc-desc').value.trim()
+      if (!desc) { this.toast('Please describe what happened', 'error'); return }
+
+      const incident = {
+        id: crypto.randomUUID(),
+        type: document.getElementById('inc-type').value,
+        description: desc,
+        actionTaken: document.getElementById('inc-action').value.trim(),
+        photo: this._incidentPhoto,
+        employeeId: this.currentEmployee.id,
+        employeeName: this.currentEmployee.name,
+        jobId: this.currentJobId,
+        timestamp: new Date().toISOString(),
+        date: new Date().toISOString().split('T')[0],
+        lat: null, lng: null,
+      }
+
+      // Capture GPS
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          incident.lat = pos.coords.latitude; incident.lng = pos.coords.longitude
+          const incidents = JSON.parse(localStorage.getItem('se_incidents') || '[]')
+          const idx = incidents.findIndex(i => i.id === incident.id)
+          if (idx >= 0) { incidents[idx].lat = incident.lat; incidents[idx].lng = incident.lng; localStorage.setItem('se_incidents', JSON.stringify(incidents)) }
+        }, () => {})
+      }
+
+      const incidents = JSON.parse(localStorage.getItem('se_incidents') || '[]')
+      incidents.push(incident)
+      localStorage.setItem('se_incidents', JSON.stringify(incidents))
+
+      // Clear form
+      document.getElementById('inc-desc').value = ''
+      document.getElementById('inc-action').value = ''
+      document.getElementById('inc-photo-preview').innerHTML = ''
+      this._incidentPhoto = null
+
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100])
+      this.toast('Incident report submitted', 'warning')
+      this.showScreen('home')
+    },
+
+    /* ── PROFILE STATS ─────────────────────────────── */
+
+    renderProfile() {
+      const timesheets = this.getStore('timesheets').filter(t => t.employeeId === this.currentEmployee?.id)
+      const clockOuts = timesheets.filter(t => t.type === 'clock-out')
+      const totalMins = clockOuts.reduce((s, t) => s + (t.duration || 0), 0)
+      const totalHrs = Math.floor(totalMins / 60)
+      const jobs = this.getStore('jobs').filter(j => j.assignedEmployees?.includes(this.currentEmployee?.id))
+      const completed = jobs.filter(j => j.status === 'complete' || j.status === 'paid')
+
+      document.getElementById('profile-stats').innerHTML = `
+        <div class="label mb-3">Your Stats</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--se-space-4);text-align:center">
+          <div><div class="text-display-xs" style="font-family:var(--se-font-display);color:var(--se-green-400)">${totalHrs}h</div><div class="text-3xs text-faint mt-1">Total Hours</div></div>
+          <div><div class="text-display-xs" style="font-family:var(--se-font-display);color:var(--se-green-400)">${completed.length}</div><div class="text-3xs text-faint mt-1">Jobs Done</div></div>
+          <div><div class="text-display-xs" style="font-family:var(--se-font-display);color:var(--se-green-400)">${this.photos.length}</div><div class="text-3xs text-faint mt-1">Photos</div></div>
+        </div>
+      `
+    },
+
     /* ── NAVIGATION ────────────────────────────────── */
 
     showScreen(screen) {
@@ -830,6 +1089,8 @@
       if (screen === 'my-jobs') this.renderAllJobs()
       if (screen === 'swms') this.renderSwmsList()
       if (screen === 'camera') this.renderPhotos()
+      if (screen === 'prestart') this.renderPrestart()
+      if (screen === 'profile') this.renderProfile()
     },
 
     renderAllJobs() {
