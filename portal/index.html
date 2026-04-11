@@ -143,6 +143,10 @@
     .doc-card__icon { width: 32px; height: 32px; color: var(--se-green-600); margin-bottom: var(--se-space-3); }
     .doc-card__name { font-size: var(--se-text-sm); font-weight: 500; color: var(--se-text-primary); }
     .doc-card__meta { font-size: var(--se-text-3xs); color: var(--se-text-faint); margin-top: var(--se-space-1); }
+
+    /* Quote approval signature */
+    .quote-sig-wrap { background: var(--se-bg-input); border: 1px solid var(--se-border-default); border-radius: var(--se-radius-lg); overflow: hidden; touch-action: none; }
+    .quote-sig-wrap canvas { width: 100%; height: 120px; display: block; }
   </style>
 </head>
 <body>
@@ -233,6 +237,22 @@
             <button class="btn btn-primary" onclick="Portal.showTab('invoices')" style="min-height:48px">View Invoices</button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Quotes -->
+    <div class="screen" id="screen-portal-quotes" role="tabpanel" aria-hidden="true">
+      <div class="p-6">
+        <h2 class="text-display-xs mb-6" style="font-family:var(--se-font-display)" tabindex="-1">Quotes</h2>
+        <ul class="flex flex-col gap-3" id="portal-quotes-list" role="list"></ul>
+      </div>
+    </div>
+
+    <!-- Quote Detail + Approval -->
+    <div class="screen" id="screen-portal-quote-detail" role="tabpanel" aria-hidden="true">
+      <div class="p-6">
+        <button class="btn btn-ghost btn-sm mb-4" onclick="Portal.showTab('quotes')">← Back to Quotes</button>
+        <div id="portal-quote-content"></div>
       </div>
     </div>
 
@@ -401,7 +421,7 @@
       const nav = document.getElementById('portal-nav')
       const tabs = isGov
         ? [['dashboard','Overview'],['contracts','Contracts'],['jobs','Jobs'],['invoices','Invoices'],['documents','Documents']]
-        : [['dashboard','Overview'],['jobs','My Jobs'],['invoices','Invoices']]
+        : [['dashboard','Overview'],['quotes','Quotes'],['jobs','My Jobs'],['invoices','Invoices']]
 
       nav.innerHTML = tabs.map(([id, label], i) =>
         `<button class="portal-nav__item ${i === 0 ? 'portal-nav__item--active' : ''}" role="tab" aria-selected="${i === 0}" data-tab="${id}" onclick="Portal.showTab('${id}')">${label}</button>`
@@ -429,6 +449,7 @@
     renderTab(tab) {
       switch(tab) {
         case 'dashboard': this.renderDashboard(); break
+        case 'quotes': this.renderClientQuotes(); break
         case 'jobs': this.renderJobs(); break
         case 'invoices': this.renderInvoices(); break
         case 'contracts': this.renderContracts(); break
@@ -471,6 +492,184 @@
       } else {
         invContainer.innerHTML = invoices.map(i => `<li>${this.invoiceCard(i)}</li>`).join('')
       }
+    },
+
+    /* ── CLIENT QUOTES + APPROVAL ────────────────────── */
+
+    renderClientQuotes() {
+      const quotes = this.getStore('quotes').filter(q => q.clientId === this.client.id).reverse()
+      const container = document.getElementById('portal-quotes-list')
+
+      if (!quotes.length) {
+        container.innerHTML = `<li class="empty-state"><p class="empty-state__title">No quotes yet</p><p class="empty-state__description">When Sam sends you a quote, it will appear here for review and approval.</p></li>`
+        return
+      }
+
+      container.innerHTML = quotes.map(q => {
+        const statusLabel = q.status === 'accepted' ? 'Approved' : q.status === 'sent' ? 'Awaiting Approval' : q.status
+        const canApprove = q.status === 'sent' || q.status === 'viewed'
+        return `<li>
+          <div class="card p-5 ${canApprove ? 'card-interactive' : ''}" ${canApprove ? `onclick="Portal.openQuoteDetail('${q.id}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')this.click()"` : ''}>
+            <div class="flex justify-between items-start">
+              <div>
+                <div class="text-md font-medium">${this.esc(q.reference || 'Quote')}</div>
+                <div class="text-xs text-muted mt-1">${this.formatCurrency(q.total || 0)} incl. GST</div>
+                ${q.validUntil ? `<div class="text-3xs text-faint mt-1">Valid until ${this.esc(q.validUntil)}</div>` : ''}
+              </div>
+              <span class="badge ${q.status === 'accepted' ? 'badge-complete' : q.status === 'sent' ? 'badge-quoted' : 'badge-new'}">${this.esc(statusLabel)}</span>
+            </div>
+            ${canApprove ? `<div class="text-xs mt-3" style="color:var(--se-green-400)">Tap to review and approve →</div>` : ''}
+          </div>
+        </li>`
+      }).join('')
+    },
+
+    openQuoteDetail(quoteId) {
+      const quote = this.getStore('quotes').find(q => q.id === quoteId)
+      if (!quote) return
+
+      // Mark as viewed
+      if (quote.status === 'sent') {
+        quote.status = 'viewed'
+        quote.viewedAt = new Date().toISOString()
+        localStorage.setItem('se_quotes', JSON.stringify(this.getStore('quotes')))
+        this.invalidateCache('quotes')
+      }
+
+      const content = document.getElementById('portal-quote-content')
+      const rows = (quote.lineItems || []).map(li =>
+        `<tr><td>${this.esc(li.description)}</td><td>${li.quantity}</td><td>${li.unit}</td><td>${this.formatCurrency(li.unitRate)}</td><td style="text-align:right">${this.formatCurrency((li.quantity || 0) * (li.unitRate || 0))}</td></tr>`
+      ).join('')
+
+      const canApprove = quote.status !== 'accepted' && quote.status !== 'rejected'
+
+      content.innerHTML = `
+        <div class="card p-6 mb-6">
+          <div class="flex justify-between items-start mb-6">
+            <div>
+              <div class="label">Steady Eco</div>
+              <div class="text-xs text-muted mt-1">ABN 49 553 784 085 · 0456 190 202</div>
+            </div>
+            <div class="text-right">
+              <div class="text-md font-medium">${this.esc(quote.reference)}</div>
+              ${quote.validUntil ? `<div class="text-xs text-muted mt-1">Valid until ${this.esc(quote.validUntil)}</div>` : ''}
+            </div>
+          </div>
+          <div class="data-table-wrapper mb-4">
+            <table class="data-table">
+              <thead><tr><th>Description</th><th>Qty</th><th>Unit</th><th>Rate</th><th style="text-align:right">Total</th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+          <div style="max-width:280px;margin-left:auto">
+            <div class="flex justify-between py-1"><span class="text-sm text-muted">Subtotal</span><span class="text-sm">${this.formatCurrency(quote.subtotal)}</span></div>
+            <div class="flex justify-between py-1"><span class="text-sm text-muted">GST (10%)</span><span class="text-sm">${this.formatCurrency(quote.gst)}</span></div>
+            <div class="flex justify-between py-2" style="border-top:1px solid var(--se-border-default);margin-top:var(--se-space-2)">
+              <span class="text-md font-medium">Total</span>
+              <span class="text-display-xs" style="font-family:var(--se-font-display);color:var(--se-green-400)">${this.formatCurrency(quote.total)}</span>
+            </div>
+          </div>
+          ${quote.paymentTerms ? `<div class="text-xs text-muted mt-4">Payment: ${this.esc(quote.paymentTerms)}</div>` : ''}
+        </div>
+
+        ${canApprove ? `
+        <div class="card p-6">
+          <h3 class="text-md font-medium mb-3">Approve this quote</h3>
+          <p class="text-xs text-muted mb-4">By signing below, you accept this quote and authorise Steady Eco to proceed with the work described above.</p>
+          <div class="quote-sig-wrap mb-3">
+            <canvas id="quote-sig-canvas" width="600" height="240"></canvas>
+          </div>
+          <div class="flex justify-between items-center mb-4">
+            <button class="btn btn-ghost btn-sm" onclick="Portal.clearQuoteSig()">Clear Signature</button>
+            <span class="text-3xs text-faint">${new Date().toLocaleDateString('en-AU')}</span>
+          </div>
+          <div class="flex gap-3">
+            <button class="btn btn-primary flex-1" onclick="Portal.approveQuote('${quote.id}')" style="min-height:48px">Approve Quote</button>
+            <button class="btn btn-ghost" onclick="Portal.rejectQuote('${quote.id}')" style="min-height:48px">Decline</button>
+          </div>
+        </div>
+        ` : `
+        <div class="card p-6 text-center">
+          <span class="badge badge-complete mb-3">Approved</span>
+          <p class="text-sm text-muted">This quote was approved on ${quote.acceptedAt ? new Date(quote.acceptedAt).toLocaleDateString('en-AU') : 'N/A'}</p>
+        </div>
+        `}
+      `
+
+      // Setup signature canvas
+      if (canApprove) {
+        setTimeout(() => this.setupQuoteSigPad(), 100)
+      }
+
+      // Show the detail screen
+      document.querySelectorAll('.screen').forEach(s => { s.classList.remove('is-active'); s.setAttribute('aria-hidden', 'true') })
+      const target = document.getElementById('screen-portal-quote-detail')
+      target.classList.add('is-active')
+      target.setAttribute('aria-hidden', 'false')
+    },
+
+    _quoteSigDrawing: false,
+
+    setupQuoteSigPad() {
+      const canvas = document.getElementById('quote-sig-canvas')
+      if (!canvas) return
+      const ctx = canvas.getContext('2d')
+      const sigColor = '#e8ede6'
+
+      const getPos = (e) => {
+        const rect = canvas.getBoundingClientRect()
+        const sx = canvas.width / rect.width, sy = canvas.height / rect.height
+        const t = e.touches ? e.touches[0] : e
+        return { x: (t.clientX - rect.left) * sx, y: (t.clientY - rect.top) * sy }
+      }
+      const start = (e) => { e.preventDefault(); this._quoteSigDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y) }
+      const draw = (e) => { if (!this._quoteSigDrawing) return; e.preventDefault(); const p = getPos(e); ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.strokeStyle = sigColor; ctx.lineTo(p.x, p.y); ctx.stroke() }
+      const stop = () => { this._quoteSigDrawing = false }
+
+      canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', draw); canvas.addEventListener('mouseup', stop)
+      canvas.addEventListener('touchstart', start, { passive: false }); canvas.addEventListener('touchmove', draw, { passive: false }); canvas.addEventListener('touchend', stop)
+    },
+
+    clearQuoteSig() {
+      const canvas = document.getElementById('quote-sig-canvas')
+      if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
+    },
+
+    approveQuote(quoteId) {
+      const canvas = document.getElementById('quote-sig-canvas')
+      if (canvas) {
+        const pixels = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data
+        let hasDrawing = false
+        for (let i = 3; i < pixels.length; i += 4) { if (pixels[i] > 0) { hasDrawing = true; break } }
+        if (!hasDrawing) { this.toast('Please sign to approve', 'error'); return }
+      }
+
+      const quotes = this.getStore('quotes')
+      const quote = quotes.find(q => q.id === quoteId)
+      if (!quote) return
+
+      quote.status = 'accepted'
+      quote.acceptedAt = new Date().toISOString()
+      quote.clientSignature = canvas ? canvas.toDataURL('image/png') : null
+      localStorage.setItem('se_quotes', JSON.stringify(quotes))
+      this.invalidateCache('quotes')
+
+      this.toast('Quote approved! Steady Eco will be in touch to schedule.', 'success')
+      this.showTab('quotes')
+    },
+
+    rejectQuote(quoteId) {
+      const quotes = this.getStore('quotes')
+      const quote = quotes.find(q => q.id === quoteId)
+      if (!quote) return
+
+      quote.status = 'rejected'
+      quote.rejectedAt = new Date().toISOString()
+      localStorage.setItem('se_quotes', JSON.stringify(quotes))
+      this.invalidateCache('quotes')
+
+      this.toast('Quote declined', 'info')
+      this.showTab('quotes')
     },
 
     /* ── JOBS ──────────────────────────────────────── */
