@@ -14,6 +14,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin></script>
   <link rel="stylesheet" href="../shared/css/tokens.css">
   <link rel="stylesheet" href="../shared/css/reset.css">
   <link rel="stylesheet" href="../shared/css/typography.css">
@@ -1042,22 +1044,29 @@
         <h3 class="label mb-4">Crew Training &amp; Certifications</h3>
         <div class="compliance-grid mb-8" id="training-certs"></div>
 
-        <!-- Satellite Monitoring -->
-        <h3 class="label mb-4">Vegetation Monitoring (Satellite)</h3>
-        <div class="card p-6 mb-8" id="satellite-panel">
-          <div class="flex items-center gap-4 mb-4">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="var(--se-green-600)" stroke-width="1.5" aria-hidden="true"><circle cx="16" cy="16" r="12"/><path d="M16 4v24M4 16h24"/><ellipse cx="16" cy="16" rx="6" ry="12"/></svg>
-            <div>
-              <div class="text-md font-medium">Sentinel-2 NDVI Integration</div>
-              <div class="text-xs text-muted">Vegetation health monitoring via satellite imagery</div>
+        <!-- Vegetation Monitoring — Live Map -->
+        <h3 class="label mb-4">Service Area Map &amp; Job Sites</h3>
+        <div class="card mb-8" style="overflow:hidden">
+          <div id="service-map" style="height:450px;width:100%;background:var(--se-bg-surface)"></div>
+          <div class="p-4 flex justify-between items-center" style="border-top:1px solid var(--se-border-subtle)">
+            <div class="flex items-center gap-4">
+              <span class="flex items-center gap-2 text-xs"><span style="width:10px;height:10px;background:var(--se-green-600);border-radius:50%;display:inline-block"></span> Active</span>
+              <span class="flex items-center gap-2 text-xs"><span style="width:10px;height:10px;background:var(--se-gold-500);border-radius:50%;display:inline-block"></span> Quoted</span>
+              <span class="flex items-center gap-2 text-xs"><span style="width:10px;height:10px;background:var(--se-status-paid);border-radius:50%;display:inline-block"></span> Complete</span>
             </div>
+            <span class="text-3xs text-faint" id="map-job-count">0 jobs mapped</span>
           </div>
-          <p class="text-sm text-secondary mb-4">When configured, this module will show NDVI (Normalized Difference Vegetation Index) data from Sentinel-2 satellites — updated every 5 days at 10m resolution. Track vegetation recovery on land regeneration sites and generate automated vegetation health reports for council contracts.</p>
+        </div>
+
+        <!-- Sentinel-2 NDVI — future integration -->
+        <h3 class="label mb-4">Satellite NDVI (Future)</h3>
+        <div class="card p-5 mb-8">
           <div class="grid grid-cols-3 gap-4" style="max-width:500px">
             <div class="carbon-card"><div class="carbon-value" style="font-size:var(--se-text-display-sm)">10m</div><div class="carbon-label">Resolution</div></div>
             <div class="carbon-card"><div class="carbon-value" style="font-size:var(--se-text-display-sm)">5d</div><div class="carbon-label">Update Cycle</div></div>
-            <div class="carbon-card"><div class="carbon-value" style="font-size:var(--se-text-display-sm)">Free</div><div class="carbon-label">Sentinel-2 Data</div></div>
+            <div class="carbon-card"><div class="carbon-value" style="font-size:var(--se-text-display-sm)">Free</div><div class="carbon-label">Sentinel-2</div></div>
           </div>
+          <p class="text-xs text-muted mt-4">NDVI vegetation health overlays will be added when backend satellite processing is configured.</p>
         </div>
 
         <!-- SaaS / White-label -->
@@ -2863,6 +2872,9 @@
     /* ── REPORTS RENDERING ─────────────────────────────── */
 
     renderReports() {
+      // Render map
+      setTimeout(() => this.renderMap(), 100)
+
       // Investor metrics
       const m = this.renderInvestor()
       document.getElementById('investor-metrics').innerHTML = `
@@ -2893,6 +2905,121 @@
           `
         }).join('')
       }
+    },
+
+    /* ── SERVICE AREA MAP ──────────────────────────────── */
+
+    _map: null,
+
+    renderMap() {
+      // Destroy old map if exists
+      if (this._map) { this._map.remove(); this._map = null }
+
+      const mapEl = document.getElementById('service-map')
+      if (!mapEl || !window.L) return
+
+      // Initialize Leaflet map centered on Cairns
+      this._map = L.map(mapEl, {
+        center: [-16.9186, 145.7781],
+        zoom: 11,
+        zoomControl: true,
+        attributionControl: true,
+      })
+
+      // Dark map tiles that match our design
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CARTO',
+        subdomains: 'abcd',
+        maxZoom: 19,
+      }).addTo(this._map)
+
+      // FNQ service area locations with coordinates
+      const locations = {
+        'cairns city': [-16.9186, 145.7781], 'cairns north': [-16.9050, 145.7720],
+        'edge hill': [-16.9020, 145.7530], 'whitfield': [-16.8900, 145.7400],
+        'freshwater': [-16.8830, 145.7340], 'redlynch': [-16.8760, 145.7180],
+        'smithfield': [-16.8450, 145.7300], 'trinity beach': [-16.7870, 145.6950],
+        'palm cove': [-16.7490, 145.6720], 'clifton beach': [-16.7650, 145.6800],
+        'gordonvale': [-17.0940, 145.7850], 'edmonton': [-17.0170, 145.7470],
+        'bentley park': [-17.0340, 145.7350], 'mount sheridan': [-17.0030, 145.7300],
+        'earlville': [-16.9470, 145.7320], 'woree': [-16.9570, 145.7400],
+        'bayview heights': [-16.9620, 145.7200], 'bungalow': [-16.9300, 145.7700],
+        'manunda': [-16.9150, 145.7530], 'mooroobool': [-16.9200, 145.7380],
+        'port douglas': [-16.4836, 145.4615], 'kuranda': [-16.8170, 145.6360],
+        'mareeba': [-16.9930, 145.4220], 'atherton': [-17.2684, 145.4746],
+        'innisfail': [-17.5236, 146.0292], 'mission beach': [-17.8685, 146.1067],
+      }
+
+      // Plot jobs on the map
+      const jobs = this.getStore('jobs')
+      const statusColors = {
+        new: '#4a7ec8', quoted: '#c8a84b', booked: '#9b59b6',
+        active: '#4a9e3f', complete: '#27ae60', invoiced: '#e67e22',
+        paid: '#1abc9c', cancelled: '#e05555',
+      }
+
+      let mapped = 0
+      jobs.forEach(job => {
+        const addr = (job.siteAddress?.suburb || job.siteAddress?.line1 || '').toLowerCase().trim()
+        let coords = null
+
+        // Match address to known locations
+        for (const [name, latlng] of Object.entries(locations)) {
+          if (addr.includes(name)) { coords = latlng; break }
+        }
+
+        // If no match, try to place near Cairns with slight randomness
+        if (!coords && addr) {
+          coords = [-16.92 + (Math.random() - 0.5) * 0.08, 145.77 + (Math.random() - 0.5) * 0.08]
+        }
+
+        if (coords) {
+          const color = statusColors[job.status] || '#4a9e3f'
+          const client = this.getClientName(job.clientId)
+          const svc = (job.serviceTypes?.[0] || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+
+          L.circleMarker(coords, {
+            radius: 8,
+            fillColor: color,
+            color: '#0a0f0a',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.85,
+          }).addTo(this._map).bindPopup(`
+            <div style="font-family:'DM Sans',sans-serif;font-size:13px;min-width:160px">
+              <strong>${this.esc(client)}</strong><br>
+              <span style="color:#666">${this.esc(svc)}</span><br>
+              <span style="color:#999">${this.esc(job.reference || '')} · ${this.esc(job.status || 'new')}</span>
+            </div>
+          `)
+          mapped++
+        }
+      })
+
+      // Steady Eco HQ marker
+      L.marker([-16.8830, 145.7340], {
+        icon: L.divIcon({
+          className: '',
+          html: '<div style="background:var(--se-gold-500);width:14px;height:14px;border-radius:50%;border:3px solid #0a0f0a;box-shadow:0 0 10px rgba(200,168,75,0.5)"></div>',
+          iconSize: [14, 14],
+          iconAnchor: [7, 7],
+        })
+      }).addTo(this._map).bindPopup('<strong style="font-family:DM Sans,sans-serif">Steady Eco HQ</strong><br><span style="color:#666;font-size:12px">Freshwater, Cairns</span>')
+
+      // 100km service radius
+      L.circle([-16.9186, 145.7781], {
+        radius: 100000,
+        color: '#4a9e3f',
+        fillColor: '#4a9e3f',
+        fillOpacity: 0.04,
+        weight: 1,
+        dashArray: '6 4',
+      }).addTo(this._map)
+
+      document.getElementById('map-job-count').textContent = `${mapped} job${mapped !== 1 ? 's' : ''} mapped`
+
+      // Force map to recalculate size after screen transition
+      setTimeout(() => { if (this._map) this._map.invalidateSize() }, 200)
     },
 
     /* ── CARBON CREDIT REGISTRATION (Item 9) ─────────── */
