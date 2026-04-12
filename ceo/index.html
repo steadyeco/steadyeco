@@ -1839,6 +1839,9 @@
      APPLICATION LOGIC
      ══════════════════════════════════════════════════════ -->
 <script>
+// Polyfill for Samsung Internet < 15 and older browsers
+if (!crypto.randomUUID) { crypto.randomUUID = function() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }); }; }
+
 (function() {
   'use strict';
 
@@ -2816,11 +2819,6 @@
         this._clientMap = new Map(this.getStore('clients').map(c => [c.id, c]))
       }
       return this._clientMap.get(id) || null
-    },
-
-    getClientName(id) {
-      const c = this.getClientById(id)
-      return c ? c.name : 'Unknown'
     },
 
     // Pagination
