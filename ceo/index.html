@@ -1234,7 +1234,18 @@
       </header>
       <div class="p-6">
         <div class="form-group mb-4"><input class="form-input" type="search" placeholder="Search equipment..." oninput="App.renderEquipment(this.value)" style="max-width:400px"></div>
-        <div class="flex flex-col gap-3" id="equipment-list"></div>
+        <div class="flex flex-col gap-3 mb-8" id="equipment-list"></div>
+
+        <!-- Inventory / Consumables -->
+        <h3 class="label mb-4">Inventory & Consumables</h3>
+        <div class="flex flex-col gap-2 mb-4" id="inventory-list"></div>
+        <div class="flex gap-2">
+          <input class="form-input" id="inv-item-name" placeholder="Item name (e.g. Chain oil, Fuel)" style="flex:2">
+          <input class="form-input" id="inv-item-qty" type="number" min="0" step="1" placeholder="Qty" style="flex:0 0 70px">
+          <input class="form-input" id="inv-item-unit" placeholder="Unit" value="L" style="flex:0 0 60px">
+          <input class="form-input" id="inv-item-min" type="number" min="0" placeholder="Min" style="flex:0 0 60px">
+          <button class="btn btn-primary btn-sm" onclick="App.addInventoryItem()">Add</button>
+        </div>
       </div>
     </div>
 
@@ -2010,7 +2021,7 @@
         case 'settings': this.renderSettings(); break
         case 'schedule': this.renderSchedule(); break
         case 'recurring': this.renderRecurring(); break
-        case 'equipment': this.renderEquipment(); break
+        case 'equipment': this.renderEquipment(); this.renderInventory(); break
         case 'carbon': this.renderCarbon(); break
         case 'compliance': this.renderCompliance(); break
         case 'reports': this.renderReports(); break
@@ -3400,7 +3411,19 @@
         html += `<div class="schedule-crew">${this.esc(emp.name.split(' ')[0])}</div>`
         days.forEach(d => {
           const iso = d.toISOString().split('T')[0]
-          const dayJobs = jobs.filter(j => j.scheduledStart?.startsWith(iso) && (j.assignedEmployees?.includes(emp.id) || (!j.assignedEmployees?.length && emp.id === 'unassigned')))
+          const dayJobs = jobs.filter(j => {
+            if (!j.scheduledStart) return false
+            const startMatch = j.scheduledStart.startsWith(iso)
+            // Multi-day: check if job spans this date
+            const multiDay = j.scheduledDuration && j.scheduledDuration >= 480
+            const jobStart = new Date(j.scheduledStart)
+            const daysSpan = multiDay ? Math.ceil(j.scheduledDuration / 480) : 1
+            const jobEnd = new Date(jobStart); jobEnd.setDate(jobEnd.getDate() + daysSpan - 1)
+            const thisDate = new Date(iso)
+            const inRange = thisDate >= jobStart && thisDate <= jobEnd
+            const crewMatch = j.assignedEmployees?.includes(emp.id) || (!j.assignedEmployees?.length && emp.id === 'unassigned')
+            return (startMatch || inRange) && crewMatch
+          })
           html += `<div class="schedule-cell" onclick="App.scheduleAddJob('${iso}','${emp.id}')">${dayJobs.map(j => `<div class="schedule-job" onclick="event.stopPropagation();App.openJobDetail('${this.esc(j.id)}')">${this.esc(this.getClientName(j.clientId).split(' ')[0])}</div>`).join('')}</div>`
         })
       })
@@ -3861,6 +3884,59 @@
       this.toast(`Washdown logged for ${this.esc(eq.name)}`, 'success')
       this.closeJobDetail()
       setTimeout(() => this.openEquipmentDetail(eqId), 300)
+    },
+
+    /* ── INVENTORY / CONSUMABLES ────────────────────── */
+
+    renderInventory() {
+      const inventory = JSON.parse(localStorage.getItem('se_inventory') || '[]')
+      const container = document.getElementById('inventory-list')
+      if (!container) return
+      if (!inventory.length) {
+        container.innerHTML = '<p class="text-sm text-muted">No inventory items. Add consumables below.</p>'
+        return
+      }
+      container.innerHTML = inventory.map((item, i) => {
+        const lowStock = item.minQty && item.qty <= item.minQty
+        return `
+          <div class="flex justify-between items-center py-2 px-3" style="background:var(--se-bg-surface);border:1px solid ${lowStock ? 'var(--se-error)' : 'var(--se-border-subtle)'};border-radius:var(--se-radius-md)">
+            <div>
+              <div class="text-sm font-medium">${this.esc(item.name)}</div>
+              <div class="text-3xs text-faint">${lowStock ? 'LOW STOCK' : ''}</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="btn btn-ghost btn-sm" onclick="App.adjustInventory(${i},-1)" style="min-width:32px">−</button>
+              <span class="text-md font-medium" style="${lowStock ? 'color:var(--se-error)' : ''}">${item.qty} ${this.esc(item.unit)}</span>
+              <button class="btn btn-ghost btn-sm" onclick="App.adjustInventory(${i},1)" style="min-width:32px">+</button>
+            </div>
+          </div>
+        `
+      }).join('')
+    },
+
+    addInventoryItem() {
+      const name = document.getElementById('inv-item-name').value.trim()
+      if (!name) { this.toast('Enter item name', 'error'); return }
+      const qty = parseInt(document.getElementById('inv-item-qty').value) || 0
+      const unit = document.getElementById('inv-item-unit').value.trim() || 'units'
+      const minQty = parseInt(document.getElementById('inv-item-min').value) || 0
+
+      const inventory = JSON.parse(localStorage.getItem('se_inventory') || '[]')
+      inventory.push({ name, qty, unit, minQty, createdAt: new Date().toISOString() })
+      this.safeSet('se_inventory', JSON.stringify(inventory))
+      document.getElementById('inv-item-name').value = ''
+      document.getElementById('inv-item-qty').value = ''
+      this.addAudit('Inventory item added', name)
+      this.toast(`${name} added to inventory`, 'success')
+      this.renderInventory()
+    },
+
+    adjustInventory(index, delta) {
+      const inventory = JSON.parse(localStorage.getItem('se_inventory') || '[]')
+      if (!inventory[index]) return
+      inventory[index].qty = Math.max(0, (inventory[index].qty || 0) + delta)
+      this.safeSet('se_inventory', JSON.stringify(inventory))
+      this.renderInventory()
     },
 
     generateEquipmentReport(eqId) {
