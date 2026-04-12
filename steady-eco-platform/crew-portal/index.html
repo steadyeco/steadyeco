@@ -343,6 +343,7 @@
         <div class="card p-5 mb-4" id="profile-stats"></div>
         <button class="btn btn-primary w-full mb-3" onclick="Crew.showScreen('equipment-log')" style="height:56px">Equipment Servicing Log</button>
         <button class="btn btn-danger w-full mb-3" onclick="Crew.showScreen('incident')" style="height:56px">Report Incident / Hazard</button>
+        <button class="btn btn-secondary w-full mb-3" onclick="Crew.cloudSync()" style="height:56px">Sync to Cloud</button>
         <button class="btn btn-secondary w-full mb-3" onclick="Crew.logout()" style="height:56px">Log Out</button>
       </div>
     </div>
@@ -1788,6 +1789,72 @@ if (!crypto.randomUUID) { crypto.randomUUID = function() { return 'xxxxxxxx-xxxx
       if (navigator.vibrate) navigator.vibrate([50, 30, 50])
       this.toast('Equipment log signed and saved', 'success')
       this.renderEquipmentLog()
+    },
+
+    /* ── CLOUD SYNC ─────────────────────────────────── */
+
+    async cloudSync() {
+      this.toast('Syncing with cloud...', 'info')
+      try {
+        // First pull latest data from cloud
+        const res = await fetch('https://x267gkoc7k.execute-api.ap-southeast-2.amazonaws.com/sync', {
+          method: 'GET',
+          headers: { 'X-Api-Key': 'se_1ee51b3fbc8d58a9f6cabbf98591958b' }
+        })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const result = await res.json()
+
+        if (result.data) {
+          // Restore shared data from cloud (jobs, clients, employees, equipment — not crew-specific data)
+          const sharedKeys = ['se_jobs', 'se_clients', 'se_employees', 'se_equipment', 'se_swms_templates', 'se_compliance_config', 'se_recurring']
+          let restored = 0
+          sharedKeys.forEach(k => {
+            if (result.data[k]) {
+              this.safeSet(k, JSON.stringify(result.data[k]))
+              restored++
+            }
+          })
+          this._cache = {}
+          this.toast(`Synced — ${restored} collections updated from cloud`, 'success')
+
+          // Re-render current screen
+          const screen = document.querySelector('.screen.is-active')
+          const id = screen?.id?.replace('screen-', '')
+          if (id) this.showScreen(id)
+        } else {
+          this.toast('No cloud data yet — sync from Command Centre first', 'warning')
+        }
+
+        // Then push crew-specific data (timesheets, photos manifest, incidents, equipment logs)
+        const crewData = {}
+        const crewKeys = ['se_timesheets', 'se_swms_signed', 'se_incidents', 'se_equipment_logs', 'se_prestart_done']
+        crewKeys.forEach(k => { try { crewData[k] = JSON.parse(localStorage.getItem(k)) } catch { crewData[k] = null } })
+
+        // Merge crew data with cloud data
+        if (result.data) {
+          crewKeys.forEach(k => {
+            const cloudArr = result.data[k] || []
+            const localArr = crewData[k] || []
+            // Merge by ID (deduplicate)
+            const merged = [...cloudArr]
+            localArr.forEach(item => {
+              if (item.id && !merged.find(m => m.id === item.id)) merged.push(item)
+            })
+            crewData[k] = merged
+          })
+        }
+
+        const pushData = { ...(result.data || {}), ...crewData, _syncedAt: new Date().toISOString(), _source: 'crew-portal' }
+        await fetch('https://x267gkoc7k.execute-api.ap-southeast-2.amazonaws.com/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Api-Key': 'se_1ee51b3fbc8d58a9f6cabbf98591958b' },
+          body: JSON.stringify(pushData)
+        })
+
+      } catch (err) {
+        this.toast('Sync failed: ' + err.message, 'error')
+        console.error('Cloud sync error:', err)
+      }
     },
 
     /* ── PULL TO REFRESH ────────────────────────────── */

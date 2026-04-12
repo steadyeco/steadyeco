@@ -1743,6 +1743,13 @@
           <div class="settings-section">
             <h3 class="settings-section__title">Integrations</h3>
             <div class="flex flex-col gap-3">
+              <div class="card p-4 flex justify-between items-center" style="border-color:var(--se-green-600)">
+                <div><div class="text-sm font-medium" style="color:var(--se-green-400)">Cloud Sync (AWS)</div><div class="text-xs text-muted">DynamoDB backup — all portals sync to cloud</div><div class="text-3xs text-faint" id="cloud-sync-status">Last sync: ${localStorage.getItem('se_last_cloud_sync') ? new Date(localStorage.getItem('se_last_cloud_sync')).toLocaleString('en-AU') : 'Never'}</div></div>
+                <div class="flex gap-2">
+                  <button class="btn btn-primary btn-sm" onclick="App.cloudPush()">Push</button>
+                  <button class="btn btn-secondary btn-sm" onclick="App.cloudPull()">Pull</button>
+                </div>
+              </div>
               <div class="card p-4 flex justify-between items-center">
                 <div><div class="text-sm font-medium">Xero Accounting</div><div class="text-xs text-muted">Sync invoices, payments, contacts</div></div>
                 <button class="btn btn-ghost btn-sm" onclick="App.toast('Xero integration ready — add API key to connect','info')">Connect</button>
@@ -4999,6 +5006,14 @@ if (!crypto.randomUUID) { crypto.randomUUID = function() { return 'xxxxxxxx-xxxx
     renderCompliance() {
       // Overview metrics
       const certs = this._getComplianceData()
+
+      // Sync compliance data to se_compliance_config for client portal to read
+      const configForPortal = certs.map(c => ({
+        label: c.name,
+        expiry: c.expiry === 'No expiry' ? null : c.expiry,
+        status: c.status === 'current' ? 'Current' : c.status === 'expiring' ? 'Expiring' : 'Expired'
+      }))
+      this.safeSet('se_compliance_config', JSON.stringify(configForPortal))
       const current = certs.filter(c => c.status === 'current').length
       const expiring = certs.filter(c => c.status === 'expiring').length
       const expired = certs.filter(c => c.status === 'expired').length
@@ -6520,6 +6535,80 @@ if (!crypto.randomUUID) { crypto.randomUUID = function() { return 'xxxxxxxx-xxxx
       }
       this.safeSet('se_business', JSON.stringify(details))
       this.toast('Business details saved', 'success')
+    },
+
+    /* ── CLOUD SYNC (AWS DynamoDB) ──────────────────── */
+
+    _cloudEndpoint: 'https://x267gkoc7k.execute-api.ap-southeast-2.amazonaws.com/sync',
+    _cloudKey: 'se_1ee51b3fbc8d58a9f6cabbf98591958b',
+
+    _getAllData() {
+      const data = {}
+      const keys = ['se_jobs', 'se_clients', 'se_quotes', 'se_invoices', 'se_employees', 'se_timesheets', 'se_audit', 'se_expenses', 'se_recurring', 'se_equipment', 'se_swms_signed', 'se_incidents', 'se_waste_dockets', 'se_maintenance_log', 'se_comms', 'se_equipment_logs', 'se_swms_templates', 'se_compliance_config', 'se_review_prompts', 'se_prestart_done', 'se_work_orders', 'se_quote_requests', 'se_inventory', 'se_rate_cards', 'se_bank', 'se_business']
+      keys.forEach(k => { try { data[k] = JSON.parse(localStorage.getItem(k)) } catch { data[k] = null } })
+      return data
+    },
+
+    async cloudPush() {
+      this.toast('Syncing to cloud...', 'info')
+      try {
+        const data = this._getAllData()
+        data._syncedAt = new Date().toISOString()
+        data._source = 'command-centre'
+
+        const res = await fetch(this._cloudEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Api-Key': this._cloudKey },
+          body: JSON.stringify(data)
+        })
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const result = await res.json()
+        this.safeSet('se_last_cloud_sync', new Date().toISOString())
+        const el = document.getElementById('cloud-sync-status')
+        if (el) el.textContent = 'Last sync: ' + new Date().toLocaleString('en-AU')
+        this.addAudit('Cloud sync pushed', 'All data backed up to AWS')
+        this.toast('Data synced to cloud', 'success')
+      } catch (err) {
+        this.toast('Cloud sync failed: ' + err.message, 'error')
+        console.error('Cloud push error:', err)
+      }
+    },
+
+    async cloudPull() {
+      this.toast('Loading from cloud...', 'info')
+      try {
+        const res = await fetch(this._cloudEndpoint, {
+          method: 'GET',
+          headers: { 'X-Api-Key': this._cloudKey }
+        })
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const result = await res.json()
+
+        if (!result.data) { this.toast('No cloud data found — push first', 'warning'); return }
+
+        const confirmed = await this.customConfirm('Restore from Cloud', `This will replace ALL local data with the cloud backup from ${new Date(result.data._syncedAt || result.updatedAt).toLocaleString('en-AU')}. Continue?`)
+        if (!confirmed) return
+
+        let restored = 0
+        Object.keys(result.data).forEach(k => {
+          if (k.startsWith('se_') && result.data[k] !== null) {
+            this.safeSet(k, JSON.stringify(result.data[k]))
+            restored++
+          }
+        })
+
+        this._cache = {}
+        this._clientMap = null
+        this.safeSet('se_last_cloud_sync', new Date().toISOString())
+        this.addAudit('Cloud sync pulled', `${restored} collections restored from AWS`)
+        this.toast(`${restored} collections restored from cloud`, 'success')
+        this.navigate('dashboard')
+      } catch (err) {
+        this.toast('Cloud pull failed: ' + err.message, 'error')
+        console.error('Cloud pull error:', err)
+      }
     },
 
     exportData() {
