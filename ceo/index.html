@@ -1092,6 +1092,10 @@
         </div>
       </header>
       <div class="p-6">
+        <!-- Quote Conversion Funnel -->
+        <h3 class="label mb-4">Quote Pipeline</h3>
+        <div class="card p-5 mb-8" id="quote-funnel"></div>
+
         <!-- Investor-ready metrics -->
         <h3 class="label mb-4">Platform Metrics</h3>
         <div class="grid grid-cols-3 gap-4 mb-8" style="max-width:700px" id="investor-metrics"></div>
@@ -4182,6 +4186,9 @@
       const completed = jobs.filter(j => ['complete', 'invoiced', 'paid'].includes(j.status)).length
       const clients = this.getStore('clients')
       const equipment = this.getStore('equipment')
+      const employees = this.getStore('employees').filter(e => e.isActive !== false)
+      const swmsSigned = JSON.parse(localStorage.getItem('se_swms_signed') || '[]')
+      const incidents = JSON.parse(localStorage.getItem('se_incidents') || '[]')
 
       this.generatePdf('Capability Statement', `
         <div class="section">
@@ -4192,10 +4199,12 @@
             <tr><td style="width:40%;color:#999">Business Name</td><td>Steady Eco</td></tr>
             <tr><td style="color:#999">ABN</td><td>49 553 784 085</td></tr>
             <tr><td style="color:#999">Principal</td><td>Sam Kerr</td></tr>
-            <tr><td style="color:#999">Location</td><td>Freshwater, Cairns QLD 4870</td></tr>
-            <tr><td style="color:#999">Phone</td><td>0456 190 202</td></tr>
+            <tr><td style="color:#999">Location</td><td>Cairns, QLD 4870</td></tr>
+            <tr><td style="color:#999">Phone</td><td>0450 753 753</td></tr>
+            <tr><td style="color:#999">Email</td><td>sam@steadyeco.com</td></tr>
             <tr><td style="color:#999">Website</td><td>steadyeco.com</td></tr>
-            <tr><td style="color:#999">Service Radius</td><td>100km from Cairns — Palm Cove to Gordonvale, Atherton to Mission Beach</td></tr>
+            <tr><td style="color:#999">Team Size</td><td>${employees.length} active crew member${employees.length !== 1 ? 's' : ''}</td></tr>
+            <tr><td style="color:#999">Service Radius</td><td>85+ locations across FNQ — Cooktown to Cardwell, Atherton Tablelands to coast</td></tr>
           </tbody></table>
         </div>
         <div class="section"><div class="section-title">Services</div>
@@ -4230,8 +4239,11 @@
           <table><tbody>
             <tr><td style="color:#999">Jobs Completed</td><td>${completed}</td></tr>
             <tr><td style="color:#999">Total Clients</td><td>${clients.length}</td></tr>
+            <tr><td style="color:#999">Active Crew</td><td>${employees.length}</td></tr>
             <tr><td style="color:#999">Years Experience</td><td>7 years (trained under TRIMSNQ)</td></tr>
-            <tr><td style="color:#999">Incidents</td><td>Zero reportable incidents</td></tr>
+            <tr><td style="color:#999">SWMS Records Signed</td><td>${swmsSigned.length}</td></tr>
+            <tr><td style="color:#999">Reportable Incidents</td><td>${incidents.length}</td></tr>
+            <tr><td style="color:#999">Equipment Register</td><td>${equipment.length} items maintained</td></tr>
           </tbody></table>
         </div>
         <div class="section"><div class="section-title">Environmental Commitment</div>
@@ -4569,6 +4581,28 @@
         } else {
           svcTable.innerHTML = svcMetrics.map(s => `<tr><td>${this.esc(s.service)}</td><td>${s.count}</td><td>${s.completed}</td><td>${this.formatCurrency(s.revenue)}</td><td>${this.formatCurrency(s.avgValue)}</td></tr>`).join('')
         }
+      }
+
+      // Quote conversion funnel
+      const quotes = this.getStore('quotes')
+      const totalQ = quotes.length || 1
+      const qSent = quotes.filter(q => q.status === 'sent' || q.status === 'viewed').length
+      const qAccepted = quotes.filter(q => q.status === 'accepted').length
+      const qRejected = quotes.filter(q => q.status === 'rejected').length
+      const convRate = quotes.length ? Math.round((qAccepted / quotes.length) * 100) : 0
+      const totalPipeline = quotes.filter(q => q.status === 'sent' || q.status === 'viewed').reduce((s, q) => s + (q.total || 0), 0)
+
+      const funnelEl = document.getElementById('quote-funnel')
+      if (funnelEl) {
+        funnelEl.innerHTML = `
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--se-space-4);text-align:center;margin-bottom:var(--se-space-4)">
+            <div class="card-stat"><span class="card-stat__label">Total Quotes</span><span class="card-stat__value">${quotes.length}</span></div>
+            <div class="card-stat"><span class="card-stat__label">Pending</span><span class="card-stat__value" style="color:var(--se-gold-500)">${qSent}</span></div>
+            <div class="card-stat"><span class="card-stat__label">Accepted</span><span class="card-stat__value" style="color:var(--se-success)">${qAccepted}</span></div>
+            <div class="card-stat"><span class="card-stat__label">Conversion</span><span class="card-stat__value" style="color:${convRate >= 50 ? 'var(--se-success)' : convRate >= 25 ? 'var(--se-gold-500)' : 'var(--se-error)'}">${convRate}%</span></div>
+          </div>
+          <div class="text-xs text-muted">Pipeline value: ${this.formatCurrency(totalPipeline)} pending · ${qRejected} declined</div>
+        `
       }
 
       // Investor metrics
