@@ -1474,7 +1474,38 @@ if (!crypto.randomUUID) { crypto.randomUUID = function() { return 'xxxxxxxx-xxxx
       this.toast('Compliance pack generated', 'success')
     },
 
-    requestPaymentDetails(invoiceRef) {
+    _apiEndpoint: 'https://x267gkoc7k.execute-api.ap-southeast-2.amazonaws.com',
+    _apiKey: 'se_1ee51b3fbc8d58a9f6cabbf98591958b',
+
+    async requestPaymentDetails(invoiceRef) {
+      // Try Stripe checkout first
+      const inv = this.getStore('invoices').find(i => i.reference === invoiceRef)
+      if (!inv) { this.toast('Invoice not found', 'error'); return }
+
+      this.toast('Creating payment link...', 'info')
+      try {
+        const res = await fetch(`${this._apiEndpoint}/stripe/checkout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Api-Key': this._apiKey },
+          body: JSON.stringify({
+            invoiceId: inv.id,
+            reference: inv.reference,
+            total: inv.total,
+            clientName: this.client?.name || '',
+            clientEmail: this.client?.email || '',
+          })
+        })
+        const result = await res.json()
+        if (result.url) {
+          window.open(result.url, '_blank')
+          this.toast('Payment page opened — complete in the new tab', 'success')
+          return
+        }
+      } catch (err) {
+        console.warn('Stripe checkout failed, falling back to email:', err)
+      }
+
+      // Fallback: email
       const subject = encodeURIComponent(`Payment — ${invoiceRef}`)
       const body = encodeURIComponent(`Hi Sam,\n\nI'd like to pay invoice ${invoiceRef}. Could you send me the bank transfer details?\n\nThanks,\n${this.client?.name || ''}`)
       window.open(`mailto:sam@steadyeco.com?subject=${subject}&body=${body}`, '_self')
