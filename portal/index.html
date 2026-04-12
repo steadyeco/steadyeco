@@ -574,11 +574,46 @@ if (!crypto.randomUUID) { crypto.randomUUID = function() { return 'xxxxxxxx-xxxx
               <div class="card-stat"><span class="card-stat__label">SWMS Records</span><span class="card-stat__value">${swmsSigned.length}</span></div>
             </div>
           </div>
-          <div>
+          <div class="mb-8">
             <h3 class="label mb-4">Quick Actions</h3>
             <div class="grid grid-cols-2 gap-3" style="max-width:400px">
               <button class="btn btn-primary" onclick="Portal.showTab('contracts')" style="min-height:48px">View Contracts</button>
               <button class="btn btn-secondary" onclick="Portal.showTab('documents')" style="min-height:48px">Compliance Docs</button>
+            </div>
+          </div>
+          <div>
+            <h3 class="label mb-4">Raise Work Order</h3>
+            <div class="card p-5">
+              <div class="flex flex-col gap-4">
+                <div class="form-group">
+                  <label class="form-label">Service Required</label>
+                  <select class="form-input form-select" id="wo-service" style="min-height:48px">
+                    <option value="vegetation-management">Vegetation Management</option>
+                    <option value="tree-removal">Tree Removal</option>
+                    <option value="tree-pruning">Tree Pruning</option>
+                    <option value="landscaping">Landscaping / Grounds Maintenance</option>
+                    <option value="lawn-mowing">Lawn Mowing</option>
+                    <option value="land-clearing">Land Clearing</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Site Address</label>
+                  <input class="form-input" id="wo-address" type="text" placeholder="Site address for this work order" style="min-height:48px">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Priority</label>
+                  <select class="form-input form-select" id="wo-priority" style="min-height:48px">
+                    <option value="routine">Routine (5 business days)</option>
+                    <option value="urgent">Urgent (48 hours)</option>
+                    <option value="emergency">Emergency (same day)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Description</label>
+                  <textarea class="form-input form-textarea" id="wo-desc" rows="3" placeholder="Describe the work required, any site access notes, hazards..." style="min-height:80px"></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="Portal.raiseWorkOrder()" style="min-height:48px">Submit Work Order</button>
+              </div>
             </div>
           </div>
         `
@@ -1284,6 +1319,41 @@ if (!crypto.randomUUID) { crypto.randomUUID = function() { return 'xxxxxxxx-xxxx
         <script>setTimeout(()=>window.print(),500)<\/script>
       </body></html>`)
       win.document.close()
+    },
+
+    raiseWorkOrder() {
+      const service = document.getElementById('wo-service')?.value
+      const address = document.getElementById('wo-address')?.value?.trim()
+      const priority = document.getElementById('wo-priority')?.value
+      const desc = document.getElementById('wo-desc')?.value?.trim()
+      if (!desc) { this.toast('Please describe the work required', 'error'); return }
+      if (!address) { this.toast('Please enter the site address', 'error'); return }
+
+      const workOrders = JSON.parse(localStorage.getItem('se_work_orders') || '[]')
+      const wo = {
+        id: crypto.randomUUID(),
+        clientId: this.client.id,
+        clientName: this.client.name,
+        service, address, priority, description: desc,
+        status: 'submitted',
+        reference: `WO-${new Date().getFullYear()}-${String(workOrders.length + 1).padStart(4, '0')}`,
+        createdAt: new Date().toISOString()
+      }
+      workOrders.push(wo)
+      this.safeSet('se_work_orders', JSON.stringify(workOrders))
+
+      // Also create as a quote request so Sam sees it in Command Centre
+      const requests = JSON.parse(localStorage.getItem('se_quote_requests') || '[]')
+      requests.push({
+        id: crypto.randomUUID(), clientId: this.client.id, clientName: this.client.name,
+        service, description: `WORK ORDER ${wo.reference} — ${priority.toUpperCase()} — ${address}\n${desc}`,
+        status: 'pending', workOrderId: wo.id, createdAt: new Date().toISOString()
+      })
+      this.safeSet('se_quote_requests', JSON.stringify(requests))
+
+      document.getElementById('wo-desc').value = ''
+      document.getElementById('wo-address').value = ''
+      this.toast(`Work order ${wo.reference} submitted — Steady Eco will respond within ${priority === 'emergency' ? '4 hours' : priority === 'urgent' ? '48 hours' : '5 business days'}`, 'success')
     },
 
     requestQuote() {
