@@ -649,6 +649,8 @@
     setupHoldToClockOut() {
       const btn = document.getElementById('clock-out-btn')
       if (!btn) return
+      if (btn._holdSetup) return // Prevent duplicate listeners
+      btn._holdSetup = true
       const progress = document.getElementById('hold-progress')
 
       const start = (e) => {
@@ -1014,6 +1016,9 @@
     /* ── SWMS ──────────────────────────────────────── */
 
     renderSwmsList() {
+      // Read custom templates from Command Centre if available
+      const customTemplates = JSON.parse(localStorage.getItem('se_swms_templates') || 'null')
+
       const swmsTemplates = [
         { id: 'tree-removal', name: 'Tree Removal SWMS', hazards: [
           { title: 'Falling branches/limbs', risk: 'high', control: 'Exclusion zone 1.5x tree height. Hard hat (AS/NZS 1801), safety glasses, steel-cap boots mandatory.' },
@@ -1079,6 +1084,20 @@
           { title: 'Equipment contact', risk: 'high', control: 'Chipper, tipper boom, crane — maintain clearances. Spotter for all elevated equipment near lines.' },
         ]},
       ]
+
+      // Merge any custom templates added from Command Centre
+      if (customTemplates) {
+        customTemplates.forEach(ct => {
+          if (!swmsTemplates.find(s => s.name.toLowerCase().includes(ct.name.toLowerCase()))) {
+            swmsTemplates.push({
+              id: ct.name.toLowerCase().replace(/\s+/g, '-'),
+              name: ct.name + ' SWMS',
+              hazards: (ct.hazards || []).map(h => ({ title: h, risk: 'medium', control: '[Assess per site — update controls as required]' }))
+            })
+          }
+        })
+      }
+
       const signed = JSON.parse(localStorage.getItem('se_swms_signed') || '[]')
       const container = document.getElementById('swms-list')
       container.innerHTML = swmsTemplates.map(sw => {
