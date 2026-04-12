@@ -953,7 +953,7 @@
           <div class="text-3xs text-faint mt-2">Tap for details ▾</div>
 
           <!-- Expandable detail -->
-          <div class="job-expand" style="display:none;margin-top:var(--se-space-4);padding-top:var(--se-space-4);border-top:1px solid var(--se-border-subtle)">
+          <div class="job-expand" style="margin-top:var(--se-space-4);padding-top:var(--se-space-4);border-top:1px solid var(--se-border-subtle)">
             ${fullDesc ? `<div class="text-sm text-secondary mb-3">${fullDesc}</div>` : ''}
             ${address ? `<div class="text-xs text-muted mb-2"><strong>Site:</strong> ${address}</div>` : ''}
             ${crew.length ? `<div class="text-xs text-muted mb-2"><strong>Crew:</strong> ${crew.map(c => this.esc(c)).join(', ')}</div>` : ''}
