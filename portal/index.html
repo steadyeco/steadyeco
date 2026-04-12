@@ -1443,10 +1443,16 @@
 
     /* ── SESSION TIMEOUT ─────────────────────────────── */
 
+    _sessionDebounce: null,
+
     startSessionTimer() {
       this.resetSessionTimer()
       const events = ['click', 'touchstart', 'keypress', 'mousemove', 'scroll']
-      events.forEach(e => document.addEventListener(e, () => this.resetSessionTimer(), { passive: true }))
+      const debounced = () => {
+        clearTimeout(this._sessionDebounce)
+        this._sessionDebounce = setTimeout(() => this.resetSessionTimer(), 1000)
+      }
+      events.forEach(e => document.addEventListener(e, debounced, { passive: true }))
     },
 
     resetSessionTimer() {

@@ -3078,7 +3078,8 @@
       if (!name) return
       const number = prompt('Certificate/licence number (optional):') || ''
       const issuer = prompt('Issuing body (e.g. TAFE QLD, St John, SafeWork):') || ''
-      const expiry = prompt('Expiry date (YYYY-MM-DD, leave blank if no expiry):') || null
+      const expiryInput = prompt('Expiry date (YYYY-MM-DD, leave blank if no expiry):') || ''
+      const expiry = /^\d{4}-\d{2}-\d{2}$/.test(expiryInput.trim()) ? expiryInput.trim() : (expiryInput ? null : null)
 
       const employees = this.getStore('employees')
       const emp = employees.find(e => e.id === empId)
@@ -4848,14 +4849,14 @@
       const calendar = document.getElementById('compliance-calendar')
       if (calendar) {
         const now = new Date()
-        const timeline = certs.filter(c => c.expiryDate).sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate))
+        const timeline = certs.filter(c => c.expiry && c.expiry !== 'No expiry').map(c => ({ ...c, _expiryDate: new Date(c.expiry) })).filter(c => !isNaN(c._expiryDate)).sort((a, b) => a._expiryDate - b._expiryDate)
         if (!timeline.length) {
           calendar.innerHTML = '<p class="text-sm text-muted">No dated certifications to display.</p>'
         } else {
           calendar.innerHTML = `
             <div class="text-xs text-muted mb-3">Upcoming renewals and expiries — next 12 months</div>
             ${timeline.map(c => {
-              const expDate = new Date(c.expiryDate)
+              const expDate = c._expiryDate
               const daysLeft = Math.floor((expDate - now) / 86400000)
               const color = daysLeft < 0 ? 'var(--se-error)' : daysLeft <= 30 ? 'var(--se-error)' : daysLeft <= 90 ? 'var(--se-gold-500)' : 'var(--se-success)'
               const barWidth = Math.max(5, Math.min(100, daysLeft > 0 ? Math.round((daysLeft / 365) * 100) : 5))
@@ -6286,7 +6287,7 @@
       const confirmed = await this.customConfirm('Delete All Data', 'This will permanently delete ALL jobs, clients, quotes, invoices, and employees. This cannot be undone. Export a backup first!')
       if (!confirmed) return
 
-      const keys = ['se_jobs', 'se_clients', 'se_quotes', 'se_invoices', 'se_employees', 'se_timesheets', 'se_audit', 'se_expenses', 'se_recurring', 'se_equipment', 'se_swms_signed', 'se_incidents', 'se_waste_dockets', 'se_maintenance_log', 'se_comms', 'se_equipment_logs']
+      const keys = ['se_jobs', 'se_clients', 'se_quotes', 'se_invoices', 'se_employees', 'se_timesheets', 'se_audit', 'se_expenses', 'se_recurring', 'se_equipment', 'se_swms_signed', 'se_incidents', 'se_waste_dockets', 'se_maintenance_log', 'se_comms', 'se_equipment_logs', 'se_swms_templates', 'se_compliance_config', 'se_review_prompts', 'se_prestart_done']
       keys.forEach(k => localStorage.removeItem(k))
       this._cache = {}
       this._clientMap = null

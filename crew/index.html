@@ -956,6 +956,7 @@
 
     async initPhotoDB() {
       return new Promise((resolve, reject) => {
+        if (typeof indexedDB === 'undefined') { console.warn('IndexedDB not available'); resolve(null); return }
         const request = indexedDB.open('SteadyEcoPhotos', 1)
         request.onerror = () => { console.warn('IndexedDB not available, falling back to localStorage'); resolve(null) }
         request.onupgradeneeded = (e) => {
@@ -1023,7 +1024,7 @@
       const reader = new FileReader()
       reader.onload = (e) => {
         const img = new Image()
-        img.onload = async () => {
+        img.onload = () => {
           const canvas = document.createElement('canvas')
           const maxW = 1200
           const scale = Math.min(1, maxW / img.width)
@@ -1039,18 +1040,17 @@
           }
 
           // Try IndexedDB first (supports 250MB+), fall back to localStorage (5MB limit)
-          const savedToIDB = await this.savePhotoToIDB(photo)
           this.photos.push(photo)
-          if (!savedToIDB) {
-            // Fallback: save to localStorage (may hit quota)
-            this.safeSet(`se_photos_${this.currentEmployee.id}`, JSON.stringify(this.photos))
-          } else {
-            // Save lightweight manifest to localStorage (no base64 data)
-            const manifest = this.photos.map(p => ({ id: p.id, tag: p.tag, jobId: p.jobId, timestamp: p.timestamp }))
-            this.safeSet(`se_photos_manifest_${this.currentEmployee.id}`, JSON.stringify(manifest))
-          }
+          this.savePhotoToIDB(photo).then(savedToIDB => {
+            if (!savedToIDB) {
+              this.safeSet(`se_photos_${this.currentEmployee.id}`, JSON.stringify(this.photos))
+            } else {
+              const manifest = this.photos.map(p => ({ id: p.id, tag: p.tag, jobId: p.jobId, timestamp: p.timestamp }))
+              this.safeSet(`se_photos_manifest_${this.currentEmployee.id}`, JSON.stringify(manifest))
+            }
+          })
           this.renderPhotos()
-          this.toast(`${this.photoTag} photo captured${savedToIDB ? '' : ' (localStorage)'}`, 'success')
+          this.toast(`${this.photoTag} photo captured`, 'success')
         }
         img.src = e.target.result
       }
