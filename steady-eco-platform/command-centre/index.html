@@ -2028,10 +2028,10 @@
       })
 
       document.getElementById('dash-metrics').innerHTML = `
-        ${this.metricCard("Today's Revenue", this.formatCurrency(todayRev), '', spark7)}
-        ${this.metricCard("This Week", this.formatCurrency(weekRev), '', spark7)}
-        ${this.metricCard("This Month", this.formatCurrency(monthRev))}
-        ${this.metricCard("Outstanding", this.formatCurrency(outstanding), outstanding > 0 ? 'gold' : '')}
+        <div style="cursor:pointer" onclick="App.navigate('invoices')">${this.metricCard("Today's Revenue", this.formatCurrency(todayRev), '', spark7)}</div>
+        <div style="cursor:pointer" onclick="App.navigate('invoices')">${this.metricCard("This Week", this.formatCurrency(weekRev), '', spark7)}</div>
+        <div style="cursor:pointer" onclick="App.navigate('invoices')">${this.metricCard("This Month", this.formatCurrency(monthRev))}</div>
+        <div style="cursor:pointer" onclick="App.navigate('invoices')">${this.metricCard("Outstanding", this.formatCurrency(outstanding), outstanding > 0 ? 'gold' : '')}</div>
       `
 
       // Today's jobs
@@ -3148,7 +3148,12 @@
       this.renderSchedule()
     },
 
+    _scheduleDayOffset: 0,
+
     renderSchedule() {
+      const isMobile = window.innerWidth < 768
+      if (isMobile) { this.renderScheduleMobile(); return }
+
       const grid = document.getElementById('schedule-grid')
       const now = new Date()
       const monday = new Date(now)
@@ -3184,6 +3189,68 @@
           html += `<div class="schedule-cell" onclick="App.scheduleAddJob('${iso}','${emp.id}')">${dayJobs.map(j => `<div class="schedule-job" onclick="event.stopPropagation();App.openJobDetail('${this.esc(j.id)}')">${this.esc(this.getClientName(j.clientId).split(' ')[0])}</div>`).join('')}</div>`
         })
       })
+
+      grid.innerHTML = html
+    },
+
+    renderScheduleMobile() {
+      const grid = document.getElementById('schedule-grid')
+      const viewDate = new Date()
+      viewDate.setDate(viewDate.getDate() + this._scheduleDayOffset)
+      const iso = viewDate.toISOString().split('T')[0]
+      const today = new Date().toISOString().split('T')[0]
+      const isToday = iso === today
+
+      const dayLabel = viewDate.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })
+      document.getElementById('schedule-week-label').textContent = isToday ? `Today — ${dayLabel}` : dayLabel
+
+      const jobs = this.getStore('jobs').filter(j => j.scheduledStart?.startsWith(iso))
+      const employees = this.getStore('employees').filter(e => e.isActive !== false)
+
+      let html = `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--se-space-3);margin-bottom:var(--se-space-4)">
+          <button class="btn btn-ghost btn-sm" onclick="App._scheduleDayOffset--;App.renderSchedule()">← Previous</button>
+          <button class="btn btn-ghost btn-sm" onclick="App._scheduleDayOffset=0;App.renderSchedule()" style="${isToday ? 'opacity:0.3' : ''}">Today</button>
+          <button class="btn btn-ghost btn-sm" onclick="App._scheduleDayOffset++;App.renderSchedule()">Next →</button>
+        </div>
+      `
+
+      if (!jobs.length) {
+        html += `<div class="text-center py-8"><p class="text-sm text-muted">No jobs scheduled for this day</p><button class="btn btn-primary btn-sm mt-3" onclick="App.navigate('new-job')">Schedule a Job</button></div>`
+      } else {
+        // Group jobs by crew member
+        const grouped = new Map()
+        jobs.forEach(j => {
+          const crewIds = j.assignedEmployees?.length ? j.assignedEmployees : ['unassigned']
+          crewIds.forEach(id => {
+            if (!grouped.has(id)) grouped.set(id, [])
+            grouped.get(id).push(j)
+          })
+        })
+
+        grouped.forEach((crewJobs, empId) => {
+          const emp = employees.find(e => e.id === empId)
+          const name = emp?.name || 'Unassigned'
+          html += `<div style="margin-bottom:var(--se-space-6)">
+            <div class="text-xs font-medium text-muted mb-2" style="text-transform:uppercase;letter-spacing:0.1em">${this.esc(name)}</div>
+            ${crewJobs.map(j => {
+              const client = this.getClientName(j.clientId)
+              const svc = (j.serviceTypes?.[0] || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+              const addr = j.siteAddress?.line1 || ''
+              return `<div class="card p-4 mb-2" style="cursor:pointer" onclick="App.openJobDetail('${this.esc(j.id)}')">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <div class="text-md font-medium">${this.esc(client)}</div>
+                    <div class="text-sm text-secondary">${this.esc(svc)}</div>
+                    ${addr ? `<div class="text-xs text-muted mt-1">${this.esc(addr)}</div>` : ''}
+                  </div>
+                  <span class="badge badge-${this.esc(j.status)}">${this.esc(j.status)}</span>
+                </div>
+              </div>`
+            }).join('')}
+          </div>`
+        })
+      }
 
       grid.innerHTML = html
     },

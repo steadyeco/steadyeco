@@ -274,7 +274,18 @@
     <!-- Jobs -->
     <div class="screen" id="screen-portal-jobs" role="tabpanel" aria-hidden="true">
       <div class="p-6">
-        <h2 class="text-display-xs mb-6" style="font-family:var(--se-font-display)" tabindex="-1">My Jobs</h2>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-display-xs" style="font-family:var(--se-font-display)" tabindex="-1">My Jobs</h2>
+          <div class="flex gap-2" id="portal-jobs-actions"></div>
+        </div>
+        <div class="flex gap-2 mb-4" id="portal-jobs-sort">
+          <select class="form-input form-select" style="max-width:160px;min-height:40px;font-size:13px" onchange="Portal._jobSort=this.value;Portal.renderJobs()">
+            <option value="date-desc">Newest first</option>
+            <option value="date-asc">Oldest first</option>
+            <option value="status">By status</option>
+          </select>
+          <input class="form-input" type="search" placeholder="Search jobs..." style="max-width:200px;min-height:40px;font-size:13px" oninput="Portal._jobSearch=this.value;Portal.renderJobs()">
+        </div>
         <ul class="flex flex-col gap-3" id="portal-all-jobs" role="list"></ul>
       </div>
     </div>
@@ -282,7 +293,10 @@
     <!-- Invoices -->
     <div class="screen" id="screen-portal-invoices" role="tabpanel" aria-hidden="true">
       <div class="p-6">
-        <h2 class="text-display-xs mb-6" style="font-family:var(--se-font-display)" tabindex="-1">Invoices</h2>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-display-xs" style="font-family:var(--se-font-display)" tabindex="-1">Invoices</h2>
+          <div class="flex gap-2" id="portal-inv-actions"></div>
+        </div>
         <ul class="flex flex-col gap-3" id="portal-all-invoices" role="list"></ul>
       </div>
     </div>
@@ -815,15 +829,64 @@
 
     /* ── JOBS ──────────────────────────────────────── */
 
+    _jobSort: 'date-desc',
+    _jobSearch: '',
+
     renderJobs() {
-      const jobs = this.getStore('jobs').filter(j => j.clientId === this.client.id).reverse()
+      let jobs = this.getStore('jobs').filter(j => j.clientId === this.client.id)
+
+      // Search
+      if (this._jobSearch) {
+        const q = this._jobSearch.toLowerCase()
+        jobs = jobs.filter(j => (j.reference||'').toLowerCase().includes(q) || (j.serviceTypes||[]).join(' ').toLowerCase().includes(q) || (j.description||'').toLowerCase().includes(q) || (j.status||'').toLowerCase().includes(q))
+      }
+
+      // Sort
+      if (this._jobSort === 'date-desc') jobs.sort((a, b) => (b.scheduledStart || b.createdAt || '').localeCompare(a.scheduledStart || a.createdAt || ''))
+      else if (this._jobSort === 'date-asc') jobs.sort((a, b) => (a.scheduledStart || a.createdAt || '').localeCompare(b.scheduledStart || b.createdAt || ''))
+      else if (this._jobSort === 'status') jobs.sort((a, b) => (a.status||'').localeCompare(b.status||''))
+
       const container = document.getElementById('portal-all-jobs')
+      // CSV export button for government
+      const actionsEl = document.getElementById('portal-jobs-actions')
+      if (actionsEl) {
+        actionsEl.innerHTML = this.client?.type === 'government'
+          ? `<button class="btn btn-ghost btn-sm" onclick="Portal.exportJobsCSV()">Export CSV</button>`
+          : ''
+      }
 
       if (!jobs.length) {
-        container.innerHTML = `<li class="empty-state"><p class="empty-state__title">No jobs yet</p><p class="empty-state__description">When Steady Eco schedules work for your property, jobs will appear here.</p></li>`
+        container.innerHTML = `<li class="empty-state"><p class="empty-state__title">No jobs${this._jobSearch ? ' matching "' + this.esc(this._jobSearch) + '"' : ''}</p><p class="empty-state__description">When Steady Eco schedules work for your property, jobs will appear here.</p></li>`
         return
       }
       container.innerHTML = jobs.map(j => `<li>${this.jobCard(j)}</li>`).join('')
+    },
+
+    exportJobsCSV() {
+      const jobs = this.getStore('jobs').filter(j => j.clientId === this.client.id)
+      const headers = ['Reference','Service','Status','Date','Address','Description']
+      const rows = jobs.map(j => [
+        j.reference, (j.serviceTypes?.[0]||'').replace(/-/g,' '), j.status, j.scheduledStart || '',
+        j.siteAddress?.line1 || '', (j.description||'').replace(/"/g,'""')
+      ])
+      const csv = [headers.join(','), ...rows.map(r => r.map(v => `"${v}"`).join(','))].join('\n')
+      const blob = new Blob([csv], { type: 'text/csv' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a'); a.href = url; a.download = `steady-eco-jobs-${new Date().toISOString().split('T')[0]}.csv`; a.click()
+      URL.revokeObjectURL(url)
+      this.toast('Jobs exported to CSV', 'success')
+    },
+
+    exportInvoicesCSV() {
+      const invoices = this.getStore('invoices').filter(i => i.clientId === this.client.id)
+      const headers = ['Reference','Amount','GST','Total','Status','Due Date']
+      const rows = invoices.map(i => [i.reference, i.subtotal||'', i.gst||'', i.total||'', i.status, i.dueDate||''])
+      const csv = [headers.join(','), ...rows.map(r => r.map(v => `"${v}"`).join(','))].join('\n')
+      const blob = new Blob([csv], { type: 'text/csv' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a'); a.href = url; a.download = `steady-eco-invoices-${new Date().toISOString().split('T')[0]}.csv`; a.click()
+      URL.revokeObjectURL(url)
+      this.toast('Invoices exported to CSV', 'success')
     },
 
     jobCard(job) {
@@ -895,6 +958,14 @@
     renderInvoices() {
       const invoices = this.getStore('invoices').filter(i => i.clientId === this.client.id).reverse()
       const container = document.getElementById('portal-all-invoices')
+
+      // CSV export button for government
+      const actionsEl = document.getElementById('portal-inv-actions')
+      if (actionsEl) {
+        actionsEl.innerHTML = this.client?.type === 'government'
+          ? `<button class="btn btn-ghost btn-sm" onclick="Portal.exportInvoicesCSV()">Export CSV</button>`
+          : ''
+      }
 
       if (!invoices.length) {
         container.innerHTML = `<li class="empty-state"><p class="empty-state__title">No invoices yet</p><p class="empty-state__description">Invoices will appear here once work is completed.</p></li>`
