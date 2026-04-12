@@ -276,7 +276,7 @@
     <div class="crew-content px-5 py-4">
       <p class="text-xs text-muted mb-4">Complete this checklist before starting work today. Required by WHS Act 2011 (QLD).</p>
       <div id="prestart-items" class="flex flex-col gap-3"></div>
-      <button class="crew-action-btn crew-action-btn--primary mt-6" id="prestart-submit" onclick="Crew.submitPrestart()" style="display:none">
+      <button class="crew-action-btn crew-action-btn--primary mt-6" id="prestart-submit" onclick="Crew.submitPrestart()" disabled style="opacity:0.4">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 10l3 3 5-6"/></svg>
         Submit Pre-Start
       </button>
@@ -341,8 +341,49 @@
       </div>
       <div class="px-5">
         <div class="card p-5 mb-4" id="profile-stats"></div>
+        <button class="btn btn-primary w-full mb-3" onclick="Crew.showScreen('equipment-log')" style="height:56px">Equipment Servicing Log</button>
         <button class="btn btn-danger w-full mb-3" onclick="Crew.showScreen('incident')" style="height:56px">Report Incident / Hazard</button>
         <button class="btn btn-secondary w-full mb-3" onclick="Crew.logout()" style="height:56px">Log Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EQUIPMENT SERVICING LOG -->
+  <div class="screen" id="screen-equipment-log">
+    <div class="crew-header"><div class="crew-header__name" tabindex="-1">Equipment Servicing</div><div><button class="btn btn-ghost btn-sm" onclick="Crew.showScreen('profile')">Back</button></div></div>
+    <div class="crew-content px-5 py-4">
+      <p class="text-xs text-muted mb-4">Log equipment cleaning, servicing, and maintenance. All entries are signed and timestamped.</p>
+      <div class="flex flex-col gap-3 mb-6">
+        <div class="form-group">
+          <label class="form-label">Equipment</label>
+          <select class="form-input form-select" id="eqlog-equipment" style="min-height:48px">
+            <option value="">Select equipment...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Task Type</label>
+          <select class="form-input form-select" id="eqlog-type" style="min-height:48px">
+            <option value="clean">Clean / Washdown</option>
+            <option value="sharpen">Sharpen (blades/chain)</option>
+            <option value="oil-fuel">Oil / Fuel / Fluids</option>
+            <option value="inspect">Pre-start Inspection</option>
+            <option value="service">Service / Maintenance</option>
+            <option value="repair">Repair</option>
+            <option value="disinfect">Biosecurity Disinfection</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <textarea class="form-input form-textarea" id="eqlog-notes" rows="3" placeholder="What was done? Any issues found?" style="min-height:80px"></textarea>
+        </div>
+        <button class="crew-action-btn crew-action-btn--primary" onclick="Crew.submitEquipmentLog()">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 10l3 3 5-6"/></svg>
+          Sign & Log
+        </button>
+      </div>
+      <div>
+        <div class="text-sm font-medium mb-3">Recent Logs</div>
+        <div id="eqlog-history" class="flex flex-col gap-2"></div>
       </div>
     </div>
   </div>
@@ -615,8 +656,14 @@
         navigator.geolocation.getCurrentPosition(pos => {
           const fresh = JSON.parse(localStorage.getItem('se_timesheets') || '[]')
           const entry = fresh.find(t => t.id === tsEntry.id)
-          if (entry) { entry.lat = pos.coords.latitude; entry.lng = pos.coords.longitude; localStorage.setItem('se_timesheets', JSON.stringify(fresh)) }
-        }, () => {})
+          if (entry) {
+            entry.lat = pos.coords.latitude
+            entry.lng = pos.coords.longitude
+            localStorage.setItem('se_timesheets', JSON.stringify(fresh))
+          }
+        }, (err) => {
+          console.warn('GPS unavailable for clock-in:', err.message)
+        }, { timeout: 10000, enableHighAccuracy: false })
       }
 
       if (navigator.vibrate) navigator.vibrate(50)
@@ -650,8 +697,14 @@
         navigator.geolocation.getCurrentPosition(pos => {
           const fresh = JSON.parse(localStorage.getItem('se_timesheets') || '[]')
           const entry = fresh.find(t => t.id === tsEntry.id)
-          if (entry) { entry.lat = pos.coords.latitude; entry.lng = pos.coords.longitude; localStorage.setItem('se_timesheets', JSON.stringify(fresh)) }
-        }, () => {})
+          if (entry) {
+            entry.lat = pos.coords.latitude
+            entry.lng = pos.coords.longitude
+            localStorage.setItem('se_timesheets', JSON.stringify(fresh))
+          }
+        }, (err) => {
+          console.warn('GPS unavailable for clock-out:', err.message)
+        }, { timeout: 10000, enableHighAccuracy: false })
       }
 
       this.clockedIn = false
@@ -1115,6 +1168,7 @@
       if (localStorage.getItem(key)) return
 
       const overlay = document.createElement('div')
+      overlay.id = 'onboard-overlay'
       overlay.style.cssText = 'position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:var(--se-space-6)'
       overlay.innerHTML = `
         <div style="max-width:340px;text-align:center">
@@ -1129,8 +1183,8 @@
             </div>
           </div>
           <div class="flex gap-3 justify-center">
-            <button class="btn btn-ghost" onclick="this.closest('div[style]').remove();localStorage.setItem('${key}','1')">Skip</button>
-            <button class="btn btn-primary" id="onboard-next" onclick="Crew._onboardNext(this)">Next</button>
+            <button class="btn btn-ghost" onclick="Crew._onboardDismiss()">Skip</button>
+            <button class="btn btn-primary" id="onboard-next" onclick="Crew._onboardNext()">Next</button>
           </div>
         </div>
       `
@@ -1144,11 +1198,16 @@
       { icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>', title: 'Sign Your SWMS Daily', desc: 'Before starting any job, sign the relevant SWMS in the SWMS tab. This is a legal requirement.' },
     ],
 
-    _onboardNext(btn) {
+    _onboardDismiss() {
+      const overlay = document.getElementById('onboard-overlay')
+      if (overlay) overlay.remove()
+      localStorage.setItem('se_crew_onboarded_' + this.currentEmployee?.id, '1')
+    },
+
+    _onboardNext() {
       this._onboardStep = (this._onboardStep || 0) + 1
       if (this._onboardStep >= this._onboardSteps.length) {
-        btn.closest('div[style*="position:fixed"]').remove()
-        localStorage.setItem('se_crew_onboarded_' + this.currentEmployee?.id, '1')
+        this._onboardDismiss()
         return
       }
       const step = this._onboardSteps[this._onboardStep]
@@ -1193,20 +1252,35 @@
 
       document.getElementById('prestart-items').style.display = ''
       document.getElementById('prestart-submit').style.display = ''
+      document.getElementById('prestart-submit').disabled = true
+      document.getElementById('prestart-submit').style.opacity = '0.4'
       document.getElementById('prestart-done').style.display = 'none'
 
       document.getElementById('prestart-items').innerHTML = this._prestartItems.map((item, i) => `
-        <label style="display:flex;align-items:center;gap:var(--se-space-3);padding:var(--se-space-4);background:var(--se-bg-surface);border:1px solid var(--se-border-subtle);border-radius:var(--se-radius-lg);cursor:pointer;min-height:56px;-webkit-tap-highlight-color:transparent" onclick="this.querySelector('input').click()">
+        <label style="display:flex;align-items:center;gap:var(--se-space-3);padding:var(--se-space-4);background:var(--se-bg-surface);border:1px solid var(--se-border-subtle);border-radius:var(--se-radius-lg);cursor:pointer;min-height:56px;-webkit-tap-highlight-color:transparent">
           <input type="checkbox" data-prestart="${i}" style="width:24px;height:24px;accent-color:var(--se-green-600);flex-shrink:0" onchange="Crew.checkPrestartComplete()">
           <span class="text-sm">${this.esc(item)}</span>
         </label>
       `).join('')
+
+      // Show submit button state on initial render
+      this.checkPrestartComplete()
     },
 
     checkPrestartComplete() {
       const all = document.querySelectorAll('[data-prestart]')
       const checked = document.querySelectorAll('[data-prestart]:checked')
-      document.getElementById('prestart-submit').style.display = checked.length === all.length ? '' : 'none'
+      const btn = document.getElementById('prestart-submit')
+      if (btn) {
+        btn.style.display = ''
+        if (checked.length === all.length && all.length > 0) {
+          btn.disabled = false
+          btn.style.opacity = '1'
+        } else {
+          btn.disabled = true
+          btn.style.opacity = '0.4'
+        }
+      }
     },
 
     submitPrestart() {
@@ -1289,6 +1363,103 @@
       this.showScreen('home')
     },
 
+    /* ── EQUIPMENT SERVICING LOG ────────────────────── */
+
+    renderEquipmentLog() {
+      // Populate equipment dropdown
+      const equipment = this.getStore('equipment')
+      const select = document.getElementById('eqlog-equipment')
+      select.innerHTML = '<option value="">Select equipment...</option>' + equipment.map(e =>
+        `<option value="${e.id}">${this.esc(e.name)} (${this.esc(e.type)})</option>`
+      ).join('')
+
+      // Render recent logs for this employee
+      const logs = JSON.parse(localStorage.getItem('se_equipment_logs') || '[]')
+        .filter(l => l.employeeId === this.currentEmployee?.id)
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+        .slice(0, 20)
+
+      const history = document.getElementById('eqlog-history')
+      if (!logs.length) {
+        history.innerHTML = '<p class="text-sm text-muted text-center py-4">No logs yet. Complete your first entry above.</p>'
+        return
+      }
+
+      const typeLabels = {
+        'clean': 'Clean / Washdown', 'sharpen': 'Sharpen', 'oil-fuel': 'Oil / Fuel',
+        'inspect': 'Inspection', 'service': 'Service', 'repair': 'Repair', 'disinfect': 'Biosecurity'
+      }
+
+      history.innerHTML = logs.map(l => {
+        const eq = equipment.find(e => e.id === l.equipmentId)
+        return `
+          <div style="padding:var(--se-space-3);background:var(--se-bg-surface);border:1px solid var(--se-border-subtle);border-radius:var(--se-radius-lg)">
+            <div class="flex justify-between items-center">
+              <div class="text-sm font-medium">${this.esc(eq?.name || 'Unknown')}</div>
+              <span class="badge badge-active" style="font-size:10px">${this.esc(typeLabels[l.type] || l.type)}</span>
+            </div>
+            ${l.notes ? `<div class="text-xs text-muted mt-1">${this.esc(l.notes)}</div>` : ''}
+            <div class="text-3xs text-faint mt-1">${new Date(l.timestamp).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })} · Signed by ${this.esc(l.employeeName)}</div>
+          </div>
+        `
+      }).join('')
+    },
+
+    submitEquipmentLog() {
+      const equipmentId = document.getElementById('eqlog-equipment').value
+      if (!equipmentId) { this.toast('Select equipment first', 'error'); return }
+
+      const type = document.getElementById('eqlog-type').value
+      const notes = document.getElementById('eqlog-notes').value.trim()
+
+      const entry = {
+        id: crypto.randomUUID(),
+        equipmentId,
+        type,
+        notes,
+        employeeId: this.currentEmployee.id,
+        employeeName: this.currentEmployee.name,
+        timestamp: new Date().toISOString(),
+        date: new Date().toISOString().split('T')[0],
+      }
+
+      // Save to crew equipment logs
+      const logs = JSON.parse(localStorage.getItem('se_equipment_logs') || '[]')
+      logs.push(entry)
+      localStorage.setItem('se_equipment_logs', JSON.stringify(logs))
+
+      // Also update the equipment record in shared store (service/wash logs)
+      const equipment = this.getStore('equipment')
+      const eq = equipment.find(e => e.id === equipmentId)
+      if (eq) {
+        if (type === 'clean' || type === 'disinfect') {
+          eq.lastWashdown = new Date().toLocaleDateString('en-AU')
+          if (!eq.washdownLog) eq.washdownLog = []
+          eq.washdownLog.push({ date: eq.lastWashdown, operator: this.currentEmployee.name, loggedAt: entry.timestamp })
+        }
+        if (type === 'service' || type === 'repair') {
+          if (!eq.serviceLog) eq.serviceLog = []
+          eq.serviceLog.push({ date: new Date().toLocaleDateString('en-AU'), type: type === 'repair' ? 'Repair' : 'Scheduled', notes, loggedAt: entry.timestamp })
+        }
+        if (type === 'inspect') {
+          if (!eq.inspectionLog) eq.inspectionLog = []
+          eq.inspectionLog.push({ date: new Date().toLocaleDateString('en-AU'), notes, inspector: this.currentEmployee.name, loggedAt: entry.timestamp })
+          eq.lastInspection = new Date().toLocaleDateString('en-AU')
+        }
+        localStorage.setItem('se_equipment', JSON.stringify(equipment))
+        this.invalidateCache('equipment')
+      }
+
+      // Clear form
+      document.getElementById('eqlog-notes').value = ''
+      document.getElementById('eqlog-equipment').selectedIndex = 0
+      document.getElementById('eqlog-type').selectedIndex = 0
+
+      if (navigator.vibrate) navigator.vibrate([50, 30, 50])
+      this.toast('Equipment log signed and saved', 'success')
+      this.renderEquipmentLog()
+    },
+
     /* ── PROFILE STATS ─────────────────────────────── */
 
     renderProfile() {
@@ -1327,6 +1498,7 @@
       if (screen === 'camera') { this.renderPhotos(); this._populateCameraJobs() }
       if (screen === 'prestart') this.renderPrestart()
       if (screen === 'profile') this.renderProfile()
+      if (screen === 'equipment-log') this.renderEquipmentLog()
     },
 
     renderAllJobs() {
