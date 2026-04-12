@@ -445,6 +445,7 @@
       this.renderEmployeeSelector()
       this.setupPinPad()
       this.startClock()
+      this.setupPullToRefresh()
       this.setupSignaturePad()
       window.addEventListener('online', () => this.updateConnectivity(true))
       window.addEventListener('offline', () => this.updateConnectivity(false))
@@ -629,7 +630,8 @@
       const stickyStatus = document.getElementById('sticky-status')
 
       if (this.clockedIn) {
-        wrap.innerHTML = `<button class="clock-btn clock-btn--out" onclick="Crew.clockOut()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>Clock Out</button>`
+        wrap.innerHTML = `<button class="clock-btn clock-btn--out" id="clock-out-btn" style="position:relative;overflow:hidden"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>Hold to Clock Out<div id="hold-progress" style="position:absolute;bottom:0;left:0;height:4px;width:0;background:var(--se-text-inverse);border-radius:2px;transition:width 1.5s linear"></div></button>`
+        this.setupHoldToClockOut()
         if (sticky) sticky.classList.add('is-visible')
         if (stickyBtn) { stickyBtn.textContent = 'Clock Out'; stickyBtn.className = 'clock-btn clock-btn--out sticky-clock__btn' }
         if (stickyStatus) stickyStatus.textContent = 'Clocked in'
@@ -640,6 +642,35 @@
         if (stickyBtn) { stickyBtn.textContent = 'Clock In'; stickyBtn.className = 'clock-btn clock-btn--in sticky-clock__btn' }
         if (stickyStatus) stickyStatus.textContent = 'Not clocked in'
       }
+    },
+
+    _holdTimer: null,
+
+    setupHoldToClockOut() {
+      const btn = document.getElementById('clock-out-btn')
+      if (!btn) return
+      const progress = document.getElementById('hold-progress')
+
+      const start = (e) => {
+        e.preventDefault()
+        if (progress) progress.style.width = '100%'
+        this._holdTimer = setTimeout(() => {
+          if (progress) progress.style.width = '0'
+          this.clockOut()
+        }, 1500)
+      }
+
+      const cancel = () => {
+        clearTimeout(this._holdTimer)
+        if (progress) { progress.style.transition = 'none'; progress.style.width = '0'; setTimeout(() => { progress.style.transition = 'width 1.5s linear' }, 50) }
+      }
+
+      btn.addEventListener('mousedown', start)
+      btn.addEventListener('touchstart', start, { passive: false })
+      btn.addEventListener('mouseup', cancel)
+      btn.addEventListener('mouseleave', cancel)
+      btn.addEventListener('touchend', cancel)
+      btn.addEventListener('touchcancel', cancel)
     },
 
     clockIn() {
@@ -1578,6 +1609,32 @@
       if (navigator.vibrate) navigator.vibrate([50, 30, 50])
       this.toast('Equipment log signed and saved', 'success')
       this.renderEquipmentLog()
+    },
+
+    /* ── PULL TO REFRESH ────────────────────────────── */
+
+    setupPullToRefresh() {
+      let startY = 0, pulling = false
+      const threshold = 60
+
+      document.addEventListener('touchstart', (e) => {
+        if (window.scrollY === 0) { startY = e.touches[0].clientY; pulling = true }
+      }, { passive: true })
+
+      document.addEventListener('touchmove', (e) => {
+        if (!pulling) return
+        const diff = e.touches[0].clientY - startY
+        if (diff > threshold && window.scrollY === 0) {
+          pulling = false
+          this._cache = {}
+          const screen = document.querySelector('.screen.is-active')
+          const id = screen?.id?.replace('screen-', '')
+          if (id) this.showScreen(id)
+          this.toast('Refreshed', 'success')
+        }
+      }, { passive: true })
+
+      document.addEventListener('touchend', () => { pulling = false }, { passive: true })
     },
 
     /* ── PROFILE STATS ─────────────────────────────── */

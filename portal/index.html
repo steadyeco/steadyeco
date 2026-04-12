@@ -356,6 +356,7 @@
     init() {
       this.setupOtpPad()
       this.seedDemoData()
+      this.setupPullToRefresh()
       if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {})
     },
 
@@ -1373,6 +1374,29 @@
     // Session timeout — auto-logout after 30 minutes of inactivity
     _sessionTimer: null,
     _sessionWarned: false,
+
+    /* ── PULL TO REFRESH ────────────────────────────── */
+
+    setupPullToRefresh() {
+      let startY = 0, pulling = false
+      document.addEventListener('touchstart', (e) => {
+        if (window.scrollY === 0) { startY = e.touches[0].clientY; pulling = true }
+      }, { passive: true })
+      document.addEventListener('touchmove', (e) => {
+        if (!pulling) return
+        if (e.touches[0].clientY - startY > 60 && window.scrollY === 0) {
+          pulling = false
+          this._cache = {}
+          const active = document.querySelector('.screen.is-active')
+          const tab = active?.id?.replace('screen-portal-', '')
+          if (tab) this.renderTab(tab)
+          this.toast('Refreshed', 'success')
+        }
+      }, { passive: true })
+      document.addEventListener('touchend', () => { pulling = false }, { passive: true })
+    },
+
+    /* ── SESSION TIMEOUT ─────────────────────────────── */
 
     startSessionTimer() {
       this.resetSessionTimer()
