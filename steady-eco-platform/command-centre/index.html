@@ -2076,7 +2076,7 @@
       const totalHoursWorked = Math.round(clockOuts.reduce((s, t) => s + (t.duration || 0), 0) / 60)
 
       // Compliance score
-      const complianceExpiry = this.checkComplianceExpiry?.() || []
+      const complianceExpiry = this.checkComplianceExpiry() || []
       const expired = complianceExpiry.filter(w => w.daysLeft < 0).length
       const totalCerts = complianceExpiry.length || 1
       const complianceScore = Math.round(((totalCerts - expired) / totalCerts) * 100)
@@ -4027,18 +4027,42 @@
 
     /* ── DOCUMENTS (real data) ─────────────────────────── */
 
+    _defaultSwmsTemplates: [
+      { name: 'Tree Removal', desc: 'Felling, sectional dismantling, stump grinding', hazards: ['Falling limbs','Chainsaw kickback','Overhead powerlines','Drop zone breach','Manual handling'] },
+      { name: 'Tree Pruning', desc: 'Crown reduction, deadwooding, canopy lift (AS4373)', hazards: ['Working at heights','Falling branches','Chainsaw kickback','Tool drop','UV/heat exposure'] },
+      { name: 'Vegetation Management', desc: 'Mechanical & hand clearing, herbicide', hazards: ['Snake/wildlife encounter','Herbicide exposure','Brush cutter debris','Uneven terrain','Heat stress'] },
+      { name: 'Mowing & Landscaping', desc: 'Ride-on, push mower, brush cutter, edging', hazards: ['Projectile debris','Noise exposure','Fuel handling','Slope/rollover','Vibration'] },
+      { name: 'Chipper Operation', desc: 'Commercial wood chipper safety', hazards: ['Entanglement','Projectile debris','Noise >100dB','Hydraulic failure','Manual feeding'] },
+      { name: 'Land Clearing', desc: 'Heavy machinery, grubbing, levelling', hazards: ['Underground services','Rollover','Dust inhalation','Falling trees','Erosion'] },
+      { name: 'Working at Heights', desc: 'Climbing, EWP, aerial rescue', hazards: ['Fall from height','EWP tip-over','Rescue failure','Tool drop','Wind conditions'] },
+      { name: 'Working Near Powerlines', desc: 'Energex/Ergon clearance zones', hazards: ['Electrocution','Arc flash','Vegetation contact','Clearance breach','Equipment contact'] },
+      { name: 'Herbicide Application', desc: 'Chemical treatment & applicator protocols', hazards: ['Chemical exposure','Drift to non-target','Waterway contamination','PPE failure','Incorrect mixing'] },
+    ],
+
+    getSwmsTemplates() {
+      const stored = JSON.parse(localStorage.getItem('se_swms_templates') || 'null')
+      return stored || this._defaultSwmsTemplates
+    },
+
     renderDocuments() {
-      // SWMS templates
-      const swmsTemplates = ['Tree Removal', 'Mowing & Landscaping', 'Vegetation Management']
-      document.getElementById('docs-swms').innerHTML = swmsTemplates.map(name => `
-        <div class="card p-5 flex justify-between items-center">
-          <div>
-            <div class="text-md font-medium">${this.esc(name)} SWMS</div>
-            <div class="text-xs text-muted mt-1">Safe Work Method Statement — WHS Act 2011 (QLD)</div>
+      // SWMS templates (editable)
+      const swmsTemplates = this.getSwmsTemplates()
+      document.getElementById('docs-swms').innerHTML = swmsTemplates.map((t, i) => `
+        <div class="card p-5">
+          <div class="flex justify-between items-center">
+            <div>
+              <div class="text-md font-medium">${this.esc(t.name)} SWMS</div>
+              <div class="text-xs text-muted mt-1">${this.esc(t.desc || 'Safe Work Method Statement')}</div>
+              ${t.hazards?.length ? `<div class="text-3xs text-faint mt-1">Hazards: ${t.hazards.map(h => this.esc(h)).join(' · ')}</div>` : ''}
+            </div>
+            <span class="badge badge-active">Current</span>
           </div>
-          <span class="badge badge-active">Current</span>
+          <div class="flex gap-2 mt-3" style="border-top:1px solid var(--se-border-subtle);padding-top:var(--se-space-2)">
+            <button class="btn btn-ghost btn-sm" onclick="App.viewSwmsTemplate(${i})">View PDF</button>
+            <button class="btn btn-ghost btn-sm" onclick="App.editSwmsTemplate(${i})">Edit Hazards</button>
+          </div>
         </div>
-      `).join('')
+      `).join('') + `<button class="btn btn-ghost btn-sm mt-3" onclick="App.addSwmsTemplate()">+ Add SWMS Template</button>`
 
       // Insurance & certs
       const certs = this._getComplianceData()
@@ -4069,6 +4093,67 @@
       // Induction + Regen docs
       this._renderInductionDocs()
       this._renderRegenDocs()
+    },
+
+    viewSwmsTemplate(idx) {
+      const templates = this.getSwmsTemplates()
+      const t = templates[idx]
+      if (!t) return
+      const content = `
+        <div class="section"><div class="section-title">Safe Work Method Statement</div>
+          <table><tbody>
+            <tr><td style="width:35%;color:#999">Activity</td><td>${this.esc(t.name)}</td></tr>
+            <tr><td style="color:#999">Description</td><td>${this.esc(t.desc || '')}</td></tr>
+            <tr><td style="color:#999">Company</td><td>Steady Eco — ABN 49 553 784 085</td></tr>
+            <tr><td style="color:#999">Prepared By</td><td>Sam Kerr — AQF3 Arboriculture</td></tr>
+            <tr><td style="color:#999">Date</td><td>${new Date().toLocaleDateString('en-AU')}</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">Identified Hazards & Controls</div>
+          <table><thead><tr><th>Hazard</th><th>Risk</th><th>Control Measure</th></tr></thead><tbody>
+            ${(t.hazards || []).map(h => `<tr><td>${this.esc(h)}</td><td>Medium</td><td>[Control measure — assess per site]</td></tr>`).join('')}
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">PPE Required</div>
+          <p class="meta">Hard hat, safety glasses, hearing protection, steel cap boots, hi-vis vest, gloves. Additional PPE as specified per hazard above.</p>
+        </div>
+        <div class="section"><div class="section-title">Emergency Procedures</div>
+          <p class="meta">Emergency: 000 | Poison Info: 13 11 26 | Sam Kerr: 0450 753 753</p>
+          <p class="meta">Nearest hospital: Cairns Hospital — 165 The Esplanade, Cairns City</p>
+        </div>
+        <div class="section"><div class="section-title">Crew Sign-On</div>
+          <table><thead><tr><th>Name</th><th>Signature</th><th>Date</th></tr></thead><tbody>
+            <tr><td>____________________</td><td>____________________</td><td>___/___/______</td></tr>
+            <tr><td>____________________</td><td>____________________</td><td>___/___/______</td></tr>
+            <tr><td>____________________</td><td>____________________</td><td>___/___/______</td></tr>
+          </tbody></table>
+        </div>
+      `
+      this.generatePdf(`SWMS — ${t.name}`, content)
+    },
+
+    editSwmsTemplate(idx) {
+      const templates = this.getSwmsTemplates()
+      const t = templates[idx]
+      if (!t) return
+      const hazards = (t.hazards || []).join('\n')
+      const newHazards = prompt(`Edit hazards for "${t.name}" SWMS\n(one per line):`, hazards)
+      if (newHazards === null) return
+      t.hazards = newHazards.split('\n').map(h => h.trim()).filter(Boolean)
+      this.safeSet('se_swms_templates', JSON.stringify(templates))
+      this.toast(`${t.name} SWMS updated`, 'success')
+      this.renderDocuments()
+    },
+
+    addSwmsTemplate() {
+      const name = prompt('New SWMS template name (e.g. "Confined Spaces"):')
+      if (!name) return
+      const templates = this.getSwmsTemplates()
+      templates.push({ name: name.trim(), desc: 'Custom SWMS template', hazards: ['[Add hazards]'] })
+      this.safeSet('se_swms_templates', JSON.stringify(templates))
+      this.addAudit('SWMS template added', name)
+      this.toast(`${name} SWMS template created`, 'success')
+      this.renderDocuments()
     },
 
     viewSignedSwms() {
