@@ -1034,7 +1034,9 @@
 
 .sidebar {
   width: var(--se-sidebar-w);
+  height: 100vh;
   height: 100dvh;
+  height: -webkit-fill-available;
   position: fixed;
   top: 0;
   left: 0;
@@ -1044,6 +1046,7 @@
   flex-direction: column;
   z-index: var(--se-z-sticky);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .sidebar__brand {
@@ -1107,9 +1110,9 @@
   gap: var(--se-space-3);
 }
 
-/* Hide sidebar on mobile */
+/* Hide sidebar on mobile — force with !important for iOS Safari */
 @media (max-width: 768px) {
-  .sidebar { display: none; }
+  .sidebar { display: none !important; }
 }
 
 

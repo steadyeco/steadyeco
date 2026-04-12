@@ -16,12 +16,13 @@
 
 .main-content {
   margin-left: var(--se-sidebar-w);
+  min-height: 100vh;
   min-height: 100dvh;
 }
 
 @media (max-width: 768px) {
   .main-content {
-    margin-left: 0;
+    margin-left: 0 !important;
     padding-bottom: calc(var(--se-mobile-nav-h) + env(safe-area-inset-bottom));
   }
 }
