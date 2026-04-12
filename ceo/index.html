@@ -912,7 +912,10 @@
           </div>
         </div>
 
-        <!-- Zone 5: Cassowary AI bar -->
+        <!-- Zone 5: Daily Briefing -->
+        <div class="dash-zone" id="dash-briefing" style="display:none"></div>
+
+        <!-- Zone 6: Cassowary AI bar -->
         <div class="dash-zone">
           <h3 class="label mb-3">Ask Cassowary</h3>
           <div class="ai-bar" onclick="App.navigate('cassowary')">
@@ -1735,6 +1738,42 @@
             </div>
             <p class="text-xs text-muted mt-2">Last backup: <span id="last-backup-time">${localStorage.getItem('se_last_backup') ? new Date(localStorage.getItem('se_last_backup')).toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : 'Never'}</span></p>
           </div>
+
+          <!-- Integrations (ready to connect) -->
+          <div class="settings-section">
+            <h3 class="settings-section__title">Integrations</h3>
+            <div class="flex flex-col gap-3">
+              <div class="card p-4 flex justify-between items-center">
+                <div><div class="text-sm font-medium">Xero Accounting</div><div class="text-xs text-muted">Sync invoices, payments, contacts</div></div>
+                <button class="btn btn-ghost btn-sm" onclick="App.toast('Xero integration ready — add API key to connect','info')">Connect</button>
+              </div>
+              <div class="card p-4 flex justify-between items-center">
+                <div><div class="text-sm font-medium">Twilio SMS</div><div class="text-xs text-muted">Automated client notifications</div></div>
+                <button class="btn btn-ghost btn-sm" onclick="App.toast('Twilio integration ready — add API key to connect','info')">Connect</button>
+              </div>
+              <div class="card p-4 flex justify-between items-center">
+                <div><div class="text-sm font-medium">Stripe Payments</div><div class="text-xs text-muted">In-app invoice payment</div></div>
+                <button class="btn btn-ghost btn-sm" onclick="App.toast('Stripe integration ready — add API key to connect','info')">Connect</button>
+              </div>
+              <div class="card p-4 flex justify-between items-center">
+                <div><div class="text-sm font-medium">Google Calendar</div><div class="text-xs text-muted">Sync jobs to crew calendars</div></div>
+                <button class="btn btn-ghost btn-sm" onclick="App.toast('Calendar integration ready — add API key to connect','info')">Connect</button>
+              </div>
+            </div>
+            <p class="text-3xs text-faint mt-3">Integration points are scaffolded and ready. Add API keys to activate each service.</p>
+          </div>
+
+          <!-- Business Details -->
+          <div class="settings-section">
+            <h3 class="settings-section__title">Business Details</h3>
+            <div class="flex flex-col gap-3">
+              <div class="form-group"><label class="form-label">Business Name</label><input class="form-input" id="set-biz-name" value="Steady Eco"></div>
+              <div class="form-group"><label class="form-label">ABN</label><input class="form-input" id="set-biz-abn" value="49 553 784 085"></div>
+              <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="set-biz-phone" value="0450 753 753"></div>
+              <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="set-biz-email" value="sam@steadyeco.com"></div>
+              <button class="btn btn-primary btn-sm" onclick="App.saveBusinessDetails()" style="align-self:flex-start">Save</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -2252,6 +2291,9 @@
 
       // Post-job review triggers
       this.checkReviewTriggers()
+
+      // Daily briefing
+      this.renderDailyBriefing()
 
       // Weather (real data from Open-Meteo — free, no API key)
       this.fetchWeather()
@@ -5366,6 +5408,53 @@
       this.invalidateCache('jobs')
       this.toast('Follow-ups dismissed', 'success')
       this.renderDashboard()
+    },
+
+    renderDailyBriefing() {
+      const container = document.getElementById('dash-briefing')
+      if (!container) return
+
+      const now = new Date()
+      const todayStr = now.toISOString().split('T')[0]
+      const jobs = this.getStore('jobs')
+      const invoices = this.getStore('invoices')
+      const quotes = this.getStore('quotes')
+      const equipment = this.getStore('equipment')
+      const inventory = JSON.parse(localStorage.getItem('se_inventory') || '[]')
+
+      const todayJobs = jobs.filter(j => j.scheduledStart?.startsWith(todayStr))
+      const activeJobs = jobs.filter(j => j.status === 'active')
+      const overdueInvoices = invoices.filter(i => i.status !== 'paid' && i.status !== 'void' && i.dueDate && new Date(i.dueDate) < now)
+      const pendingQuotes = quotes.filter(q => q.status === 'sent' || q.status === 'viewed')
+      const expiringCerts = (this.checkComplianceExpiry() || []).filter(w => w.daysLeft >= 0 && w.daysLeft <= 30)
+      const overdueEquip = equipment.filter(e => e.serviceDue && new Date(e.serviceDue) < now)
+      const lowStock = inventory.filter(i => i.minQty && i.qty <= i.minQty)
+
+      const items = []
+      items.push(`${todayJobs.length} job${todayJobs.length !== 1 ? 's' : ''} scheduled today`)
+      if (activeJobs.length) items.push(`${activeJobs.length} currently active`)
+      if (overdueInvoices.length) items.push(`${overdueInvoices.length} overdue invoice${overdueInvoices.length !== 1 ? 's' : ''} — ${this.formatCurrency(overdueInvoices.reduce((s,i) => s + (i.total||0), 0))}`)
+      if (pendingQuotes.length) items.push(`${pendingQuotes.length} quote${pendingQuotes.length !== 1 ? 's' : ''} pending — ${this.formatCurrency(pendingQuotes.reduce((s,q) => s + (q.total||0), 0))} pipeline`)
+      if (expiringCerts.length) items.push(`${expiringCerts.length} cert${expiringCerts.length !== 1 ? 's' : ''} expiring within 30 days`)
+      if (overdueEquip.length) items.push(`${overdueEquip.length} equipment overdue for service`)
+      if (lowStock.length) items.push(`${lowStock.length} inventory item${lowStock.length !== 1 ? 's' : ''} low stock`)
+
+      const monthStart = now.toISOString().slice(0, 7)
+      const monthRev = invoices.filter(i => i.status === 'paid' && i.paidAt?.startsWith(monthStart)).reduce((s, i) => s + (i.total || 0), 0)
+      items.push(`Month-to-date: ${this.formatCurrency(monthRev)}`)
+
+      container.style.display = ''
+      container.innerHTML = `
+        <div class="card p-5" style="border-color:var(--se-green-600);background:var(--se-green-050)">
+          <div class="flex justify-between items-center mb-3">
+            <div class="text-md font-medium" style="color:var(--se-green-600)">Daily Briefing</div>
+            <div class="text-3xs text-faint">${now.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+          </div>
+          <ul style="list-style:none;padding:0;margin:0">
+            ${items.map(item => `<li style="padding:3px 0;display:flex;align-items:baseline;gap:var(--se-space-2)"><span style="color:var(--se-green-600);flex-shrink:0">•</span><span class="text-sm text-secondary">${item}</span></li>`).join('')}
+          </ul>
+        </div>
+      `
     },
 
     /* ── COMPLIANCE EXPIRY ENGINE (EMPIRE P1) ─────────── */
