@@ -1750,9 +1750,11 @@
                   <button class="btn btn-secondary btn-sm" onclick="App.cloudPull()">Pull</button>
                 </div>
               </div>
-              <div class="card p-4 flex justify-between items-center">
-                <div><div class="text-sm font-medium">Xero Accounting</div><div class="text-xs text-muted">Sync invoices, payments, contacts</div></div>
-                <button class="btn btn-ghost btn-sm" onclick="App.toast('Xero integration ready — add API key to connect','info')">Connect</button>
+              <div class="card p-4 flex justify-between items-center" id="xero-card">
+                <div><div class="text-sm font-medium">Xero Accounting</div><div class="text-xs text-muted">Sync invoices, payments, contacts</div><div class="text-3xs text-faint" id="xero-status">Checking...</div></div>
+                <div class="flex gap-2" id="xero-actions">
+                  <button class="btn btn-primary btn-sm" onclick="App.connectXero()">Connect</button>
+                </div>
               </div>
               <div class="card p-4 flex justify-between items-center">
                 <div><div class="text-sm font-medium">Twilio SMS</div><div class="text-xs text-muted">Automated client notifications</div></div>
@@ -6454,6 +6456,9 @@ if (!crypto.randomUUID) { crypto.randomUUID = function() { return 'xxxxxxxx-xxxx
     /* ── SETTINGS ──────────────────────────────────── */
 
     renderSettings() {
+      // Check Xero connection status
+      this.checkXeroStatus()
+
       // Load existing API key
       const key = localStorage.getItem('se_ai_key') || ''
       document.getElementById('set-api-key').value = key
@@ -6608,6 +6613,100 @@ if (!crypto.randomUUID) { crypto.randomUUID = function() { return 'xxxxxxxx-xxxx
       } catch (err) {
         this.toast('Cloud pull failed: ' + err.message, 'error')
         console.error('Cloud pull error:', err)
+      }
+    },
+
+    /* ── XERO INTEGRATION ─────────────────────────────── */
+
+    async checkXeroStatus() {
+      try {
+        const res = await fetch(this._cloudEndpoint.replace('/sync', '/xero/status'), {
+          headers: { 'X-Api-Key': this._cloudKey }
+        })
+        const data = await res.json()
+        const statusEl = document.getElementById('xero-status')
+        const actionsEl = document.getElementById('xero-actions')
+        const cardEl = document.getElementById('xero-card')
+        if (data.connected) {
+          if (statusEl) statusEl.textContent = `Connected since ${new Date(data.connectedAt).toLocaleDateString('en-AU')}`
+          if (cardEl) cardEl.style.borderColor = 'var(--se-green-600)'
+          if (actionsEl) actionsEl.innerHTML = `
+            <button class="btn btn-secondary btn-sm" onclick="App.xeroPushInvoices()">Push Invoices</button>
+            <button class="btn btn-ghost btn-sm" onclick="App.xeroPushContacts()">Sync Contacts</button>
+          `
+        } else {
+          if (statusEl) statusEl.textContent = 'Not connected'
+          if (actionsEl) actionsEl.innerHTML = `<button class="btn btn-primary btn-sm" onclick="App.connectXero()">Connect</button>`
+        }
+      } catch {
+        const el = document.getElementById('xero-status')
+        if (el) el.textContent = 'Could not check status'
+      }
+    },
+
+    connectXero() {
+      window.open(this._cloudEndpoint.replace('/sync', '/xero/auth'), '_blank')
+      this.toast('Redirecting to Xero — authorise the connection', 'info')
+    },
+
+    async xeroPushInvoices() {
+      const invoices = this.getStore('invoices').filter(i => !i._xeroSynced)
+      if (!invoices.length) { this.toast('No new invoices to sync', 'info'); return }
+
+      this.toast(`Pushing ${invoices.length} invoice${invoices.length > 1 ? 's' : ''} to Xero...`, 'info')
+      let synced = 0
+
+      for (const inv of invoices) {
+        const client = this.getClientById(inv.clientId)
+        try {
+          const res = await fetch(this._cloudEndpoint.replace('/sync', '/xero/invoice'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Api-Key': this._cloudKey },
+            body: JSON.stringify({
+              reference: inv.reference,
+              clientName: client?.name || 'Unknown',
+              clientEmail: client?.email || '',
+              lineItems: inv.lineItems || [{ description: 'Services', quantity: 1, unitRate: inv.subtotal || (inv.total / 1.1) }],
+              date: inv.createdAt?.split('T')[0],
+              dueDate: inv.dueDate || '',
+            })
+          })
+          const result = await res.json()
+          if (result.success) {
+            inv._xeroSynced = true
+            inv._xeroId = result.xeroInvoiceId
+            synced++
+          }
+        } catch (err) { console.error('Xero push error:', err) }
+      }
+
+      this.safeSet('se_invoices', JSON.stringify(this.getStore('invoices')))
+      this.invalidateCache('invoices')
+      this.addAudit('Xero invoices synced', `${synced} of ${invoices.length}`)
+      this.toast(`${synced} invoice${synced !== 1 ? 's' : ''} pushed to Xero`, 'success')
+    },
+
+    async xeroPushContacts() {
+      const clients = this.getStore('clients').filter(c => !c._xeroSynced)
+      if (!clients.length) { this.toast('No new contacts to sync', 'info'); return }
+
+      this.toast(`Syncing ${clients.length} contact${clients.length > 1 ? 's' : ''} to Xero...`, 'info')
+      try {
+        const res = await fetch(this._cloudEndpoint.replace('/sync', '/xero/contacts'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Api-Key': this._cloudKey },
+          body: JSON.stringify(clients)
+        })
+        const result = await res.json()
+        if (result.success) {
+          clients.forEach(c => c._xeroSynced = true)
+          this.safeSet('se_clients', JSON.stringify(this.getStore('clients')))
+          this.invalidateCache('clients')
+          this.addAudit('Xero contacts synced', `${result.synced} contacts`)
+          this.toast(`${result.synced} contacts synced to Xero`, 'success')
+        }
+      } catch (err) {
+        this.toast('Xero contact sync failed: ' + err.message, 'error')
       }
     },
 
