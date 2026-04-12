@@ -149,6 +149,10 @@
     .quote-sig-wrap canvas { width: 100%; height: 200px; display: block; }
     @media (max-width: 640px) { .quote-sig-wrap canvas { height: 180px; } }
 
+    /* Expandable detail */
+    .job-expand { display: none; }
+    .job-expand.is-open { display: block; animation: card-enter 0.2s ease-out; }
+
     /* Design polish */
     .btn { position: relative; overflow: hidden; }
     .btn::after { content:''; position:absolute; inset:0; background:radial-gradient(circle, rgba(255,255,255,0.12) 10%, transparent 10.01%); transform:scale(10); opacity:0; transition:transform 0.5s, opacity 0.5s; pointer-events:none; }
@@ -930,25 +934,33 @@
       // Site address
       const address = job.siteAddress?.line1 ? this.esc(job.siteAddress.line1) : ''
 
+      // Full description for expanded view
+      const fullDesc = job.description ? this.esc(job.description) : ''
+      const duration = job.scheduledDuration ? (job.scheduledDuration >= 480 ? Math.round(job.scheduledDuration/480) + ' day' + (job.scheduledDuration >= 960 ? 's' : '') : Math.round(job.scheduledDuration/60) + ' hr' + (job.scheduledDuration > 60 ? 's' : '')) : ''
+
       return `
-        <div class="card p-5">
+        <div class="card p-5" style="cursor:pointer" onclick="this.querySelector('.job-expand')?.classList.toggle('is-open')">
           <div class="flex justify-between items-start">
             <div>
               <div class="text-md font-medium">${svc}</div>
-              <div class="text-xs text-muted mt-1">${this.esc(job.reference || '')} · ${date}</div>
-              ${desc ? `<p class="text-sm text-secondary mt-2">${desc}</p>` : ''}
-              ${address ? `<div class="text-xs text-muted mt-1">${address}</div>` : ''}
+              <div class="text-xs text-muted mt-1">${this.esc(job.reference || '')} · ${date}${duration ? ' · ~' + duration : ''}</div>
             </div>
             <span class="badge badge-${this.esc(job.status)}">${this.esc(statusLabels[job.status] || job.status)}</span>
           </div>
           <div style="margin-top:var(--se-space-3);height:3px;background:var(--se-border-subtle);border-radius:2px;overflow:hidden">
             <div style="height:100%;width:${progress}%;background:${job.status === 'cancelled' ? 'var(--se-error)' : 'var(--se-green-600)'};border-radius:2px;transition:width 300ms var(--se-ease-out)"></div>
           </div>
-          ${crew.length || equip.length ? `<div style="margin-top:var(--se-space-3);display:flex;flex-wrap:wrap;gap:var(--se-space-2)">
-            ${crew.map(c => `<span style="font-size:11px;padding:2px 8px;background:var(--se-green-100);color:var(--se-green-600);border-radius:var(--se-radius-full)">${this.esc(c)}</span>`).join('')}
-            ${equip.map(e => `<span style="font-size:11px;padding:2px 8px;background:var(--se-bg-surface);color:var(--se-text-muted);border-radius:var(--se-radius-full);border:1px solid var(--se-border-subtle)">${this.esc(e)}</span>`).join('')}
-          </div>` : ''}
-          ${photoHtml}
+          <div class="text-3xs text-faint mt-2">Tap for details ▾</div>
+
+          <!-- Expandable detail -->
+          <div class="job-expand" style="display:none;margin-top:var(--se-space-4);padding-top:var(--se-space-4);border-top:1px solid var(--se-border-subtle)">
+            ${fullDesc ? `<div class="text-sm text-secondary mb-3">${fullDesc}</div>` : ''}
+            ${address ? `<div class="text-xs text-muted mb-2"><strong>Site:</strong> ${address}</div>` : ''}
+            ${crew.length ? `<div class="text-xs text-muted mb-2"><strong>Crew:</strong> ${crew.map(c => this.esc(c)).join(', ')}</div>` : ''}
+            ${equip.length ? `<div class="text-xs text-muted mb-2"><strong>Equipment:</strong> ${equip.map(e => this.esc(e)).join(', ')}</div>` : ''}
+            ${job.completedAt ? `<div class="text-xs text-muted mb-2"><strong>Completed:</strong> ${new Date(job.completedAt).toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric'})}</div>` : ''}
+            ${photoHtml}
+          </div>
         </div>
       `
     },
@@ -1055,6 +1067,33 @@
           </div>
         </li>
         ${incidents.length ? `<li><div class="card p-5 mb-4"><h4 class="label mb-3">Safety Record</h4>${incidents.slice(-5).reverse().map(inc => `<div class="flex justify-between items-center py-2" style="border-bottom:1px solid var(--se-border-subtle)"><div><div class="text-sm">${this.esc(inc.type || 'Incident')}</div><div class="text-xs text-muted">${this.esc(inc.description?.slice(0, 80) || '')}</div></div><div class="text-3xs text-faint">${new Date(inc.timestamp).toLocaleDateString('en-AU')}</div></div>`).join('')}</div></li>` : ''}
+        <li>
+          <div class="card p-5 mb-4">
+            <h4 class="label mb-4">Quote Pipeline</h4>
+            ${(() => {
+              const quotes = this.getStore('quotes').filter(q => q.clientId === this.client.id)
+              const sent = quotes.filter(q => q.status === 'sent' || q.status === 'viewed').length
+              const accepted = quotes.filter(q => q.status === 'accepted').length
+              const rejected = quotes.filter(q => q.status === 'rejected').length
+              const jobsFromQuotes = jobs.filter(j => j.quoteId).length
+              const paidFromQuotes = jobs.filter(j => j.quoteId && j.status === 'paid').length
+              const total = quotes.length || 1
+              const stages = [
+                { label: 'Quotes Sent', count: quotes.length, pct: 100 },
+                { label: 'Accepted', count: accepted, pct: Math.round((accepted / total) * 100) },
+                { label: 'Jobs Created', count: jobsFromQuotes, pct: Math.round((jobsFromQuotes / total) * 100) },
+                { label: 'Completed', count: completed.length, pct: Math.round((completed.length / total) * 100) },
+                { label: 'Paid', count: paidFromQuotes, pct: Math.round((paidFromQuotes / total) * 100) },
+              ]
+              return stages.map(s => `
+                <div style="margin-bottom:var(--se-space-2)">
+                  <div class="flex justify-between text-xs text-muted mb-1"><span>${s.label}</span><span>${s.count}</span></div>
+                  <div style="height:6px;background:var(--se-border-subtle);border-radius:3px;overflow:hidden"><div style="height:100%;width:${s.pct}%;background:var(--se-green-600);border-radius:3px;transition:width 300ms"></div></div>
+                </div>
+              `).join('')
+            })()}
+          </div>
+        </li>
         <li><h4 class="label mb-3 mt-2">Recent Completed Jobs</h4></li>
         ${completed.length ? completed.slice(-5).reverse().map(j => `<li>${this.jobCard(j)}</li>`).join('') : '<li class="text-sm text-muted">No completed jobs yet.</li>'}
       `

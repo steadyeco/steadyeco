@@ -831,13 +831,69 @@
     },
 
     completeJob(jobId) {
+      // Show completion checklist before marking complete
+      const job = this.getStore('jobs').find(j => j.id === jobId)
+      if (!job) return
+
+      // Check for photos
+      const allPhotos = JSON.parse(localStorage.getItem('se_photos_' + this.currentEmployee.id) || '[]').filter(p => p.jobId === jobId)
+      const hasBefore = allPhotos.some(p => p.tag === 'before')
+      const hasAfter = allPhotos.some(p => p.tag === 'after')
+      const today = new Date().toISOString().split('T')[0]
+      const prestartDone = JSON.parse(localStorage.getItem('se_prestart_done') || '{}')
+      const hasPrestart = !!prestartDone[this.currentEmployee.id + '_' + today]
+
+      const checkIcon = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l3 3 7-7"/></svg>'
+      const crossIcon = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l8 8M12 4l-8 8"/></svg>'
+
+      const checks = [
+        { label: 'Before photos uploaded', ok: hasBefore, required: false },
+        { label: 'After photos uploaded', ok: hasAfter, required: false },
+        { label: 'Pre-start completed today', ok: hasPrestart, required: false },
+      ]
+
+      const overlay = document.createElement('div')
+      overlay.id = 'completion-overlay'
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:var(--se-space-6)'
+      overlay.innerHTML = `
+        <div style="max-width:380px;width:100%;background:var(--se-bg-surface);border-radius:var(--se-radius-xl);padding:var(--se-space-6)">
+          <div class="text-md font-medium mb-4">Complete Job — ${this.esc(job.reference)}</div>
+          <div class="flex flex-col gap-3 mb-4">
+            ${checks.map(c => `
+              <div style="display:flex;align-items:center;gap:var(--se-space-3);padding:var(--se-space-3);background:var(--se-bg-base);border-radius:var(--se-radius-md)">
+                <span style="color:${c.ok ? 'var(--se-success)' : 'var(--se-text-muted)'}">${c.ok ? checkIcon : crossIcon}</span>
+                <span class="text-sm ${c.ok ? '' : 'text-muted'}">${c.label}</span>
+                ${c.ok ? '<span class="text-3xs text-faint ml-auto">Done</span>' : '<span class="text-3xs text-faint ml-auto">Missing</span>'}
+              </div>
+            `).join('')}
+            <label style="display:flex;align-items:center;gap:var(--se-space-3);padding:var(--se-space-3);background:var(--se-bg-base);border-radius:var(--se-radius-md)">
+              <input type="checkbox" id="comp-site-clean" style="width:20px;height:20px;accent-color:var(--se-green-600)">
+              <span class="text-sm">Site is clean and tidy</span>
+            </label>
+          </div>
+          ${!hasBefore || !hasAfter ? '<p class="text-xs text-muted mb-4">Missing photos? You can still complete, but photos strengthen your record for government contracts.</p>' : ''}
+          <div class="flex gap-3">
+            <button class="btn btn-ghost flex-1" style="min-height:48px" onclick="document.getElementById('completion-overlay').remove()">Cancel</button>
+            <button class="btn btn-primary flex-1" style="min-height:48px" onclick="Crew.confirmCompleteJob('${jobId}')">Complete Job</button>
+          </div>
+        </div>
+      `
+      document.body.appendChild(overlay)
+    },
+
+    confirmCompleteJob(jobId) {
+      const overlay = document.getElementById('completion-overlay')
+      if (overlay) overlay.remove()
+
       const jobs = this.getStore('jobs')
       const job = jobs.find(j => j.id === jobId)
       if (!job) return
       job.status = 'complete'
+      job.completedAt = new Date().toISOString()
       job.updatedAt = new Date().toISOString()
       this.safeSet('se_jobs', JSON.stringify(jobs))
       this.invalidateCache('jobs')
+      if (navigator.vibrate) navigator.vibrate([50, 30, 50, 30, 50])
       this.toast(`Job ${this.esc(job.reference)} completed`, 'success')
       this.showScreen('home')
     },
@@ -1382,7 +1438,49 @@
 
       if (navigator.vibrate) navigator.vibrate([100, 50, 100])
       this.toast('Incident report submitted', 'warning')
+
+      // Generate formal WHS incident report PDF
+      this.generateIncidentPdf(incident)
       this.showScreen('home')
+    },
+
+    generateIncidentPdf(incident) {
+      const win = window.open('', '_blank', 'width=800,height=600')
+      if (!win) return
+      win.document.write(`<!DOCTYPE html><html><head><title>Incident Report</title><style>
+        body{font-family:'DM Sans',system-ui,sans-serif;max-width:700px;margin:40px auto;padding:0 24px;color:#1a1a1a;line-height:1.6}
+        .header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:24px;border-bottom:2px solid #d94f4f;margin-bottom:32px}
+        .brand{font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:#d94f4f}
+        .section{margin-bottom:24px} .section-title{font-size:11px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:#d94f4f;margin-bottom:12px}
+        table{width:100%;border-collapse:collapse} td{padding:8px 12px;border:1px solid #eee;font-size:13px}
+        td:first-child{width:35%;color:#999;font-weight:500} .meta{font-size:13px;color:#666;margin:4px 0}
+        @media print{body{margin:0;padding:20px}}
+      </style></head><body>
+        <div class="header"><div><div class="brand">Steady Eco — Incident Report</div><div style="font-size:9px;color:#999;margin-top:2px">Work Health & Safety Act 2011 (QLD)</div></div><div style="text-align:right"><div style="font-size:13px;font-weight:500">Report Date: ${new Date(incident.timestamp).toLocaleDateString('en-AU')}</div><div style="font-size:11px;color:#999">${new Date(incident.timestamp).toLocaleTimeString('en-AU')}</div></div></div>
+        <div class="section"><div class="section-title">Incident Details</div>
+          <table><tbody>
+            <tr><td>Type</td><td>${this.esc(incident.type || 'Not specified')}</td></tr>
+            <tr><td>Date / Time</td><td>${new Date(incident.timestamp).toLocaleString('en-AU')}</td></tr>
+            <tr><td>Location (GPS)</td><td>${incident.lat ? incident.lat.toFixed(6) + ', ' + incident.lng.toFixed(6) : 'GPS not captured'}</td></tr>
+            <tr><td>Reported By</td><td>${this.esc(incident.employeeName)}</td></tr>
+            <tr><td>Job Reference</td><td>${incident.jobId ? this.esc(this.getStore('jobs').find(j => j.id === incident.jobId)?.reference || 'N/A') : 'N/A'}</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">Description</div><p class="meta">${this.esc(incident.description)}</p></div>
+        <div class="section"><div class="section-title">Immediate Action Taken</div><p class="meta">${this.esc(incident.actionTaken || 'None recorded')}</p></div>
+        ${incident.photo ? `<div class="section"><div class="section-title">Photo Evidence</div><img src="${incident.photo}" style="max-width:100%;border-radius:8px;border:1px solid #eee"></div>` : ''}
+        <div class="section"><div class="section-title">Root Cause Analysis</div><p class="meta" style="border:1px dashed #ccc;padding:12px;min-height:60px">[To be completed by management]</p></div>
+        <div class="section"><div class="section-title">Corrective Actions</div><p class="meta" style="border:1px dashed #ccc;padding:12px;min-height:60px">[To be completed by management]</p></div>
+        <div class="section"><div class="section-title">Sign-Off</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px">
+            <div><p class="meta">Employee: ____________________</p><p class="meta">${this.esc(incident.employeeName)}</p><p class="meta">Date: ${new Date(incident.timestamp).toLocaleDateString('en-AU')}</p></div>
+            <div><p class="meta">Manager: ____________________</p><p class="meta">Sam Kerr — Principal</p><p class="meta">Date: ________________</p></div>
+          </div>
+        </div>
+        <div style="margin-top:32px;padding-top:16px;border-top:1px solid #eee;text-align:center"><p class="meta">Steady Eco · ABN 49 553 784 085 · Cairns QLD 4870 · 0450 753 753</p><p style="font-size:10px;color:#ccc">This report is generated in compliance with the Work Health & Safety Act 2011 (QLD). Retain for a minimum of 5 years.</p></div>
+        <script>setTimeout(()=>window.print(),500)<\/script>
+      </body></html>`)
+      win.document.close()
     },
 
     /* ── EQUIPMENT SERVICING LOG ────────────────────── */
