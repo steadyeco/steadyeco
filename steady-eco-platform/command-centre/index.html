@@ -1420,6 +1420,12 @@
               <p class="form-hint mt-1">Hold Ctrl/Cmd to select multiple crew members</p>
             </div>
             <div class="form-group">
+              <label class="form-label" for="nj-equipment">Allocate Equipment</label>
+              <select class="form-input form-select" id="nj-equipment" multiple style="min-height:80px">
+              </select>
+              <p class="form-hint mt-1">Hold Ctrl/Cmd to select multiple items</p>
+            </div>
+            <div class="form-group">
               <label class="form-label" for="nj-notes">Internal Notes</label>
               <textarea class="form-input form-textarea" id="nj-notes" placeholder="Notes visible only to you..." rows="2"></textarea>
             </div>
@@ -1554,11 +1560,11 @@
           <div class="quote-panel" id="qp-5" style="display:none">
             <h2 class="quote-step-title">Review & Send</h2>
             <div class="card p-6" id="q-preview"></div>
-            <div class="quote-nav">
+            <div class="quote-nav" style="flex-wrap:wrap">
               <button class="btn btn-ghost" onclick="App.quotePrev()">Back</button>
-              <div class="flex gap-3">
+              <div class="flex gap-3" style="flex-wrap:wrap">
                 <button class="btn btn-secondary" onclick="App.saveQuote('draft')">Save Draft</button>
-                <button class="btn btn-primary" onclick="App.saveQuote('sent')">Mark as Sent</button>
+                <button class="btn btn-primary" onclick="App.saveQuote('sent')">Save & Email</button>
               </div>
             </div>
           </div>
@@ -1927,7 +1933,17 @@
       })
     },
 
-    navigate(screen) {
+    _navContext: null,
+
+    navigate(screen, context) {
+      this._navContext = context || null
+
+      // Auto-close any open overlay (client detail, job detail, etc.)
+      const overlay = document.getElementById('job-detail-overlay')
+      if (overlay && overlay.classList.contains('is-open')) {
+        overlay.classList.remove('is-open')
+      }
+
       // Hide all screens
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('is-active'))
 
@@ -2202,13 +2218,20 @@
         return
       }
       container.innerHTML = quotes.map(q => `
-        <div class="card card-interactive p-5 flex justify-between items-center" onclick="App.printQuote('${this.esc(q.id)}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
-          <div>
-            <div class="text-md font-medium">${this.esc(q.reference || 'Draft')}</div>
-            <div class="text-sm text-secondary">${this.esc(this.getClientName(q.clientId))}</div>
-            <div class="text-xs text-muted mt-1">${this.formatCurrency(q.total || 0)}</div>
+        <div class="card p-5" style="position:relative">
+          <div class="flex justify-between items-center" style="cursor:pointer" onclick="App.printQuote('${this.esc(q.id)}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
+            <div>
+              <div class="text-md font-medium">${this.esc(q.reference || 'Draft')}</div>
+              <div class="text-sm text-secondary">${this.esc(this.getClientName(q.clientId))}</div>
+              <div class="text-xs text-muted mt-1">${this.formatCurrency(q.total || 0)}</div>
+            </div>
+            <span class="badge badge-${this.esc(q.status || 'draft')}">${this.esc(q.status || 'Draft')}</span>
           </div>
-          <span class="badge badge-${this.esc(q.status || 'draft')}">${this.esc(q.status || 'Draft')}</span>
+          <div class="flex gap-2 mt-3" style="border-top:1px solid var(--se-border-subtle);padding-top:var(--se-space-3)">
+            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();App.emailQuote('${this.esc(q.id)}')">Email</button>
+            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();App.convertQuoteToJob('${this.esc(q.id)}')">Convert to Job</button>
+            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();App.printQuote('${this.esc(q.id)}')">View PDF</button>
+          </div>
         </div>
       `).join('')
     },
@@ -2513,10 +2536,11 @@
       document.getElementById('jd-title').textContent = this.esc(client.name)
       document.getElementById('jd-timeline').innerHTML = ''
       document.getElementById('jd-actions').innerHTML = `
-        <div class="flex gap-3">
+        <div class="flex gap-3" style="flex-wrap:wrap">
           ${client.phone ? `<a href="tel:${this.esc(client.phone.replace(/\s/g,''))}" class="btn btn-primary btn-sm">Call</a>` : ''}
           <button class="btn btn-secondary btn-sm" onclick="App.addCommNote('${this.esc(clientId)}');App.openClientDetail('${this.esc(clientId)}')">Add Note</button>
-          <button class="btn btn-ghost btn-sm" onclick="App.navigate('new-quote')">New Quote</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.closeJobDetail();App.navigate('new-quote',{clientId:'${this.esc(clientId)}'})">New Quote</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.closeJobDetail();App.navigate('new-job',{clientId:'${this.esc(clientId)}'})">New Job</button>
         </div>
       `
 
@@ -2544,7 +2568,7 @@
           <div class="job-section__body">
             ${jobs.length ? jobs.slice(-10).reverse().map(j => `
               <div class="flex justify-between items-center py-2" style="border-bottom:1px solid var(--se-border-subtle);cursor:pointer" onclick="App.closeJobDetail();setTimeout(()=>App.openJobDetail('${this.esc(j.id)}'),300)">
-                <div><div class="text-sm">${this.esc(j.reference)}</div><div class="text-xs text-muted">${this.esc((j.serviceTypes?.[0] || '').replace(/-/g,' '))}</div></div>
+                <div><div class="text-sm">${this.esc(j.reference)}</div><div class="text-xs text-muted">${this.esc((j.serviceTypes?.[0] || '').replace(/-/g,' '))}${j.scheduledStart ? ' · ' + new Date(j.scheduledStart).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : ''}</div></div>
                 <span class="badge badge-${this.esc(j.status)}">${this.esc(j.status)}</span>
               </div>
             `).join('') : '<p class="text-sm text-muted">No jobs yet.</p>'}
@@ -3128,14 +3152,16 @@
       }
 
       const toolIcon = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M14 2l4 4-9 9H5v-4L14 2z"/></svg>'
+      const jobs = this.getStore('jobs')
       container.innerHTML = equipment.map(e => {
         const overdue = e.serviceDue && new Date(e.serviceDue) < new Date()
+        const assignedJobs = jobs.filter(j => j.assignedEquipment?.includes(e.id) && !['paid','cancelled'].includes(j.status)).length
         return `
-          <div class="equip-card">
+          <div class="equip-card" style="cursor:pointer" onclick="App.openEquipmentDetail('${this.esc(e.id)}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
             <div class="equip-icon">${toolIcon}</div>
             <div style="flex:1">
               <div class="text-md font-medium">${this.esc(e.name)}</div>
-              <div class="text-xs text-muted mt-1">${this.esc(e.type)} · Service due: ${e.serviceDue || 'N/A'}</div>
+              <div class="text-xs text-muted mt-1">${this.esc(e.type)} · Service due: ${e.serviceDue || 'N/A'}${assignedJobs ? ` · ${assignedJobs} active job${assignedJobs !== 1 ? 's' : ''}` : ''}</div>
             </div>
             <span class="badge ${overdue ? 'badge-cancelled' : 'badge-active'}">${overdue ? 'Overdue' : this.esc(e.status)}</span>
           </div>
@@ -3162,6 +3188,241 @@
       this.addAudit('Equipment added', name)
       this.toast(`${this.esc(name)} added`, 'success')
       this.navigate('equipment')
+    },
+
+    openEquipmentDetail(eqId) {
+      const eq = this.getStore('equipment').find(e => e.id === eqId)
+      if (!eq) return
+
+      const overlay = document.getElementById('job-detail-overlay')
+      const jobs = this.getStore('jobs').filter(j => j.assignedEquipment?.includes(eqId))
+      const activeJobs = jobs.filter(j => !['paid','cancelled'].includes(j.status))
+      const completedJobs = jobs.filter(j => ['complete','invoiced','paid'].includes(j.status))
+      const overdue = eq.serviceDue && new Date(eq.serviceDue) < new Date()
+      const serviceLog = eq.serviceLog || []
+      const inspectionLog = eq.inspectionLog || []
+
+      document.getElementById('jd-title').textContent = this.esc(eq.name)
+      document.getElementById('jd-timeline').innerHTML = ''
+
+      document.getElementById('jd-actions').innerHTML = `
+        <div class="flex gap-3" style="flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="App.logEquipmentService('${this.esc(eqId)}')">Log Service</button>
+          <button class="btn btn-secondary btn-sm" onclick="App.logEquipmentInspection('${this.esc(eqId)}')">Log Inspection</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.logEquipmentWashdown('${this.esc(eqId)}')">Log Washdown</button>
+        </div>
+      `
+
+      const arrow = '<svg class="job-section__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>'
+
+      // Determine compliance items based on equipment type
+      const typeCompliance = {
+        'Vehicle': { rego: true, ctp: true, chainOfResp: true, licence: 'Appropriate class (C/LR/MR/HR)', preStart: 'Daily', periodic: 'Annual safety inspection', electrical: false },
+        'Machinery': { rego: false, ctp: false, chainOfResp: false, licence: 'Competency assessment or HRWL', preStart: 'Daily', periodic: 'Per manufacturer schedule', electrical: false },
+        'Power Tool': { rego: false, ctp: false, chainOfResp: false, licence: 'Unit of competency (e.g. AHCMOM213)', preStart: 'Before each use', periodic: 'Per manufacturer schedule', electrical: true },
+        'Workshop': { rego: false, ctp: false, chainOfResp: false, licence: 'Competency assessment', preStart: 'Before each use', periodic: 'Annual', electrical: true },
+      }
+      const comp = typeCompliance[eq.type] || typeCompliance['Machinery']
+
+      document.getElementById('jd-sections').innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--se-space-4);margin-bottom:var(--se-space-6)">
+          <div class="card-stat"><span class="card-stat__label">Status</span><span class="card-stat__value" style="${overdue ? 'color:var(--se-red-500)' : ''}">${overdue ? 'SERVICE OVERDUE' : this.esc(eq.status)}</span></div>
+          <div class="card-stat"><span class="card-stat__label">Active Jobs</span><span class="card-stat__value">${activeJobs.length}</span></div>
+          <div class="card-stat"><span class="card-stat__label">Total Jobs</span><span class="card-stat__value">${jobs.length}</span></div>
+        </div>
+
+        <div class="job-section is-open">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')"><span class="job-section__title">Asset Details</span>${arrow}</div>
+          <div class="job-section__body">
+            <div class="text-sm text-secondary mb-2"><strong>Type:</strong> ${this.esc(eq.type)}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Serial:</strong> ${this.esc(eq.serial || 'Not recorded')}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Make/Model:</strong> ${this.esc(eq.make || '—')} ${this.esc(eq.model || '')}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Year:</strong> ${this.esc(eq.yearMfg || '—')}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Hours/Odo:</strong> ${eq.hourMeter || eq.odometer || 'Not tracked'}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Notes:</strong> ${this.esc(eq.notes || '—')}</div>
+          </div>
+        </div>
+
+        <div class="job-section${comp.rego ? ' is-open' : ''}">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')"><span class="job-section__title">Registration & Compliance — QLD</span>${arrow}</div>
+          <div class="job-section__body">
+            ${comp.rego ? `
+              <div class="text-sm text-secondary mb-2"><strong>Road Registration:</strong> ${this.esc(eq.regoPlate || 'Not recorded')} ${eq.regoExpiry ? '· Expires ' + eq.regoExpiry : ''}</div>
+              <div class="text-sm text-secondary mb-2"><strong>CTP Insurance:</strong> ${this.esc(eq.ctpPolicy || 'Not recorded')} ${eq.ctpExpiry ? '· Expires ' + eq.ctpExpiry : ''}</div>
+            ` : '<div class="text-sm text-muted mb-2">Road registration not required for this equipment type</div>'}
+            ${comp.chainOfResp ? '<div class="text-sm text-secondary mb-2"><strong>Chain of Responsibility:</strong> Applicable under Heavy Vehicle National Law (HVNL) — ensure load restraint, fatigue management, mass compliance</div>' : ''}
+            <div class="text-sm text-secondary mb-2"><strong>Design Registration:</strong> ${this.esc(eq.designRego || 'N/A')} <span class="text-3xs text-faint">(WHS Reg 2011, Part 5.3 — required for cranes, EWPs, hoists)</span></div>
+            <div class="text-sm text-secondary mb-2"><strong>Item Registration:</strong> ${this.esc(eq.itemRego || 'N/A')} <span class="text-3xs text-faint">(WHS Reg 2011, Reg 246)</span></div>
+          </div>
+        </div>
+
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')"><span class="job-section__title">Inspections & Pre-Start</span>${arrow}</div>
+          <div class="job-section__body">
+            <div class="text-sm text-secondary mb-2"><strong>Pre-start frequency:</strong> ${comp.preStart}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Last pre-start:</strong> ${this.esc(eq.lastPreStart || 'Not recorded')}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Periodic inspection:</strong> ${comp.periodic}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Last inspection:</strong> ${this.esc(eq.lastInspection || 'Not recorded')}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Next inspection due:</strong> ${this.esc(eq.nextInspectionDue || 'Not set')}</div>
+            <div class="text-sm text-secondary mb-3"><strong>Defects:</strong> ${eq.defects?.length ? eq.defects.length + ' recorded' : 'None recorded'}</div>
+            <p class="text-3xs text-faint">WHS Regulation 2011, Part 5.1 Div 7 — inspection by competent person per manufacturer recs & applicable standards</p>
+            ${inspectionLog.length ? `<div class="mt-3">${inspectionLog.slice(-5).reverse().map(l => `<div class="text-xs text-muted py-1" style="border-bottom:1px solid var(--se-border-subtle)">${l.date} — ${this.esc(l.notes || 'Inspection logged')}</div>`).join('')}</div>` : ''}
+          </div>
+        </div>
+
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')"><span class="job-section__title">Service & Maintenance Log</span>${arrow}</div>
+          <div class="job-section__body">
+            <div class="text-sm text-secondary mb-2"><strong>Next service due:</strong> <span style="${overdue ? 'color:var(--se-red-500);font-weight:600' : ''}">${eq.serviceDue || 'Not set'}</span></div>
+            <div class="text-sm text-secondary mb-2"><strong>Warranty:</strong> ${this.esc(eq.warrantyExpiry ? 'Expires ' + eq.warrantyExpiry : 'Not recorded')}</div>
+            <p class="text-3xs text-faint mb-3">WHS Reg 2011, Reg 213-214 — records must be kept for life of plant or 2 years after disposal</p>
+            ${serviceLog.length ? serviceLog.slice(-5).reverse().map(l => `<div class="text-xs text-muted py-1" style="border-bottom:1px solid var(--se-border-subtle)">${l.date} — ${this.esc(l.type || 'Service')} — ${this.esc(l.notes || '')}</div>`).join('') : '<p class="text-sm text-muted">No service records. Click "Log Service" to add one.</p>'}
+          </div>
+        </div>
+
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')"><span class="job-section__title">Operator Requirements</span>${arrow}</div>
+          <div class="job-section__body">
+            <div class="text-sm text-secondary mb-2"><strong>Required:</strong> ${comp.licence}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Authorised operators:</strong> ${eq.authorisedOperators?.length ? eq.authorisedOperators.map(id => this.getStore('employees').find(e => e.id === id)?.name || 'Unknown').join(', ') : 'Not restricted'}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Manufacturer training required:</strong> ${eq.mfgTrainingReq ? 'Yes' : 'Per risk assessment'}</div>
+            <div class="text-sm text-secondary"><strong>PPE required:</strong> ${eq.ppeRequired || 'Per SWMS / risk assessment'}</div>
+          </div>
+        </div>
+
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')"><span class="job-section__title">Biosecurity & Hygiene</span>${arrow}</div>
+          <div class="job-section__body">
+            <div class="text-sm text-secondary mb-2"><strong>Washdown required between sites:</strong> Yes — QLD Biosecurity Act 2014</div>
+            <div class="text-sm text-secondary mb-2"><strong>Last washdown:</strong> ${this.esc(eq.lastWashdown || 'Not recorded')}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Phytophthora / disease protocol:</strong> ${eq.type === 'Power Tool' || eq.type === 'Machinery' ? 'Required — disinfect cutting surfaces between sites' : 'As applicable'}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Fire ant / biosecurity zone:</strong> Check BQCC requirements per site</div>
+            <p class="text-3xs text-faint">Council contracts in Cairns typically require washdown certificates. Myrtle rust & Panama TR4 protocols apply in FNQ.</p>
+          </div>
+        </div>
+
+        ${comp.electrical ? `
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')"><span class="job-section__title">Electrical Safety</span>${arrow}</div>
+          <div class="job-section__body">
+            <div class="text-sm text-secondary mb-2"><strong>Test & tag required:</strong> Yes — AS/NZS 3760:2022</div>
+            <div class="text-sm text-secondary mb-2"><strong>Frequency:</strong> Construction/hostile = 3 months, Other = 12 months</div>
+            <div class="text-sm text-secondary mb-2"><strong>Last test & tag:</strong> ${this.esc(eq.lastTestTag || 'Not recorded')}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Next due:</strong> ${this.esc(eq.nextTestTagDue || 'Not set')}</div>
+            <div class="text-sm text-secondary"><strong>RCD protection:</strong> Required for all portable electrical equipment on-site</div>
+            <p class="text-3xs text-faint">Electrical Safety Act 2002 (QLD), Electrical Safety Regulation 2013</p>
+          </div>
+        </div>` : ''}
+
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')"><span class="job-section__title">Insurance</span>${arrow}</div>
+          <div class="job-section__body">
+            <div class="text-sm text-secondary mb-2"><strong>Policy:</strong> ${this.esc(eq.insurancePolicy || 'Not recorded')}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Type:</strong> ${this.esc(eq.insuranceType || 'Not recorded')}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Insured value:</strong> ${eq.insuredValue ? this.formatCurrency(eq.insuredValue) : 'Not recorded'}</div>
+            <div class="text-sm text-secondary"><strong>Expiry:</strong> ${this.esc(eq.insuranceExpiry || 'Not recorded')}</div>
+          </div>
+        </div>
+
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')"><span class="job-section__title">Safety & Risk</span>${arrow}</div>
+          <div class="job-section__body">
+            <div class="text-sm text-secondary mb-2"><strong>Risk assessment:</strong> ${eq.riskAssessment ? 'Completed ' + eq.riskAssessment : 'Not recorded'}</div>
+            <div class="text-sm text-secondary mb-2"><strong>SWMS linked:</strong> ${eq.swmsLinked || 'Not linked'}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Safety features:</strong> ${eq.safetyFeatures || 'Not recorded (check: guards, dead-man switch, e-stop, ROPS, FOPS)'}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Spark arrestor:</strong> ${['Power Tool','Machinery'].includes(eq.type) ? (eq.sparkArrestor || 'Check — mandatory in QLD fire season (Fire & Emergency Services Act 1990)') : 'N/A'}</div>
+            <p class="text-3xs text-faint">WHS Regulation 2011, Reg 291-292 — SWMS mandatory for high-risk construction work</p>
+          </div>
+        </div>
+
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')"><span class="job-section__title">Job History (${jobs.length})</span>${arrow}</div>
+          <div class="job-section__body">
+            ${jobs.length ? jobs.slice(-10).reverse().map(j => {
+              const client = this.getStore('clients').find(c => c.id === j.clientId)
+              return `<div class="flex justify-between items-center py-2" style="border-bottom:1px solid var(--se-border-subtle)">
+                <div><div class="text-sm">${this.esc(j.reference)}</div><div class="text-xs text-muted">${this.esc(client?.name || 'Unknown')}${j.scheduledStart ? ' · ' + new Date(j.scheduledStart).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : ''}</div></div>
+                <span class="badge badge-${this.esc(j.status)}">${this.esc(j.status)}</span>
+              </div>`
+            }).join('') : '<p class="text-sm text-muted">No jobs assigned to this equipment yet.</p>'}
+          </div>
+        </div>
+
+        <div class="mt-6 p-4" style="background:var(--se-bg-surface);border-radius:var(--se-radius-lg);border:1px solid var(--se-border-subtle)">
+          <div class="text-xs font-medium mb-2" style="color:var(--se-gold-500)">QLD Legislation Reference</div>
+          <div class="text-3xs text-faint">Work Health & Safety Act 2011 · WHS Regulation 2011 (Part 5) · Electrical Safety Act 2002 · Biosecurity Act 2014 · Fire & Emergency Services Act 1990 · Heavy Vehicle National Law · AS/NZS 3760 · AS 4373:2007</div>
+        </div>
+      `
+
+      overlay.classList.add('is-open')
+    },
+
+    logEquipmentService(eqId) {
+      const equipment = this.getStore('equipment')
+      const eq = equipment.find(e => e.id === eqId)
+      if (!eq) return
+      const notes = prompt('Service details (what was done):')
+      if (!notes) return
+      if (!eq.serviceLog) eq.serviceLog = []
+      eq.serviceLog.push({
+        date: new Date().toLocaleDateString('en-AU'),
+        type: 'Scheduled',
+        notes,
+        loggedAt: new Date().toISOString()
+      })
+      // Reset service due date (3 months from now as default)
+      const next = new Date(); next.setMonth(next.getMonth() + 3)
+      eq.serviceDue = next.toISOString().split('T')[0]
+      localStorage.setItem('se_equipment', JSON.stringify(equipment))
+      this.invalidateCache('equipment')
+      this.addAudit('Equipment service logged', eq.name)
+      this.toast(`Service logged for ${this.esc(eq.name)}`, 'success')
+      this.closeJobDetail()
+      setTimeout(() => this.openEquipmentDetail(eqId), 300)
+    },
+
+    logEquipmentInspection(eqId) {
+      const equipment = this.getStore('equipment')
+      const eq = equipment.find(e => e.id === eqId)
+      if (!eq) return
+      const notes = prompt('Inspection notes (condition, defects found):')
+      if (!notes) return
+      if (!eq.inspectionLog) eq.inspectionLog = []
+      eq.inspectionLog.push({
+        date: new Date().toLocaleDateString('en-AU'),
+        notes,
+        inspector: 'Sam Kerr',
+        loggedAt: new Date().toISOString()
+      })
+      eq.lastInspection = new Date().toLocaleDateString('en-AU')
+      localStorage.setItem('se_equipment', JSON.stringify(equipment))
+      this.invalidateCache('equipment')
+      this.addAudit('Equipment inspection logged', eq.name)
+      this.toast(`Inspection logged for ${this.esc(eq.name)}`, 'success')
+      this.closeJobDetail()
+      setTimeout(() => this.openEquipmentDetail(eqId), 300)
+    },
+
+    logEquipmentWashdown(eqId) {
+      const equipment = this.getStore('equipment')
+      const eq = equipment.find(e => e.id === eqId)
+      if (!eq) return
+      const location = prompt('Washdown location:')
+      if (!location) return
+      if (!eq.washdownLog) eq.washdownLog = []
+      eq.washdownLog.push({
+        date: new Date().toLocaleDateString('en-AU'),
+        location,
+        operator: 'Sam Kerr',
+        loggedAt: new Date().toISOString()
+      })
+      eq.lastWashdown = new Date().toLocaleDateString('en-AU')
+      localStorage.setItem('se_equipment', JSON.stringify(equipment))
+      this.invalidateCache('equipment')
+      this.addAudit('Equipment washdown logged', eq.name)
+      this.toast(`Washdown logged for ${this.esc(eq.name)}`, 'success')
+      this.closeJobDetail()
+      setTimeout(() => this.openEquipmentDetail(eqId), 300)
     },
 
     /* ── CARBON & ESG ─────────────────────────────────── */
@@ -4588,18 +4849,47 @@
     /* ── SAVE JOB ──────────────────────────────────── */
 
     renderNewJob() {
+      const ctx = this._navContext || {}
       const select = document.getElementById('nj-client')
       const clients = this.getStore('clients')
-      select.innerHTML = '<option value="">Select a client...</option>' + clients.map(c => `<option value="${c.id}">${this.esc(c.name)}</option>`).join('')
+      select.innerHTML = '<option value="">Select a client...</option>' + clients.map(c => `<option value="${c.id}"${c.id === ctx.clientId ? ' selected' : ''}>${this.esc(c.name)}</option>`).join('')
+
+      // Pre-fill from quote context
+      if (ctx.quoteId) {
+        const quote = this.getStore('quotes').find(q => q.id === ctx.quoteId)
+        if (quote) {
+          document.getElementById('nj-desc').value = (quote.lineItems || []).map(li => li.description).join(', ')
+          if (quote.lineItems?.[0]?.service) {
+            const svc = document.getElementById('nj-service')
+            for (let i = 0; i < svc.options.length; i++) {
+              if (svc.options[i].value === quote.lineItems[0].service) { svc.selectedIndex = i; break }
+            }
+          }
+        }
+      }
+
+      // Pre-fill address from client
+      if (ctx.clientId) {
+        const client = clients.find(c => c.id === ctx.clientId)
+        if (client?.address) {
+          document.getElementById('nj-address').value = [client.address.line1, client.address.suburb, client.address.postcode].filter(Boolean).join(', ')
+        }
+      }
+
       // Default date to today
       document.getElementById('nj-date').value = new Date().toISOString().split('T')[0]
       // Populate employee assignment
       const empSelect = document.getElementById('nj-assign')
       const employees = this.getStore('employees').filter(e => e.isActive !== false)
       empSelect.innerHTML = employees.map(e => `<option value="${e.id}">${this.esc(e.name)}</option>`).join('')
+      // Populate equipment allocation
+      const eqSelect = document.getElementById('nj-equipment')
+      const equipment = this.getStore('equipment').filter(e => e.status === 'Active')
+      eqSelect.innerHTML = equipment.map(e => `<option value="${e.id}">${this.esc(e.name)} (${this.esc(e.type)})</option>`).join('')
     },
 
     saveJob() {
+      const ctx = this._navContext || {}
       const clientId = document.getElementById('nj-client').value
       if (!clientId) { this.toast('Please select a client', 'error'); return }
 
@@ -4612,7 +4902,7 @@
       const job = {
         id: crypto.randomUUID(),
         reference,
-        status: 'new',
+        status: ctx.quoteId ? 'quoted' : 'new',
         clientId,
         serviceTypes: [document.getElementById('nj-service').value],
         description: document.getElementById('nj-desc').value.trim(),
@@ -4624,7 +4914,8 @@
         scheduledStart: document.getElementById('nj-date').value,
         scheduledDuration: parseInt(document.getElementById('nj-duration').value),
         assignedEmployees: Array.from(document.getElementById('nj-assign').selectedOptions).map(o => o.value),
-        quoteId: null,
+        assignedEquipment: Array.from(document.getElementById('nj-equipment').selectedOptions).map(o => o.value),
+        quoteId: ctx.quoteId || null,
         invoiceId: null,
         photos: [],
         notes: document.getElementById('nj-notes').value.trim(),
@@ -4703,13 +4994,14 @@
     quoteData: { clientId: '', services: [], lineItems: [], validUntil: '', paymentTerms: '14 days net', conditions: '' },
 
     renderNewQuote() {
+      const ctx = this._navContext || {}
       this.quoteStep = 1
-      this.quoteData = { clientId: '', services: [], lineItems: [], validUntil: '', paymentTerms: '14 days net', conditions: '' }
+      this.quoteData = { clientId: ctx.clientId || '', services: [], lineItems: [], validUntil: '', paymentTerms: '14 days net', conditions: '' }
 
       // Populate client dropdown
       const select = document.getElementById('q-client')
       const clients = this.getStore('clients')
-      select.innerHTML = '<option value="">Choose a client...</option>' + clients.map(c => `<option value="${c.id}">${this.esc(c.name)}</option>`).join('')
+      select.innerHTML = '<option value="">Choose a client...</option>' + clients.map(c => `<option value="${c.id}"${c.id === ctx.clientId ? ' selected' : ''}>${this.esc(c.name)}</option>`).join('')
 
       // Set default valid date (30 days)
       const validDate = new Date(); validDate.setDate(validDate.getDate() + 30)
@@ -4930,8 +5222,55 @@
       this.invalidateCache('quotes')
       this.addAudit(`Quote ${status === 'sent' ? 'sent' : 'drafted'}`, reference)
 
-      this.toast(`Quote ${reference} ${status === 'sent' ? 'marked as sent' : 'saved as draft'}`, 'success')
+      if (status === 'sent') {
+        this.emailQuote(quote.id)
+        this.toast(`Quote ${reference} saved — opening email`, 'success')
+      } else {
+        this.toast(`Quote ${reference} saved as draft`, 'success')
+      }
       this.navigate('quotes')
+    },
+
+    emailQuote(quoteId) {
+      const quote = this.getStore('quotes').find(q => q.id === quoteId)
+      if (!quote) return
+      const client = this.getStore('clients').find(c => c.id === quote.clientId)
+      if (!client?.email) {
+        this.toast('No email address on file for this client — add one in their profile', 'error')
+        return
+      }
+
+      const itemLines = (quote.lineItems || []).map(li =>
+        `  ${li.description} — ${li.quantity} ${li.unit} × $${li.unitRate.toFixed(2)} = $${(li.quantity * li.unitRate).toFixed(2)}`
+      ).join('%0A')
+
+      const subject = encodeURIComponent(`Quote ${quote.reference} — Steady Eco`)
+      const body = encodeURIComponent(
+        `Hi ${client.name},\n\n` +
+        `Please find your quote below:\n\n` +
+        `Quote: ${quote.reference}\n` +
+        `Date: ${new Date(quote.createdAt).toLocaleDateString('en-AU')}\n\n` +
+        `Services:\n` +
+        (quote.lineItems || []).map(li =>
+          `  ${li.description} — ${li.quantity} ${li.unit} × $${li.unitRate.toFixed(2)} = $${(li.quantity * li.unitRate).toFixed(2)}`
+        ).join('\n') + `\n\n` +
+        `Subtotal: $${quote.subtotal.toFixed(2)}\n` +
+        `GST (10%): $${quote.gst.toFixed(2)}\n` +
+        `Total (incl. GST): $${quote.total.toFixed(2)}\n\n` +
+        (quote.validUntil ? `Valid until: ${quote.validUntil}\n` : '') +
+        (quote.paymentTerms ? `Payment terms: ${quote.paymentTerms}\n` : '') +
+        (quote.conditions ? `\nConditions:\n${quote.conditions}\n` : '') +
+        `\nIf you'd like to go ahead, just reply to this email or give us a call.\n\n` +
+        `Cheers,\nSam Kerr\nSteady Eco\n0450 753 753\nsteadyeco.com`
+      )
+
+      window.open(`mailto:${encodeURIComponent(client.email)}?subject=${subject}&body=${body}`, '_self')
+    },
+
+    convertQuoteToJob(quoteId) {
+      const quote = this.getStore('quotes').find(q => q.id === quoteId)
+      if (!quote) return
+      this.navigate('new-job', { clientId: quote.clientId, quoteId: quote.id })
     },
 
     /* ── JOB DETAIL ────────────────────────────────── */
@@ -5015,7 +5354,8 @@
           </div>
           <div class="job-section__body">
             <div class="text-sm text-secondary mb-2"><strong>Date:</strong> ${this.esc(job.scheduledStart || 'Not scheduled')}</div>
-            <div class="text-sm text-secondary"><strong>Assigned:</strong> ${job.assignedEmployees?.length ? job.assignedEmployees.map(id => this.esc(this.getStore('employees').find(e => e.id === id)?.name || 'Unknown')).join(', ') : 'Unassigned'}</div>
+            <div class="text-sm text-secondary mb-2"><strong>Assigned:</strong> ${job.assignedEmployees?.length ? job.assignedEmployees.map(id => this.esc(this.getStore('employees').find(e => e.id === id)?.name || 'Unknown')).join(', ') : 'Unassigned'}</div>
+            <div class="text-sm text-secondary"><strong>Equipment:</strong> ${job.assignedEquipment?.length ? job.assignedEquipment.map(id => this.esc(this.getStore('equipment').find(e => e.id === id)?.name || 'Unknown')).join(', ') : 'None allocated'}</div>
           </div>
         </div>
         <div class="job-section">
