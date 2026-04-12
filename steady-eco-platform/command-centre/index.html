@@ -2057,11 +2057,37 @@
       // Quick stats
       const quotes = this.getStore('quotes')
       const employees = this.getStore('employees')
+      const timesheets = this.getStore('timesheets')
+      const expenses = JSON.parse(localStorage.getItem('se_expenses') || '[]')
+      const wasteDockets = JSON.parse(localStorage.getItem('se_waste_dockets') || '[]')
+      const maintenanceLogs = JSON.parse(localStorage.getItem('se_maintenance_log') || '[]')
+
+      // P&L calculation
+      const totalRevenue = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + (i.total || 0), 0)
+      const totalExpenses = expenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0)
+        + wasteDockets.reduce((s, w) => s + (parseFloat(w.cost) || 0), 0)
+        + maintenanceLogs.reduce((s, m) => s + (parseFloat(m.cost) || 0), 0)
+      const grossProfit = totalRevenue - totalExpenses
+      const margin = totalRevenue > 0 ? Math.round((grossProfit / totalRevenue) * 100) : 0
+
+      // Crew utilisation (hours worked vs hours available)
+      const activeEmps = employees.filter(e => e.isActive !== false).length
+      const clockOuts = timesheets.filter(t => t.type === 'clock-out')
+      const totalHoursWorked = Math.round(clockOuts.reduce((s, t) => s + (t.duration || 0), 0) / 60)
+
+      // Compliance score
+      const complianceExpiry = this.checkComplianceExpiry?.() || []
+      const expired = complianceExpiry.filter(w => w.daysLeft < 0).length
+      const totalCerts = complianceExpiry.length || 1
+      const complianceScore = Math.round(((totalCerts - expired) / totalCerts) * 100)
+
       document.getElementById('dash-stats').innerHTML = `
         ${this.quickStat('Active jobs', jobs.filter(j => j.status === 'active').length)}
-        ${this.quickStat('Quotes sent this week', quotes.filter(q => q.status === 'sent' && new Date(q.sentAt) >= weekStart).length)}
-        ${this.quickStat('Quote acceptance', quotes.filter(q => q.status === 'accepted').length + '/' + quotes.filter(q => ['accepted','rejected'].includes(q.status)).length)}
-        ${this.quickStat('Employees', employees.filter(e => e.isActive).length)}
+        ${this.quickStat('Quotes pending', quotes.filter(q => q.status === 'sent' || q.status === 'viewed').length)}
+        ${this.quickStat('Gross profit', this.formatCurrency(grossProfit))}
+        ${this.quickStat('Margin', margin + '%')}
+        ${this.quickStat('Crew hours (total)', totalHoursWorked + 'h')}
+        ${this.quickStat('Compliance', complianceScore + '%')}
       `
 
       // Activity feed
@@ -2166,7 +2192,10 @@
           <div style="padding:var(--se-space-4);background:var(--se-green-050);border:1px solid var(--se-green-600);border-radius:var(--se-radius-lg);margin-bottom:var(--se-space-4)">
             <div class="text-xs font-medium" style="color:var(--se-green-600)">${recurringDue.length} recurring job${recurringDue.length>1?'s':''} due today</div>
             ${recurringDue.slice(0, 3).map(r => `<div class="text-xs text-secondary mt-1">${this.esc(this.getClientName(r.clientId))} — ${this.esc((r.service||'').replace(/-/g,' '))}</div>`).join('')}
-            <button class="btn btn-ghost btn-sm mt-2" onclick="App.navigate('recurring')" style="color:var(--se-green-600)">View recurring jobs →</button>
+            <div class="flex gap-2 mt-2">
+              <button class="btn btn-primary btn-sm" onclick="App.createAllRecurringJobs()" style="background:var(--se-green-600)">Create All Jobs</button>
+              <button class="btn btn-ghost btn-sm" onclick="App.navigate('recurring')" style="color:var(--se-green-600)">View →</button>
+            </div>
           </div>
         `)
       }
@@ -2352,17 +2381,24 @@
         return
       }
       container.innerHTML = invoices.map(i => `
-        <div class="card card-interactive p-5 flex justify-between items-center" role="button" tabindex="0">
-          <div onclick="App.printInvoice('${this.esc(i.id)}')" style="flex:1;cursor:pointer">
-            <div class="text-md font-medium">${this.esc(i.reference || 'Draft')}</div>
-            <div class="text-sm text-secondary">${this.esc(this.getClientName(i.clientId))}</div>
-          </div>
-          <div class="flex items-center gap-3">
-            <div class="text-right" onclick="App.printInvoice('${this.esc(i.id)}')" style="cursor:pointer">
+        <div class="card p-5">
+          <div class="flex justify-between items-center" onclick="App.printInvoice('${this.esc(i.id)}')" style="cursor:pointer">
+            <div>
+              <div class="text-md font-medium">${this.esc(i.reference || 'Draft')}</div>
+              <div class="text-sm text-secondary">${this.esc(this.getClientName(i.clientId))}</div>
+              ${i.dueDate ? `<div class="text-xs text-muted mt-1">Due: ${new Date(i.dueDate).toLocaleDateString('en-AU',{day:'numeric',month:'short'})}</div>` : ''}
+            </div>
+            <div class="text-right">
               <div class="text-md font-medium">${this.formatCurrency(i.total || 0)}</div>
               <span class="badge badge-${this.esc(i.status || 'draft')}">${this.esc(i.status || 'Draft')}</span>
             </div>
-            ${i.status === 'sent' || i.status === 'overdue' ? `<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();App.markInvoicePaid('${this.esc(i.id)}')">Mark Paid</button>` : ''}
+          </div>
+          <div class="flex gap-2 mt-3" style="border-top:1px solid var(--se-border-subtle);padding-top:var(--se-space-3)">
+            <button class="btn btn-ghost btn-sm" onclick="App.printInvoice('${this.esc(i.id)}')">View PDF</button>
+            <button class="btn btn-ghost btn-sm" onclick="App.emailInvoice('${this.esc(i.id)}')">Email</button>
+            ${i.status !== 'paid' ? `<button class="btn btn-ghost btn-sm" onclick="App.editInvoice('${this.esc(i.id)}')">Edit</button>` : ''}
+            ${i.status === 'sent' || i.status === 'overdue' ? `<button class="btn btn-primary btn-sm" onclick="App.markInvoicePaid('${this.esc(i.id)}')">Mark Paid</button>` : ''}
+            ${i.status === 'sent' ? `<button class="btn btn-ghost btn-sm" style="color:var(--se-error)" onclick="App.voidInvoice('${this.esc(i.id)}')">Void</button>` : ''}
           </div>
         </div>
       `).join('')
@@ -2378,6 +2414,132 @@
       this.invalidateCache('invoices')
       this.addAudit('Invoice paid', `${inv.reference} — ${this.formatCurrency(inv.total)}`)
       this.toast(`${inv.reference} marked as paid`, 'success')
+      this.renderInvoices()
+    },
+
+    emailInvoice(invoiceId) {
+      const inv = this.getStore('invoices').find(i => i.id === invoiceId)
+      if (!inv) return
+      const client = this.getClientById(inv.clientId)
+      if (!client?.email) { this.toast('No email on file for this client', 'error'); return }
+
+      const subject = encodeURIComponent(`Invoice ${inv.reference} — Steady Eco`)
+      const body = encodeURIComponent(
+        `Hi ${client.name},\n\nPlease find your invoice details below:\n\n` +
+        `Invoice: ${inv.reference}\n` +
+        `Amount: ${this.formatCurrency(inv.total)}\n` +
+        `GST: ${this.formatCurrency(inv.gst)}\n` +
+        (inv.dueDate ? `Due: ${inv.dueDate}\n` : '') +
+        `\nPayment can be made via bank transfer. Please reference ${inv.reference}.\n\n` +
+        `Cheers,\nSam Kerr\nSteady Eco\n0450 753 753`
+      )
+      window.open(`mailto:${encodeURIComponent(client.email)}?subject=${subject}&body=${body}`, '_self')
+      // Mark as sent if draft
+      if (inv.status === 'draft') {
+        inv.status = 'sent'; inv.sentAt = new Date().toISOString()
+        this.safeSet('se_invoices', JSON.stringify(this.getStore('invoices')))
+        this.invalidateCache('invoices')
+      }
+      this.toast('Opening email', 'success')
+    },
+
+    editInvoice(invoiceId) {
+      const inv = this.getStore('invoices').find(i => i.id === invoiceId)
+      if (!inv) return
+      const client = this.getClientById(inv.clientId)
+
+      const overlay = document.getElementById('job-detail-overlay')
+      document.getElementById('jd-title').textContent = `Edit ${inv.reference}`
+      document.getElementById('jd-timeline').innerHTML = ''
+      document.getElementById('jd-actions').innerHTML = ''
+
+      const lineItems = inv.lineItems || [{ description: 'Services rendered', quantity: 1, unitRate: inv.subtotal || inv.total / 1.1, unit: 'job' }]
+
+      document.getElementById('jd-sections').innerHTML = `
+        <div class="card p-5 mb-4">
+          <div class="text-sm text-muted mb-3"><strong>Client:</strong> ${this.esc(client?.name || 'Unknown')}</div>
+          <div class="form-group mb-3">
+            <label class="form-label">Due Date</label>
+            <input class="form-input" type="date" id="inv-edit-due" value="${inv.dueDate || ''}">
+          </div>
+          <div class="text-sm font-medium mb-2">Line Items</div>
+          <div id="inv-edit-items">
+            ${lineItems.map((li, i) => `
+              <div class="flex gap-2 mb-2 items-end">
+                <input class="form-input" style="flex:2" data-inv-li="${i}" data-field="description" value="${this.esc(li.description || '')}">
+                <input class="form-input" style="flex:0 0 60px" data-inv-li="${i}" data-field="quantity" type="number" min="0.5" step="0.5" value="${li.quantity || 1}">
+                <input class="form-input" style="flex:0 0 80px" data-inv-li="${i}" data-field="unitRate" type="number" min="0" step="10" value="${li.unitRate || 0}">
+                <button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--se-error)">×</button>
+              </div>
+            `).join('')}
+          </div>
+          <button class="btn btn-ghost btn-sm mt-2" onclick="App.addInvoiceLineItem()">+ Add Line Item</button>
+        </div>
+        <div class="flex gap-3">
+          <button class="btn btn-primary" onclick="App.saveInvoiceEdit('${this.esc(invoiceId)}')">Save Invoice</button>
+          <button class="btn btn-ghost" onclick="App.closeJobDetail()">Cancel</button>
+        </div>
+      `
+      overlay.classList.add('is-open')
+    },
+
+    addInvoiceLineItem() {
+      const container = document.getElementById('inv-edit-items')
+      const idx = container.children.length
+      container.insertAdjacentHTML('beforeend', `
+        <div class="flex gap-2 mb-2 items-end">
+          <input class="form-input" style="flex:2" data-inv-li="${idx}" data-field="description" value="" placeholder="Description">
+          <input class="form-input" style="flex:0 0 60px" data-inv-li="${idx}" data-field="quantity" type="number" min="0.5" step="0.5" value="1">
+          <input class="form-input" style="flex:0 0 80px" data-inv-li="${idx}" data-field="unitRate" type="number" min="0" step="10" value="0" placeholder="Rate">
+          <button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()" style="color:var(--se-error)">×</button>
+        </div>
+      `)
+    },
+
+    saveInvoiceEdit(invoiceId) {
+      const invoices = this.getStore('invoices')
+      const inv = invoices.find(i => i.id === invoiceId)
+      if (!inv) return
+
+      inv.dueDate = document.getElementById('inv-edit-due').value
+      inv.lineItems = []
+      document.querySelectorAll('[data-inv-li]').forEach(el => {
+        const idx = parseInt(el.dataset.invLi)
+        if (!inv.lineItems[idx]) inv.lineItems[idx] = { description: '', quantity: 1, unitRate: 0, unit: 'job' }
+        inv.lineItems[idx][el.dataset.field] = el.dataset.field === 'description' ? el.value : parseFloat(el.value) || 0
+      })
+      inv.lineItems = inv.lineItems.filter(li => li && li.description)
+      inv.subtotal = inv.lineItems.reduce((s, li) => s + (li.quantity * li.unitRate), 0)
+      inv.gst = inv.subtotal / 10
+      inv.total = inv.subtotal + inv.gst
+      inv.updatedAt = new Date().toISOString()
+
+      this.safeSet('se_invoices', JSON.stringify(invoices))
+      this.invalidateCache('invoices')
+      this.addAudit('Invoice edited', inv.reference)
+      this.toast(`${inv.reference} updated — ${this.formatCurrency(inv.total)}`, 'success')
+      this.closeJobDetail()
+      this.renderInvoices()
+    },
+
+    voidInvoice(invoiceId) {
+      const invoices = this.getStore('invoices')
+      const inv = invoices.find(i => i.id === invoiceId)
+      if (!inv) return
+      inv.status = 'void'
+      inv.voidedAt = new Date().toISOString()
+      this.safeSet('se_invoices', JSON.stringify(invoices))
+      this.invalidateCache('invoices')
+      // Un-link from job
+      if (inv.jobId) {
+        const jobs = this.getStore('jobs')
+        const job = jobs.find(j => j.id === inv.jobId)
+        if (job && job.status === 'invoiced') { job.status = 'complete'; job.invoiceId = null }
+        this.safeSet('se_jobs', JSON.stringify(jobs))
+        this.invalidateCache('jobs')
+      }
+      this.addAudit('Invoice voided', inv.reference)
+      this.toast(`${inv.reference} voided`, 'info')
       this.renderInvoices()
     },
 
@@ -3312,6 +3474,56 @@
       this.addAudit('Recurring job created', `${this.getClientName(clientId)} — ${service} (${frequency})`)
       this.toast('Recurring job created', 'success')
       this.navigate('recurring')
+    },
+
+    createAllRecurringJobs() {
+      const todayStr = new Date().toISOString().split('T')[0]
+      const recurring = this.getStore('recurring').filter(r => r.nextDate && r.nextDate <= todayStr && r.isActive !== false)
+      if (!recurring.length) { this.toast('No recurring jobs due', 'info'); return }
+
+      const jobs = this.getStore('jobs')
+      let created = 0
+
+      recurring.forEach(r => {
+        const year = new Date().getFullYear()
+        const existing = jobs.map(j => parseInt((j.reference || '').split('-').pop()) || 0)
+        const count = (Math.max(0, ...existing)) + 1
+        const reference = `SE-J-${year}-${String(count).padStart(4, '0')}`
+
+        const job = {
+          id: crypto.randomUUID(), reference, status: 'booked',
+          clientId: r.clientId, serviceTypes: [r.service],
+          description: `Recurring: ${(r.service||'').replace(/-/g,' ')}${r.notes ? ' — ' + r.notes : ''}`,
+          siteAddress: { line1: '', suburb: '', postcode: '' },
+          scheduledStart: todayStr,
+          scheduledDuration: 120,
+          assignedEmployees: [], assignedEquipment: [],
+          quoteId: null, invoiceId: null, photos: [],
+          notes: `Auto-created from recurring job (${r.frequency})`,
+          createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+        }
+
+        // Fill address from client
+        const client = this.getClientById(r.clientId)
+        if (client?.address) { job.siteAddress = { ...client.address } }
+
+        jobs.push(job)
+        created++
+
+        // Advance the next date
+        const freq = { weekly: 7, fortnightly: 14, monthly: 30, quarterly: 90 }
+        const next = new Date(r.nextDate)
+        next.setDate(next.getDate() + (freq[r.frequency] || 7))
+        r.nextDate = next.toISOString().split('T')[0]
+      })
+
+      this.safeSet('se_jobs', JSON.stringify(jobs))
+      this.invalidateCache('jobs')
+      this.safeSet('se_recurring', JSON.stringify(this.getStore('recurring')))
+      this.invalidateCache('recurring')
+      this.addAudit('Recurring jobs created', `${created} jobs`)
+      this.toast(`${created} recurring job${created > 1 ? 's' : ''} created and scheduled`, 'success')
+      this.renderDashboard()
     },
 
     /* ── EQUIPMENT REGISTER ───────────────────────────── */
