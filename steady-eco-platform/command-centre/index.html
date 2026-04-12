@@ -1076,6 +1076,7 @@
         </div>
       </header>
       <div class="p-6">
+        <div class="form-group mb-4"><input class="form-input" type="search" placeholder="Search timesheets..." oninput="App.renderTimesheets(this.value)" style="max-width:400px"></div>
         <div class="grid grid-cols-3 gap-4 mb-8" style="max-width:500px" id="ts-summary"></div>
         <h3 class="label mb-4">Clock Records</h3>
         <div class="data-table-wrapper"><table class="data-table"><thead><tr><th>Employee</th><th>Date</th><th>Clock In</th><th>Clock Out</th><th>Duration</th><th>Status</th></tr></thead><tbody id="ts-records"></tbody></table></div>
@@ -1212,6 +1213,7 @@
         </div>
       </header>
       <div class="p-6">
+        <div class="form-group mb-4"><input class="form-input" type="search" placeholder="Search equipment..." oninput="App.renderEquipment(this.value)" style="max-width:400px"></div>
         <div class="flex flex-col gap-3" id="equipment-list"></div>
       </div>
     </div>
@@ -1817,7 +1819,7 @@
       if (!localStorage.getItem(OWNER_PIN_KEY)) {
         // First time — set default PIN
         this.hashPin(DEFAULT_PIN).then(hash => {
-          localStorage.setItem(OWNER_PIN_KEY, JSON.stringify(hash))
+          this.safeSet(OWNER_PIN_KEY, JSON.stringify(hash))
         })
       }
     },
@@ -2122,6 +2124,42 @@
         }
       }
 
+      // Quote expiry watchdog
+      const now = new Date()
+      const expiredQuotes = this.getStore('quotes').filter(q => {
+        if (q.status !== 'sent' && q.status !== 'viewed') return false
+        if (!q.validUntil) return false
+        return new Date(q.validUntil) < now
+      })
+      const expiringQuotes = this.getStore('quotes').filter(q => {
+        if (q.status !== 'sent' && q.status !== 'viewed') return false
+        if (!q.validUntil) return false
+        const daysLeft = Math.floor((new Date(q.validUntil) - now) / 86400000)
+        return daysLeft >= 0 && daysLeft <= 7
+      })
+      if (expiredQuotes.length > 0 || expiringQuotes.length > 0) {
+        activityContainer.insertAdjacentHTML('afterbegin', `
+          <div style="padding:var(--se-space-4);background:var(--se-warning-bg);border:1px solid var(--se-warning);border-radius:var(--se-radius-lg);margin-bottom:var(--se-space-4)">
+            <div class="text-xs font-medium" style="color:var(--se-warning)">${expiredQuotes.length ? expiredQuotes.length + ' expired quote' + (expiredQuotes.length>1?'s':'') : ''}${expiredQuotes.length && expiringQuotes.length ? ' + ' : ''}${expiringQuotes.length ? expiringQuotes.length + ' expiring within 7 days' : ''}</div>
+            ${[...expiredQuotes, ...expiringQuotes].slice(0, 3).map(q => `<div class="text-xs text-secondary mt-1">${this.esc(q.reference)} — ${this.esc(this.getClientName(q.clientId))} — ${this.formatCurrency(q.total)}</div>`).join('')}
+            <button class="btn btn-ghost btn-sm mt-2" onclick="App.navigate('quotes')" style="color:var(--se-warning)">Follow up quotes →</button>
+          </div>
+        `)
+      }
+
+      // Recurring jobs due today
+      const todayStr = new Date().toISOString().split('T')[0]
+      const recurringDue = this.getStore('recurring').filter(r => r.nextDate && r.nextDate <= todayStr && r.isActive !== false)
+      if (recurringDue.length > 0) {
+        activityContainer.insertAdjacentHTML('afterbegin', `
+          <div style="padding:var(--se-space-4);background:var(--se-green-050);border:1px solid var(--se-green-600);border-radius:var(--se-radius-lg);margin-bottom:var(--se-space-4)">
+            <div class="text-xs font-medium" style="color:var(--se-green-600)">${recurringDue.length} recurring job${recurringDue.length>1?'s':''} due today</div>
+            ${recurringDue.slice(0, 3).map(r => `<div class="text-xs text-secondary mt-1">${this.esc(this.getClientName(r.clientId))} — ${this.esc((r.service||'').replace(/-/g,' '))}</div>`).join('')}
+            <button class="btn btn-ghost btn-sm mt-2" onclick="App.navigate('recurring')" style="color:var(--se-green-600)">View recurring jobs →</button>
+          </div>
+        `)
+      }
+
       // Post-job review triggers
       this.checkReviewTriggers()
 
@@ -2143,8 +2181,8 @@
         const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-16.92&longitude=145.78&current=temperature_2m,weathercode,windspeed_10m&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Australia%2FBrisbane&forecast_days=3')
         if (!res.ok) throw new Error('Weather API error')
         const data = await res.json()
-        localStorage.setItem('se_weather_cache', JSON.stringify(data))
-        localStorage.setItem('se_weather_time', String(Date.now()))
+        this.safeSet('se_weather_cache', JSON.stringify(data))
+        this.safeSet('se_weather_time', String(Date.now()))
         this.renderWeather(data)
       } catch {
         weatherEl.innerHTML = `<div class="text-sm text-muted">Weather unavailable</div>`
@@ -2203,7 +2241,12 @@
         return
       }
 
-      container.innerHTML = filtered.map(j => this.jobCard(j)).join('')
+      const page = this.getPage('jobs')
+      const visible = filtered.slice(0, page * this._pageSize)
+      container.innerHTML = visible.map(j => this.jobCard(j)).join('')
+      if (visible.length < filtered.length) {
+        container.innerHTML += `<div class="text-center mt-4"><button class="btn btn-ghost btn-sm" onclick="App.loadMore('jobs')">Load more (${filtered.length - visible.length} remaining)</button></div>`
+      }
     },
 
     /* ── QUOTES / CLIENTS / EMPLOYEES / INVOICES ──── */
@@ -2234,6 +2277,7 @@
           </div>
         </div>
       `).join('')
+      this.paginateList('quotes-list', 'quotes')
     },
 
     renderClients(search = '') {
@@ -2254,6 +2298,7 @@
           </div>
         </div>
       `).join('')
+      this.paginateList('clients-list', 'clients')
     },
 
     renderEmployees(search = '') {
@@ -2318,7 +2363,7 @@
       if (!inv) return
       inv.status = 'paid'
       inv.paidAt = new Date().toISOString()
-      localStorage.setItem('se_invoices', JSON.stringify(invoices))
+      this.safeSet('se_invoices', JSON.stringify(invoices))
       this.invalidateCache('invoices')
       this.addAudit('Invoice paid', `${inv.reference} — ${this.formatCurrency(inv.total)}`)
       this.toast(`${inv.reference} marked as paid`, 'success')
@@ -2479,13 +2524,72 @@
       return this._cache[collection]
     },
 
-    invalidateCache(collection) { delete this._cache[collection] },
+    invalidateCache(collection) {
+      delete this._cache[collection]
+      if (collection === 'clients') this._clientMap = null
+    },
+
+    // Safe localStorage write with quota protection
+    safeSet(key, value) {
+      try {
+        localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value))
+      } catch (e) {
+        if (e.name === 'QuotaExceededError' || e.code === 22) {
+          this.toast('Storage is full — consider exporting and clearing old data in Settings', 'error')
+          console.error('localStorage quota exceeded for key:', key)
+        } else { throw e }
+      }
+    },
+
+    // O(1) client lookup by ID
+    _clientMap: null,
+    getClientById(id) {
+      if (!this._clientMap) {
+        this._clientMap = new Map(this.getStore('clients').map(c => [c.id, c]))
+      }
+      return this._clientMap.get(id) || null
+    },
+
+    getClientName(id) {
+      const c = this.getClientById(id)
+      return c ? c.name : 'Unknown'
+    },
+
+    // Pagination
+    _pages: {},
+    _pageSize: 25,
+    getPage(screen) { return this._pages[screen] || 1 },
+    loadMore(screen) { this._pages[screen] = (this._pages[screen] || 1) + 1; this.renderScreen(screen) },
+    resetPages() { this._pages = {} },
+
+    paginateList(containerId, screen) {
+      const container = document.getElementById(containerId)
+      if (!container) return
+      const items = container.children
+      const total = items.length
+      const page = this.getPage(screen)
+      const limit = page * this._pageSize
+      let hiddenCount = 0
+      for (let i = 0; i < total; i++) {
+        if (items[i].classList.contains('load-more-btn')) continue
+        if (i >= limit) { items[i].style.display = 'none'; hiddenCount++ }
+        else { items[i].style.display = '' }
+      }
+      // Remove old load-more button
+      container.querySelector('.load-more-btn')?.remove()
+      if (hiddenCount > 0) {
+        const btn = document.createElement('div')
+        btn.className = 'load-more-btn text-center mt-4'
+        btn.innerHTML = `<button class="btn btn-ghost btn-sm" onclick="App.loadMore('${screen}')">Load more (${hiddenCount} remaining)</button>`
+        container.appendChild(btn)
+      }
+    },
 
     addAudit(action, detail) {
       const audit = []; try { audit.push(...JSON.parse(localStorage.getItem('se_audit') || '[]')) } catch {}
       audit.push({ id: crypto.randomUUID(), action, detail: String(detail || ''), timestamp: new Date().toISOString(), user: 'Sam' })
       if (audit.length > 5000) audit.splice(0, audit.length - 5000)
-      localStorage.setItem('se_audit', JSON.stringify(audit))
+      this.safeSet('se_audit', JSON.stringify(audit))
       this.invalidateCache('audit')
     },
 
@@ -2768,7 +2872,7 @@
       if (!emp) return
       emp.isActive = emp.isActive === false ? true : false
       emp.updatedAt = new Date().toISOString()
-      localStorage.setItem('se_employees', JSON.stringify(employees))
+      this.safeSet('se_employees', JSON.stringify(employees))
       this.invalidateCache('employees')
       this.addAudit(emp.isActive ? 'Employee reactivated' : 'Employee deactivated', emp.name)
       this.toast(`${this.esc(emp.name)} ${emp.isActive ? 'reactivated' : 'deactivated'}`, emp.isActive ? 'success' : 'warning')
@@ -2785,7 +2889,7 @@
       const cost = parseFloat(costStr || '0')
       const logs = JSON.parse(localStorage.getItem('se_maintenance_log') || '[]')
       logs.push({ id: crypto.randomUUID(), equipmentId: equipId, description: desc, cost, date: new Date().toISOString().split('T')[0], createdAt: new Date().toISOString() })
-      localStorage.setItem('se_maintenance_log', JSON.stringify(logs))
+      this.safeSet('se_maintenance_log', JSON.stringify(logs))
       this.addAudit('Maintenance logged', desc)
       this.toast('Maintenance entry logged', 'success')
       this.renderEquipment()
@@ -2803,7 +2907,7 @@
       const cost = parseFloat(costStr || '0')
       const docketNo = await this.customPrompt('Docket Number', 'Enter docket number (optional):', '') || ''
       dockets.push({ id: crypto.randomUUID(), jobId, facility, weight, cost, docketNo, wasteType: 'green', date: new Date().toISOString().split('T')[0], createdAt: new Date().toISOString() })
-      localStorage.setItem('se_waste_dockets', JSON.stringify(dockets))
+      this.safeSet('se_waste_dockets', JSON.stringify(dockets))
       this.addAudit('Waste docket logged', `${weight}kg to ${facility}`)
       this.toast('Waste docket recorded', 'success')
     },
@@ -3122,7 +3226,7 @@
 
       const recurring = this.getStore('recurring')
       recurring.push({ id: crypto.randomUUID(), clientId, service, frequency, nextDate, notes, isActive: true, createdAt: new Date().toISOString() })
-      localStorage.setItem('se_recurring', JSON.stringify(recurring))
+      this.safeSet('se_recurring', JSON.stringify(recurring))
       this.invalidateCache('recurring')
       this.addAudit('Recurring job created', `${this.getClientName(clientId)} — ${service} (${frequency})`)
       this.toast('Recurring job created', 'success')
@@ -3131,8 +3235,9 @@
 
     /* ── EQUIPMENT REGISTER ───────────────────────────── */
 
-    renderEquipment() {
-      const equipment = this.getStore('equipment')
+    renderEquipment(search = '') {
+      let equipment = this.getStore('equipment')
+      if (search) { const q = search.toLowerCase(); equipment = equipment.filter(e => (e.name||'').toLowerCase().includes(q) || (e.type||'').toLowerCase().includes(q) || (e.serial||'').toLowerCase().includes(q)) }
       const container = document.getElementById('equipment-list')
       if (!equipment.length) {
         // Seed with Steady Eco's real equipment
@@ -3145,7 +3250,7 @@
           { id: crypto.randomUUID(), name: 'Whipper Snipper', type: 'Power Tool', status: 'Active', serviceDue: '2026-06-01', notes: 'Line trimmer for edging' },
           { id: crypto.randomUUID(), name: 'Blade Grinder', type: 'Workshop', status: 'Active', serviceDue: '2026-08-01', notes: 'Electromagnetic chuck for blade sharpening' },
         ]
-        localStorage.setItem('se_equipment', JSON.stringify(seed))
+        this.safeSet('se_equipment', JSON.stringify(seed))
         this.invalidateCache('equipment')
         this.renderEquipment()
         return
@@ -3183,7 +3288,7 @@
         notes: document.getElementById('eq-notes').value.trim(),
         createdAt: new Date().toISOString()
       })
-      localStorage.setItem('se_equipment', JSON.stringify(equipment))
+      this.safeSet('se_equipment', JSON.stringify(equipment))
       this.invalidateCache('equipment')
       this.addAudit('Equipment added', name)
       this.toast(`${this.esc(name)} added`, 'success')
@@ -3373,7 +3478,7 @@
       // Reset service due date (3 months from now as default)
       const next = new Date(); next.setMonth(next.getMonth() + 3)
       eq.serviceDue = next.toISOString().split('T')[0]
-      localStorage.setItem('se_equipment', JSON.stringify(equipment))
+      this.safeSet('se_equipment', JSON.stringify(equipment))
       this.invalidateCache('equipment')
       this.addAudit('Equipment service logged', eq.name)
       this.toast(`Service logged for ${this.esc(eq.name)}`, 'success')
@@ -3395,7 +3500,7 @@
         loggedAt: new Date().toISOString()
       })
       eq.lastInspection = new Date().toLocaleDateString('en-AU')
-      localStorage.setItem('se_equipment', JSON.stringify(equipment))
+      this.safeSet('se_equipment', JSON.stringify(equipment))
       this.invalidateCache('equipment')
       this.addAudit('Equipment inspection logged', eq.name)
       this.toast(`Inspection logged for ${this.esc(eq.name)}`, 'success')
@@ -3417,7 +3522,7 @@
         loggedAt: new Date().toISOString()
       })
       eq.lastWashdown = new Date().toLocaleDateString('en-AU')
-      localStorage.setItem('se_equipment', JSON.stringify(equipment))
+      this.safeSet('se_equipment', JSON.stringify(equipment))
       this.invalidateCache('equipment')
       this.addAudit('Equipment washdown logged', eq.name)
       this.toast(`Washdown logged for ${this.esc(eq.name)}`, 'success')
@@ -3509,7 +3614,7 @@
 
     /* ── TIMESHEETS (real data) ────────────────────────── */
 
-    renderTimesheets() {
+    renderTimesheets(search = '') {
       const timesheets = this.getStore('timesheets')
       const employees = this.getStore('employees')
 
@@ -3693,14 +3798,14 @@
       }
 
       invoices.push(invoice)
-      localStorage.setItem('se_invoices', JSON.stringify(invoices))
+      this.safeSet('se_invoices', JSON.stringify(invoices))
       this.invalidateCache('invoices')
 
       // Update job status
       job.status = 'invoiced'
       job.invoiceId = invoice.id
       job.updatedAt = new Date().toISOString()
-      localStorage.setItem('se_jobs', JSON.stringify(jobs))
+      this.safeSet('se_jobs', JSON.stringify(jobs))
       this.invalidateCache('jobs')
 
       this.addAudit('Invoice created', `${reference} — ${this.formatCurrency(total)} for ${this.esc(client?.name || 'Unknown')}`)
@@ -4349,7 +4454,7 @@
 
       const expenses = JSON.parse(localStorage.getItem('se_expenses') || '[]')
       expenses.push({ id: crypto.randomUUID(), jobId, description: desc, amount, date: new Date().toISOString(), createdBy: 'Sam' })
-      localStorage.setItem('se_expenses', JSON.stringify(expenses))
+      this.safeSet('se_expenses', JSON.stringify(expenses))
 
       document.getElementById('jd-exp-desc').value = ''
       document.getElementById('jd-exp-amount').value = ''
@@ -4567,9 +4672,9 @@
           createdAt: new Date().toISOString(),
           completed: false,
         })
-        localStorage.setItem('se_review_prompts', JSON.stringify(reviews))
+        this.safeSet('se_review_prompts', JSON.stringify(reviews))
       })
-      localStorage.setItem('se_jobs', JSON.stringify(this.getStore('jobs')))
+      this.safeSet('se_jobs', JSON.stringify(this.getStore('jobs')))
       this.invalidateCache('jobs')
     },
 
@@ -4603,7 +4708,7 @@
       ts.status = 'approved'
       ts.approvedAt = new Date().toISOString()
       ts.approvedBy = 'Sam'
-      localStorage.setItem('se_timesheets', JSON.stringify(timesheets))
+      this.safeSet('se_timesheets', JSON.stringify(timesheets))
       this.invalidateCache('timesheets')
       this.addAudit('Timesheet approved', ts.employeeId)
       this.toast('Timesheet approved', 'success')
@@ -4616,7 +4721,7 @@
       timesheets.forEach(t => {
         if (t.status === 'pending') { t.status = 'approved'; t.approvedAt = new Date().toISOString(); t.approvedBy = 'Sam'; count++ }
       })
-      localStorage.setItem('se_timesheets', JSON.stringify(timesheets))
+      this.safeSet('se_timesheets', JSON.stringify(timesheets))
       this.invalidateCache('timesheets')
       if (count) { this.addAudit('Bulk timesheet approval', `${count} entries`); this.toast(`${count} timesheets approved`, 'success') }
       else this.toast('No pending timesheets', 'info')
@@ -4630,7 +4735,7 @@
       if (!note) return
       const comms = JSON.parse(localStorage.getItem('se_comms') || '[]')
       comms.push({ id: crypto.randomUUID(), clientId, type: 'note', text: note, createdAt: new Date().toISOString(), createdBy: 'Sam' })
-      localStorage.setItem('se_comms', JSON.stringify(comms))
+      this.safeSet('se_comms', JSON.stringify(comms))
       this.addAudit('Client note added', note.slice(0, 50))
       this.toast('Note added', 'success')
     },
@@ -4721,7 +4826,7 @@
     saveLineTemplate(description, unit, unitRate) {
       const templates = JSON.parse(localStorage.getItem('se_line_templates') || '[]')
       templates.push({ id: crypto.randomUUID(), description, unit, unitRate, createdAt: new Date().toISOString() })
-      localStorage.setItem('se_line_templates', JSON.stringify(templates))
+      this.safeSet('se_line_templates', JSON.stringify(templates))
       this.toast('Line item template saved', 'success')
     },
 
@@ -4760,7 +4865,7 @@
       })
 
       if (nudged) {
-        localStorage.setItem('se_invoices', JSON.stringify(this.getStore('invoices')))
+        this.safeSet('se_invoices', JSON.stringify(this.getStore('invoices')))
         this.invalidateCache('invoices')
         this.addAudit('Collections run', `${nudged} invoices marked overdue`)
         this.toast(`${nudged} invoice${nudged > 1 ? 's' : ''} marked overdue`, 'warning')
@@ -4832,7 +4937,7 @@
 
       const clients = this.getStore('clients')
       clients.push(client)
-      localStorage.setItem('se_clients', JSON.stringify(clients))
+      this.safeSet('se_clients', JSON.stringify(clients))
       this.invalidateCache('clients')
       this.addAudit('Client created', name)
 
@@ -4925,7 +5030,7 @@
       }
 
       jobs.push(job)
-      localStorage.setItem('se_jobs', JSON.stringify(jobs))
+      this.safeSet('se_jobs', JSON.stringify(jobs))
       this.invalidateCache('jobs')
       this.addAudit('Job created', reference)
 
@@ -4974,7 +5079,7 @@
 
       const employees = this.getStore('employees')
       employees.push(employee)
-      localStorage.setItem('se_employees', JSON.stringify(employees))
+      this.safeSet('se_employees', JSON.stringify(employees))
       this.invalidateCache('employees')
       this.addAudit('Employee created', name)
 
@@ -5064,20 +5169,81 @@
       el.classList.toggle('is-selected')
     },
 
-    buildLineItems() {
-      const serviceNames = {
-        'tree-removal': 'Tree Removal', 'tree-pruning': 'Tree Pruning', 'landscaping': 'Landscaping',
-        'lawn-mowing': 'Lawn Mowing', 'vegetation-management': 'Vegetation Management',
-        'land-clearing': 'Land Clearing', 'blade-sharpening': 'Blade Sharpening', 'chipping-mulching': 'Chipping & Mulching',
-      }
+    // Service-to-line-items templates for quote auto-fill
+    _serviceTemplates: {
+      'tree-removal': [
+        { description: 'Arborist site assessment', quantity: 1, unit: 'job' },
+        { description: 'Tree felling / sectional removal', quantity: 1, unit: 'tree' },
+        { description: 'Chipping & mulching', quantity: 1, unit: 'job' },
+        { description: 'Stump grinding', quantity: 1, unit: 'stump' },
+        { description: 'Site clean-up & waste removal', quantity: 1, unit: 'job' },
+      ],
+      'tree-pruning': [
+        { description: 'Arborist assessment', quantity: 1, unit: 'job' },
+        { description: 'Pruning (AS4373 compliant)', quantity: 1, unit: 'tree' },
+        { description: 'Green waste removal', quantity: 1, unit: 'job' },
+      ],
+      'landscaping': [
+        { description: 'Site preparation', quantity: 1, unit: 'job' },
+        { description: 'Planting & garden beds', quantity: 1, unit: 'job' },
+        { description: 'Mulching', quantity: 1, unit: 'm³' },
+        { description: 'Garden bed edging', quantity: 1, unit: 'lm' },
+        { description: 'Clean-up', quantity: 1, unit: 'job' },
+      ],
+      'lawn-mowing': [
+        { description: 'Lawn mowing', quantity: 1, unit: 'job' },
+        { description: 'Edging & trimming', quantity: 1, unit: 'job' },
+        { description: 'Blowing & clean-up', quantity: 1, unit: 'job' },
+      ],
+      'vegetation-management': [
+        { description: 'Site assessment & planning', quantity: 1, unit: 'job' },
+        { description: 'Vegetation clearing (mechanical)', quantity: 1, unit: 'hr' },
+        { description: 'Herbicide application', quantity: 1, unit: 'hr' },
+        { description: 'Waste removal & disposal', quantity: 1, unit: 'job' },
+        { description: 'Biosecurity washdown', quantity: 1, unit: 'job' },
+      ],
+      'land-clearing': [
+        { description: 'Site survey & DBYD check', quantity: 1, unit: 'job' },
+        { description: 'Clearing & grubbing', quantity: 1, unit: 'hr' },
+        { description: 'Levelling', quantity: 1, unit: 'hr' },
+        { description: 'Waste disposal (green waste)', quantity: 1, unit: 'load' },
+        { description: 'Erosion & sediment control', quantity: 1, unit: 'job' },
+      ],
+      'blade-sharpening': [
+        { description: 'Blade sharpening (full set)', quantity: 1, unit: 'set' },
+      ],
+      'chipping-mulching': [
+        { description: 'Chipping on-site', quantity: 1, unit: 'hr' },
+        { description: 'Mulch spreading', quantity: 1, unit: 'm³' },
+      ],
+    },
 
+    buildLineItems() {
       const clientRate = this.getRateForClient(this.quoteData.clientId)
-      this.quoteData.lineItems = this.quoteData.services.map(s => ({
-        description: serviceNames[s] || s,
-        quantity: 1,
-        unit: s === 'blade-sharpening' ? 'set' : 'hours',
-        unitRate: s === 'blade-sharpening' ? 120 : clientRate,
-      }))
+      this.quoteData.lineItems = []
+
+      this.quoteData.services.forEach(s => {
+        const template = this._serviceTemplates[s]
+        if (template) {
+          template.forEach(t => {
+            this.quoteData.lineItems.push({
+              description: t.description,
+              quantity: t.quantity,
+              unit: t.unit,
+              unitRate: s === 'blade-sharpening' ? 120 : 0,
+              service: s,
+            })
+          })
+        } else {
+          this.quoteData.lineItems.push({
+            description: (s || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+            quantity: 1,
+            unit: 'hours',
+            unitRate: clientRate,
+            service: s,
+          })
+        }
+      })
 
       this.renderLineItems()
     },
@@ -5218,7 +5384,7 @@
       }
 
       quotes.push(quote)
-      localStorage.setItem('se_quotes', JSON.stringify(quotes))
+      this.safeSet('se_quotes', JSON.stringify(quotes))
       this.invalidateCache('quotes')
       this.addAudit(`Quote ${status === 'sent' ? 'sent' : 'drafted'}`, reference)
 
@@ -5411,7 +5577,7 @@
 
       job.status = newStatus
       job.updatedAt = new Date().toISOString()
-      localStorage.setItem('se_jobs', JSON.stringify(jobs))
+      this.safeSet('se_jobs', JSON.stringify(jobs))
       this.invalidateCache('jobs')
       this.addAudit(`Job status → ${newStatus}`, job.reference)
 
@@ -5452,7 +5618,7 @@
       if (currentHash !== stored) { this.toast('Current PIN is incorrect', 'error'); return }
 
       const newHash = await this.hashPin(newPin)
-      localStorage.setItem(OWNER_PIN_KEY, JSON.stringify(newHash))
+      this.safeSet(OWNER_PIN_KEY, JSON.stringify(newHash))
       this.addAudit('PIN changed', 'Owner PIN updated')
 
       document.getElementById('set-pin-current').value = ''
@@ -5464,7 +5630,7 @@
 
     saveApiKey() {
       const key = document.getElementById('set-api-key').value.trim()
-      localStorage.setItem('se_ai_key', key)
+      this.safeSet('se_ai_key', key)
       this.toast(key ? 'API key saved' : 'API key cleared', 'success')
     },
 
@@ -5474,7 +5640,7 @@
         commercial: parseFloat(document.getElementById('rate-commercial').value) || 95,
         government: parseFloat(document.getElementById('rate-government').value) || 110,
       }
-      localStorage.setItem('se_rate_cards', JSON.stringify(rates))
+      this.safeSet('se_rate_cards', JSON.stringify(rates))
       this.toast('Rate cards saved', 'success')
     },
 
@@ -5490,7 +5656,7 @@
         bsb: document.getElementById('set-bsb').value.trim(),
         account: document.getElementById('set-acct').value.trim(),
       }
-      localStorage.setItem('se_bank', JSON.stringify(bank))
+      this.safeSet('se_bank', JSON.stringify(bank))
       this.toast('Bank details saved', 'success')
     },
 
@@ -5501,7 +5667,7 @@
         phone: document.getElementById('set-biz-phone').value.trim(),
         email: document.getElementById('set-biz-email').value.trim(),
       }
-      localStorage.setItem('se_business', JSON.stringify(details))
+      this.safeSet('se_business', JSON.stringify(details))
       this.toast('Business details saved', 'success')
     },
 
@@ -5573,7 +5739,7 @@
       const credits = await this.customPrompt('Estimated Credits', 'Estimated ACCUs per year:', '50')
       const projects = JSON.parse(localStorage.getItem('se_accu_projects') || '[]')
       projects.push({ id: crypto.randomUUID(), name, area: parseFloat(area||'0'), methodology: method||'Environmental Plantings', estimatedCredits: parseInt(credits||'0'), status: 'draft', createdAt: new Date().toISOString() })
-      localStorage.setItem('se_accu_projects', JSON.stringify(projects))
+      this.safeSet('se_accu_projects', JSON.stringify(projects))
       this.addAudit('ACCU project registered', name)
       this.toast('ACCU project registered', 'success')
       this.renderCarbon()
@@ -5588,7 +5754,7 @@
       const area = await this.customPrompt('Area Treated', 'Area in m²:', '500')
       const logs = JSON.parse(localStorage.getItem('se_reef_log') || '[]')
       logs.push({ id: crypto.randomUUID(), site, activity: activity||'riparian planting', area: parseFloat(area||'0'), date: new Date().toISOString().split('T')[0], createdAt: new Date().toISOString() })
-      localStorage.setItem('se_reef_log', JSON.stringify(logs))
+      this.safeSet('se_reef_log', JSON.stringify(logs))
       this.addAudit('Reef restoration logged', `${site} — ${activity}`)
       this.toast('Restoration activity logged', 'success')
       this.renderCompliance()
