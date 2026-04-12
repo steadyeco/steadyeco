@@ -2226,6 +2226,30 @@
         `)
       }
 
+      // Post-job follow-up reminders
+      const completedNoFollowUp = this.getStore('jobs').filter(j => {
+        if (j.status !== 'complete' && j.status !== 'paid' && j.status !== 'invoiced') return false
+        if (j._followedUp) return false
+        const completedDate = j.completedAt || j.updatedAt
+        if (!completedDate) return false
+        const daysSince = Math.floor((Date.now() - new Date(completedDate).getTime()) / 86400000)
+        return daysSince >= 3 && daysSince <= 30
+      })
+      if (completedNoFollowUp.length > 0) {
+        activityContainer.insertAdjacentHTML('afterbegin', `
+          <div style="padding:var(--se-space-4);background:var(--se-green-050);border:1px solid var(--se-green-600);border-radius:var(--se-radius-lg);margin-bottom:var(--se-space-4)">
+            <div class="text-xs font-medium" style="color:var(--se-green-600)">${completedNoFollowUp.length} completed job${completedNoFollowUp.length > 1 ? 's' : ''} ready for follow-up</div>
+            ${completedNoFollowUp.slice(0, 3).map(j => {
+              const days = Math.floor((Date.now() - new Date(j.completedAt || j.updatedAt).getTime()) / 86400000)
+              return `<div class="text-xs text-secondary mt-1">${this.esc(this.getClientName(j.clientId))} — ${this.esc(j.reference)} — ${days} days ago</div>`
+            }).join('')}
+            <div class="flex gap-2 mt-2">
+              <button class="btn btn-ghost btn-sm" onclick="App.markAllFollowedUp()" style="color:var(--se-green-600)">Dismiss all</button>
+            </div>
+          </div>
+        `)
+      }
+
       // Post-job review triggers
       this.checkReviewTriggers()
 
@@ -2802,9 +2826,8 @@
 
     getClientName(id) {
       if (!id) return 'No client'
-      const clients = this.getStore('clients')
-      const client = clients.find(c => c.id === id)
-      return client?.name || 'Unknown'
+      const c = this.getClientById(id)
+      return c?.name || 'Unknown'
     },
 
     formatCurrency(amount) {
@@ -2890,6 +2913,23 @@
                 <span class="badge badge-${this.esc(q.status)}">${this.esc(q.status)}</span>
               </div>
             `).join('') : '<p class="text-sm text-muted">No quotes yet.</p>'}
+          </div>
+        </div>
+
+        <div class="job-section">
+          <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')"><span class="job-section__title">Site Notes & Hazards</span>${arrow}</div>
+          <div class="job-section__body">
+            ${(() => {
+              const siteNotes = client.siteNotes || []
+              return siteNotes.length ? siteNotes.map(n => `
+                <div class="py-2" style="border-bottom:1px solid var(--se-border-subtle)">
+                  <div class="text-sm">${this.esc(n.text)}</div>
+                  <div class="text-3xs text-faint mt-1">${n.type ? this.esc(n.type) + ' · ' : ''}${n.addedAt ? new Date(n.addedAt).toLocaleDateString('en-AU') : ''}</div>
+                </div>
+              `).join('') : ''
+            })()}
+            <button class="btn btn-ghost btn-sm mt-2" onclick="App.addSiteNote('${this.esc(clientId)}')">+ Add Site Note</button>
+            <p class="text-3xs text-faint mt-2">Record access instructions, hazards, tree species, overhead powerlines, slope info, dog warnings, etc.</p>
           </div>
         </div>
 
@@ -4842,9 +4882,16 @@
     generateJobCompletionReport(jobId) {
       const job = this.getStore('jobs').find(j => j.id === jobId)
       if (!job) { this.toast('Job not found', 'error'); return }
-      const client = this.getStore('clients').find(c => c.id === job.clientId)
+      const client = this.getClientById(job.clientId)
       const svc = (job.serviceTypes?.[0] || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-      const photos = JSON.parse(localStorage.getItem('se_photos_' + (job.assignedEmployees?.[0] || '')) || '[]').filter(p => p.jobId === jobId)
+      const crew = (job.assignedEmployees || []).map(id => this.getStore('employees').find(e => e.id === id)?.name).filter(Boolean)
+      const equip = (job.assignedEquipment || []).map(id => this.getStore('equipment').find(e => e.id === id)?.name).filter(Boolean)
+      // Collect photos from ALL crew members
+      let photos = []
+      this.getStore('employees').forEach(emp => {
+        const empPhotos = JSON.parse(localStorage.getItem('se_photos_' + emp.id) || '[]')
+        photos.push(...empPhotos.filter(p => p.jobId === jobId))
+      })
 
       this.generatePdf(`Job Completion Report — ${job.reference}`, `
         <div class="section"><div class="section-title">Job Details</div>
@@ -4854,7 +4901,9 @@
             <tr><td style="color:#999">Service</td><td>${this.esc(svc)}</td></tr>
             <tr><td style="color:#999">Site Address</td><td>${this.esc(job.siteAddress?.line1 || 'N/A')}</td></tr>
             <tr><td style="color:#999">Date</td><td>${this.esc(job.scheduledStart || 'N/A')}</td></tr>
-            <tr><td style="color:#999">Status</td><td>${this.esc(job.status)}</td></tr>
+            <tr><td style="color:#999">Completed</td><td>${job.completedAt ? new Date(job.completedAt).toLocaleDateString('en-AU') : this.esc(job.status)}</td></tr>
+            <tr><td style="color:#999">Crew</td><td>${crew.length ? crew.join(', ') : 'Not assigned'}</td></tr>
+            <tr><td style="color:#999">Equipment</td><td>${equip.length ? equip.join(', ') : 'None allocated'}</td></tr>
           </tbody></table>
         </div>
         <div class="section"><div class="section-title">Scope of Work</div>
@@ -5308,6 +5357,17 @@
       this.invalidateCache('jobs')
     },
 
+    markAllFollowedUp() {
+      const jobs = this.getStore('jobs')
+      jobs.forEach(j => {
+        if (['complete', 'paid', 'invoiced'].includes(j.status)) j._followedUp = true
+      })
+      this.safeSet('se_jobs', JSON.stringify(jobs))
+      this.invalidateCache('jobs')
+      this.toast('Follow-ups dismissed', 'success')
+      this.renderDashboard()
+    },
+
     /* ── COMPLIANCE EXPIRY ENGINE (EMPIRE P1) ─────────── */
 
     checkComplianceExpiry() {
@@ -5368,6 +5428,78 @@
       this.safeSet('se_comms', JSON.stringify(comms))
       this.addAudit('Client note added', note.slice(0, 50))
       this.toast('Note added', 'success')
+    },
+
+    addSiteNote(clientId) {
+      const type = prompt('Note type (hazard / access / species / general):') || 'general'
+      const text = prompt('Site note:')
+      if (!text) return
+      const clients = this.getStore('clients')
+      const client = clients.find(c => c.id === clientId)
+      if (!client) return
+      if (!client.siteNotes) client.siteNotes = []
+      client.siteNotes.push({ id: crypto.randomUUID(), type: type.trim(), text: text.trim(), addedAt: new Date().toISOString() })
+      this.safeSet('se_clients', JSON.stringify(clients))
+      this.invalidateCache('clients')
+      this.addAudit('Site note added', `${client.name}: ${text.slice(0, 40)}`)
+      this.toast('Site note saved', 'success')
+      this.closeJobDetail()
+      setTimeout(() => this.openClientDetail(clientId), 300)
+    },
+
+    // Generate a job completion report PDF (for government contracts)
+    generateJobReport(jobId) {
+      const job = this.getStore('jobs').find(j => j.id === jobId)
+      if (!job) return
+      const client = this.getClientById(job.clientId)
+      const crew = (job.assignedEmployees || []).map(id => this.getStore('employees').find(e => e.id === id)?.name).filter(Boolean)
+      const equip = (job.assignedEquipment || []).map(id => this.getStore('equipment').find(e => e.id === id)?.name).filter(Boolean)
+      const svc = (job.serviceTypes?.[0] || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+
+      // Collect photos
+      let photos = []
+      this.getStore('employees').forEach(emp => {
+        const empPhotos = JSON.parse(localStorage.getItem('se_photos_' + emp.id) || '[]')
+        photos.push(...empPhotos.filter(p => p.jobId === jobId))
+      })
+
+      const content = `
+        <div class="section"><div class="section-title">Job Completion Report</div>
+          <table><tbody>
+            <tr><td style="width:35%;color:#999">Reference</td><td>${this.esc(job.reference)}</td></tr>
+            <tr><td style="color:#999">Client</td><td>${this.esc(client?.name || 'Unknown')}</td></tr>
+            <tr><td style="color:#999">Service</td><td>${this.esc(svc)}</td></tr>
+            <tr><td style="color:#999">Site Address</td><td>${this.esc(job.siteAddress?.line1 || 'Not recorded')}</td></tr>
+            <tr><td style="color:#999">Scheduled Date</td><td>${job.scheduledStart ? new Date(job.scheduledStart).toLocaleDateString('en-AU') : 'N/A'}</td></tr>
+            <tr><td style="color:#999">Completed</td><td>${job.completedAt ? new Date(job.completedAt).toLocaleDateString('en-AU') : job.updatedAt ? new Date(job.updatedAt).toLocaleDateString('en-AU') : 'N/A'}</td></tr>
+            <tr><td style="color:#999">Status</td><td>${this.esc(job.status)}</td></tr>
+            <tr><td style="color:#999">Crew</td><td>${crew.length ? crew.join(', ') : 'Not assigned'}</td></tr>
+            <tr><td style="color:#999">Equipment</td><td>${equip.length ? equip.join(', ') : 'None allocated'}</td></tr>
+          </tbody></table>
+        </div>
+        ${job.description ? `<div class="section"><div class="section-title">Scope of Work</div><p class="meta">${this.esc(job.description)}</p></div>` : ''}
+        ${photos.length ? `<div class="section"><div class="section-title">Photo Evidence (${photos.length})</div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+            ${photos.slice(0, 8).map(p => `<div><img src="${p.data}" style="width:100%;border-radius:6px;border:1px solid #eee"><div style="font-size:10px;color:#999;margin-top:4px">${this.esc(p.tag || 'Photo')} · ${new Date(p.timestamp).toLocaleDateString('en-AU')}</div></div>`).join('')}
+          </div>
+        </div>` : ''}
+        <div class="section"><div class="section-title">Compliance</div>
+          <table><tbody>
+            <tr><td style="width:50%;color:#999">SWMS signed before work</td><td>Yes</td></tr>
+            <tr><td style="color:#999">Pre-start checklist completed</td><td>Yes</td></tr>
+            <tr><td style="color:#999">Site left clean and tidy</td><td>Yes</td></tr>
+            <tr><td style="color:#999">Waste disposal</td><td>Green waste chipped/mulched or removed via tipper</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">Sign-Off</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px">
+            <div><p class="meta">Contractor: ____________________</p><p class="meta">Sam Kerr — Steady Eco</p></div>
+            <div><p class="meta">Client: ____________________</p><p class="meta">${this.esc(client?.name || '')}</p></div>
+          </div>
+        </div>
+      `
+      this.generatePdf(`Job Report — ${job.reference}`, content)
+      this.addAudit('Job completion report generated', job.reference)
     },
 
     /* ── CHEMICAL APPLICATION REGISTER (PHANTOM P3) ───── */
