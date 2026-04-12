@@ -1719,8 +1719,10 @@
             <h3 class="settings-section__title">Data</h3>
             <div class="flex gap-3 flex-wrap">
               <button class="btn btn-secondary btn-sm" onclick="App.exportData()">Export All Data</button>
+              <button class="btn btn-secondary btn-sm" onclick="App.importData()">Import Data</button>
               <button class="btn btn-danger btn-sm" onclick="App.clearData()">Clear All Data</button>
             </div>
+            <p class="text-xs text-muted mt-2">Last backup: <span id="last-backup-time">${localStorage.getItem('se_last_backup') ? new Date(localStorage.getItem('se_last_backup')).toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : 'Never'}</span></p>
           </div>
         </div>
       </div>
@@ -2950,19 +2952,21 @@
           </div>
         </div>
 
-        <!-- Credentials -->
-        <div class="job-section">
+        <!-- Credentials (per-employee) -->
+        <div class="job-section is-open">
           <div class="job-section__header" onclick="this.parentElement.classList.toggle('is-open')">
             <span class="job-section__title">Credentials & Certifications</span>${arrow}
           </div>
           <div class="job-section__body">
-            ${this._getComplianceData().filter(c => ['Arborist', 'Chainsaw', 'First Aid', 'White Card', 'Traffic'].some(k => c.name.includes(k))).map(c => `
-              <div class="flex justify-between items-center py-2" style="border-bottom:1px solid var(--se-border-subtle)">
-                <span class="text-sm">${this.esc(c.name)}</span>
-                <span class="text-xs" style="color:var(--se-success)">${this.esc(c.expiry)}</span>
-              </div>
-            `).join('')}
-            <p class="text-xs text-muted mt-3">Credential tracking per employee coming in next update. Currently showing company-level certs.</p>
+            ${(emp.certifications || []).length ? emp.certifications.map(c => {
+              const daysLeft = c.expiry ? Math.floor((new Date(c.expiry) - new Date()) / 86400000) : null
+              const color = daysLeft === null ? 'var(--se-success)' : daysLeft < 0 ? 'var(--se-error)' : daysLeft < 30 ? 'var(--se-gold-500)' : 'var(--se-success)'
+              return `<div class="flex justify-between items-center py-2" style="border-bottom:1px solid var(--se-border-subtle)">
+                <div><div class="text-sm">${this.esc(c.name)}</div><div class="text-3xs text-faint">${this.esc(c.issuer || '')}${c.number ? ' · #' + this.esc(c.number) : ''}</div></div>
+                <span class="text-xs" style="color:${color}">${c.expiry ? (daysLeft < 0 ? 'EXPIRED' : new Date(c.expiry).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})) : 'No expiry'}</span>
+              </div>`
+            }).join('') : '<p class="text-sm text-muted">No certifications recorded.</p>'}
+            <button class="btn btn-ghost btn-sm mt-3" onclick="App.addEmployeeCert('${this.esc(empId)}')">+ Add Certification</button>
           </div>
         </div>
 
@@ -3067,6 +3071,27 @@
       this.toast(`${this.esc(emp.name)} ${emp.isActive ? 'reactivated' : 'deactivated'}`, emp.isActive ? 'success' : 'warning')
       this.closeJobDetail()
       this.renderEmployees()
+    },
+
+    addEmployeeCert(empId) {
+      const name = prompt('Certification name (e.g. First Aid, White Card, AQF3 Arboriculture):')
+      if (!name) return
+      const number = prompt('Certificate/licence number (optional):') || ''
+      const issuer = prompt('Issuing body (e.g. TAFE QLD, St John, SafeWork):') || ''
+      const expiry = prompt('Expiry date (YYYY-MM-DD, leave blank if no expiry):') || null
+
+      const employees = this.getStore('employees')
+      const emp = employees.find(e => e.id === empId)
+      if (!emp) return
+      if (!emp.certifications) emp.certifications = []
+      emp.certifications.push({ id: crypto.randomUUID(), name: name.trim(), number: number.trim(), issuer: issuer.trim(), expiry, addedAt: new Date().toISOString() })
+      emp.updatedAt = new Date().toISOString()
+      this.safeSet('se_employees', JSON.stringify(employees))
+      this.invalidateCache('employees')
+      this.addAudit('Cert added', `${name} for ${emp.name}`)
+      this.toast(`${name} added to ${this.esc(emp.name)}`, 'success')
+      this.closeJobDetail()
+      setTimeout(() => this.openEmployeeDetail(empId), 300)
     },
 
     /* ── EQUIPMENT MAINTENANCE LOG ────────────────────── */
@@ -5443,20 +5468,22 @@
     saveClient() {
       const name = document.getElementById('nc-name').value.trim()
       if (!name) { this.toast('Client name is required', 'error'); return }
+      const email = document.getElementById('nc-email').value.trim()
+      if (email && !email.includes('@')) { this.toast('Please enter a valid email address', 'error'); return }
 
       const client = {
         id: crypto.randomUUID(),
         name,
         type: document.getElementById('nc-type').value,
         phone: document.getElementById('nc-phone').value.trim(),
-        email: document.getElementById('nc-email').value.trim(),
+        email,
         address: {
           line1: document.getElementById('nc-address').value.trim(),
           suburb: document.getElementById('nc-suburb').value.trim(),
           postcode: document.getElementById('nc-postcode').value.trim(),
         },
         notes: document.getElementById('nc-notes').value.trim(),
-        portalAccess: false,
+        portalAccess: !!email,
         totalSpend: 0,
         outstandingBalance: 0,
         createdAt: new Date().toISOString(),
@@ -6201,9 +6228,11 @@
 
     exportData() {
       const data = {}
-      const keys = ['se_jobs', 'se_clients', 'se_quotes', 'se_invoices', 'se_employees', 'se_timesheets', 'se_audit']
-      keys.forEach(k => { try { data[k] = JSON.parse(localStorage.getItem(k)) } catch { data[k] = [] } })
+      const keys = ['se_jobs', 'se_clients', 'se_quotes', 'se_invoices', 'se_employees', 'se_timesheets', 'se_audit', 'se_expenses', 'se_recurring', 'se_equipment', 'se_swms_signed', 'se_incidents', 'se_waste_dockets', 'se_maintenance_log', 'se_comms', 'se_equipment_logs', 'se_swms_templates', 'se_compliance_config', 'se_review_prompts', 'se_prestart_done']
+      keys.forEach(k => { try { data[k] = JSON.parse(localStorage.getItem(k)) } catch { data[k] = null } })
       data._exportedAt = new Date().toISOString()
+      data._version = '2.0'
+      data._platform = 'Steady Eco Command Centre'
 
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
       const url = URL.createObjectURL(blob)
@@ -6212,16 +6241,55 @@
       a.download = `steady-eco-backup-${new Date().toISOString().split('T')[0]}.json`
       a.click()
       URL.revokeObjectURL(url)
-      this.toast('Data exported', 'success')
+      this.safeSet('se_last_backup', new Date().toISOString())
+      const el = document.getElementById('last-backup-time')
+      if (el) el.textContent = new Date().toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})
+      this.addAudit('Data backup exported', `${keys.length} collections`)
+      this.toast('Full backup exported', 'success')
+    },
+
+    importData() {
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.accept = '.json'
+      input.onchange = async (e) => {
+        const file = e.target.files[0]
+        if (!file) return
+        try {
+          const text = await file.text()
+          const data = JSON.parse(text)
+          if (!data._exportedAt) { this.toast('Invalid backup file', 'error'); return }
+
+          const confirmed = await this.customConfirm('Import Data', `This will replace ALL current data with the backup from ${new Date(data._exportedAt).toLocaleDateString('en-AU')}. Current data will be overwritten. Continue?`)
+          if (!confirmed) return
+
+          let imported = 0
+          Object.keys(data).forEach(k => {
+            if (k.startsWith('se_') && data[k] !== null) {
+              this.safeSet(k, JSON.stringify(data[k]))
+              imported++
+            }
+          })
+          this._cache = {}
+          this._clientMap = null
+          this.addAudit('Data imported from backup', `${imported} collections from ${new Date(data._exportedAt).toLocaleDateString('en-AU')}`)
+          this.toast(`${imported} data collections restored from backup`, 'success')
+          this.navigate('dashboard')
+        } catch (err) {
+          this.toast('Failed to read backup file: ' + err.message, 'error')
+        }
+      }
+      input.click()
     },
 
     async clearData() {
-      const confirmed = await this.customConfirm('Delete All Data', 'This will permanently delete ALL jobs, clients, quotes, invoices, and employees. This cannot be undone.')
+      const confirmed = await this.customConfirm('Delete All Data', 'This will permanently delete ALL jobs, clients, quotes, invoices, and employees. This cannot be undone. Export a backup first!')
       if (!confirmed) return
 
-      const keys = ['se_jobs', 'se_clients', 'se_quotes', 'se_invoices', 'se_employees', 'se_timesheets', 'se_audit', 'se_expenses', 'se_recurring', 'se_equipment']
+      const keys = ['se_jobs', 'se_clients', 'se_quotes', 'se_invoices', 'se_employees', 'se_timesheets', 'se_audit', 'se_expenses', 'se_recurring', 'se_equipment', 'se_swms_signed', 'se_incidents', 'se_waste_dockets', 'se_maintenance_log', 'se_comms', 'se_equipment_logs']
       keys.forEach(k => localStorage.removeItem(k))
       this._cache = {}
+      this._clientMap = null
       this.toast('All data cleared', 'warning')
       this.navigate('dashboard')
     },

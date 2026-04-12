@@ -152,6 +152,8 @@
     /* Expandable detail */
     .job-expand { display: none; }
     .job-expand.is-open { display: block; animation: card-enter 0.2s ease-out; }
+    .inv-expand { display: none; }
+    .inv-expand.is-open { display: block; animation: card-enter 0.2s ease-out; }
 
     /* Design polish */
     .btn { position: relative; overflow: hidden; }
@@ -255,6 +257,9 @@
         <div id="portal-quick-actions"></div>
 
         <!-- Quote request (residential only) -->
+        <!-- Communication log -->
+        <div class="mb-8" id="portal-comms-log"></div>
+
         <div id="portal-quote-request"></div>
       </div>
     </div>
@@ -577,6 +582,7 @@
         `
         document.getElementById('portal-quote-request').innerHTML = ''
       } else {
+        // Residential: render comms log too
         // Residential: show review prompt + quote request
         this.renderReviewPrompt()
         document.getElementById('portal-quick-actions').innerHTML = `
@@ -606,6 +612,27 @@
             </div>
           </div>
         `
+      }
+
+      // Communication log (both client types)
+      const comms = JSON.parse(localStorage.getItem('se_comms') || '[]').filter(c => c.clientId === this.client.id).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')).slice(0, 5)
+      const commsEl = document.getElementById('portal-comms-log')
+      if (commsEl) {
+        if (comms.length) {
+          commsEl.innerHTML = `
+            <h3 class="label mb-4">Recent Communications</h3>
+            <div class="flex flex-col gap-2">
+              ${comms.map(c => `
+                <div class="card p-4">
+                  <div class="text-sm">${this.esc(c.text)}</div>
+                  <div class="text-3xs text-faint mt-1">${this.esc(c.createdBy || 'Steady Eco')} · ${c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-AU', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : ''}</div>
+                </div>
+              `).join('')}
+            </div>
+          `
+        } else {
+          commsEl.innerHTML = ''
+        }
       }
     },
 
@@ -993,15 +1020,33 @@
       const due = inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : ''
       const job = inv.jobId ? this.getStore('jobs').find(j => j.id === inv.jobId) : null
       const jobRef = job ? (job.serviceTypes?.[0] || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : ''
+      const lineItems = inv.lineItems || []
+
       return `
-        <div class="invoice-card">
-          <div>
-            <div class="text-md font-medium">${this.esc(inv.reference || 'Invoice')}</div>
-            <div class="text-xs text-muted mt-1">${isPaid ? 'Paid' : isOverdue ? 'Overdue' : due ? 'Due ' + due : ''}${jobRef ? ' · ' + this.esc(jobRef) : ''}</div>
+        <div class="card p-0" style="cursor:pointer" onclick="this.querySelector('.inv-expand')?.classList.toggle('is-open')">
+          <div class="invoice-card" style="border:none">
+            <div>
+              <div class="text-md font-medium">${this.esc(inv.reference || 'Invoice')}</div>
+              <div class="text-xs text-muted mt-1">${isPaid ? 'Paid' : isOverdue ? 'Overdue' : due ? 'Due ' + due : ''}${jobRef ? ' · ' + this.esc(jobRef) : ''}</div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="text-md font-medium">${this.formatCurrency(inv.total || 0)}</div>
+              ${!isPaid ? `<button class="pay-btn" onclick="event.stopPropagation();Portal.requestPaymentDetails('${inv.reference}')">Pay Now</button>` : `<span class="badge badge-paid">Paid</span>`}
+            </div>
           </div>
-          <div class="flex items-center gap-4">
-            <div class="text-md font-medium">${this.formatCurrency(inv.total || 0)}</div>
-            ${!isPaid ? `<button class="pay-btn" onclick="Portal.requestPaymentDetails('${inv.reference}')">Pay Now</button>` : `<span class="badge badge-paid">Paid</span>`}
+          <div class="inv-expand" style="padding:0 var(--se-space-5) var(--se-space-4);border-top:1px solid var(--se-border-subtle)">
+            ${lineItems.length ? `
+              <table style="width:100%;font-size:13px;margin-top:var(--se-space-3)">
+                <thead><tr style="color:var(--se-text-faint);font-size:11px"><th style="text-align:left;padding:4px 0">Description</th><th style="text-align:right;padding:4px 0">Amount</th></tr></thead>
+                <tbody>${lineItems.map(li => `<tr><td style="padding:4px 0">${this.esc(li.description)}</td><td style="text-align:right;padding:4px 0">${this.formatCurrency((li.quantity||1) * (li.unitRate||0))}</td></tr>`).join('')}</tbody>
+              </table>
+              <div style="border-top:1px solid var(--se-border-subtle);margin-top:var(--se-space-2);padding-top:var(--se-space-2)">
+                <div class="flex justify-between text-xs text-muted"><span>Subtotal</span><span>${this.formatCurrency(inv.subtotal || 0)}</span></div>
+                <div class="flex justify-between text-xs text-muted"><span>GST (10%)</span><span>${this.formatCurrency(inv.gst || 0)}</span></div>
+                <div class="flex justify-between text-sm font-medium mt-1"><span>Total</span><span>${this.formatCurrency(inv.total || 0)}</span></div>
+              </div>
+            ` : '<p class="text-xs text-muted mt-3">No line item detail available.</p>'}
+            ${inv.paidAt ? `<div class="text-3xs text-faint mt-2">Paid on ${new Date(inv.paidAt).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}</div>` : ''}
           </div>
         </div>
       `
