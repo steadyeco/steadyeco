@@ -424,8 +424,15 @@
 
     @media (max-width: 768px) {
       .line-item {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
         gap: var(--se-space-2);
+      }
+      .line-item .form-group:nth-child(2),
+      .line-item .form-group:nth-child(3),
+      .line-item .form-group:nth-child(4) {
+        display: inline-block;
+        width: 30%;
+        vertical-align: top;
       }
     }
 
@@ -1736,9 +1743,9 @@
       <svg class="mobile-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h8M8 12h5M8 16h6"/></svg>
       Jobs
     </a>
-    <a href="#" class="mobile-nav__item" data-screen="quotes">
-      <svg class="mobile-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 4h14v16l-7-3.5L5 20V4z"/></svg>
-      Quotes
+    <a href="#" class="mobile-nav__item" data-screen="schedule">
+      <svg class="mobile-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>
+      Schedule
     </a>
     <a href="#" class="mobile-nav__item" onclick="event.preventDefault();App.toggleMobileMenu()">
       <svg class="mobile-nav__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -2381,15 +2388,18 @@
       const isOpen = overlay.style.display !== 'none'
       overlay.style.display = isOpen ? 'none' : 'block'
       if (!isOpen) {
-        const items = [
-          ['dashboard','Dashboard'], ['jobs','Jobs'], ['quotes','Quotes'], ['clients','Clients'],
-          ['employees','Employees'], ['invoices','Invoices'], ['schedule','Schedule'], ['recurring','Recurring'],
-          ['equipment','Equipment'], ['documents','Documents'], ['timesheets','Timesheets'],
-          ['reports','Reports'], ['carbon','Carbon & ESG'], ['compliance','Compliance'],
-          ['settings','Settings'], ['cassowary','Ask Cassowary'],
+        const groups = [
+          { title: 'Operations', items: [['dashboard','Dashboard'],['jobs','Jobs'],['quotes','Quotes'],['schedule','Schedule'],['recurring','Recurring']] },
+          { title: 'People', items: [['clients','Clients'],['employees','Employees'],['timesheets','Timesheets']] },
+          { title: 'Finance', items: [['invoices','Invoices'],['reports','Reports & Metrics']] },
+          { title: 'Assets & Compliance', items: [['equipment','Equipment'],['documents','Documents'],['compliance','Compliance'],['carbon','Carbon & ESG']] },
+          { title: 'Tools', items: [['cassowary','Ask Cassowary'],['settings','Settings']] },
         ]
-        document.getElementById('mobile-menu-items').innerHTML = items.map(([screen, label]) => `
-          <button class="btn btn-ghost" style="justify-content:flex-start;width:100%;min-height:48px;font-size:var(--se-text-md)" onclick="App.navigate('${screen}');App.toggleMobileMenu()">${label}</button>
+        document.getElementById('mobile-menu-items').innerHTML = groups.map(g => `
+          <div class="text-3xs text-faint mt-4 mb-1" style="text-transform:uppercase;letter-spacing:0.15em;padding:0 var(--se-space-4)">${g.title}</div>
+          ${g.items.map(([screen, label]) => `
+            <button class="btn btn-ghost" style="justify-content:flex-start;width:100%;min-height:48px;font-size:var(--se-text-md)" onclick="App.navigate('${screen}');App.toggleMobileMenu()">${label}</button>
+          `).join('')}
         `).join('')
       }
     },
@@ -3386,6 +3396,7 @@
           <button class="btn btn-primary btn-sm" onclick="App.logEquipmentService('${this.esc(eqId)}')">Log Service</button>
           <button class="btn btn-secondary btn-sm" onclick="App.logEquipmentInspection('${this.esc(eqId)}')">Log Inspection</button>
           <button class="btn btn-ghost btn-sm" onclick="App.logEquipmentWashdown('${this.esc(eqId)}')">Log Washdown</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.generateEquipmentReport('${this.esc(eqId)}')">Service Report</button>
         </div>
       `
 
@@ -3599,6 +3610,48 @@
       this.toast(`Washdown logged for ${this.esc(eq.name)}`, 'success')
       this.closeJobDetail()
       setTimeout(() => this.openEquipmentDetail(eqId), 300)
+    },
+
+    generateEquipmentReport(eqId) {
+      const eq = this.getStore('equipment').find(e => e.id === eqId)
+      if (!eq) return
+      const jobs = this.getStore('jobs').filter(j => j.assignedEquipment?.includes(eqId))
+      const serviceLog = eq.serviceLog || []
+      const inspectionLog = eq.inspectionLog || []
+      const washdownLog = eq.washdownLog || []
+      const crewLogs = JSON.parse(localStorage.getItem('se_equipment_logs') || '[]').filter(l => l.equipmentId === eqId)
+      const totalServiceCost = serviceLog.reduce((s, l) => s + (parseFloat(l.cost) || 0), 0)
+
+      const content = `
+        <div class="section"><div class="section-title">Asset Details</div>
+          <table><tbody>
+            <tr><td style="width:35%;color:#999">Equipment</td><td>${this.esc(eq.name)}</td></tr>
+            <tr><td style="color:#999">Type</td><td>${this.esc(eq.type)}</td></tr>
+            <tr><td style="color:#999">Serial Number</td><td>${this.esc(eq.serial || 'Not recorded')}</td></tr>
+            <tr><td style="color:#999">Status</td><td>${this.esc(eq.status)}</td></tr>
+            <tr><td style="color:#999">Next Service Due</td><td>${eq.serviceDue || 'Not set'}</td></tr>
+            <tr><td style="color:#999">Jobs Assigned</td><td>${jobs.length}</td></tr>
+            <tr><td style="color:#999">Total Service Cost</td><td>${this.formatCurrency(totalServiceCost)}</td></tr>
+          </tbody></table>
+        </div>
+        <div class="section"><div class="section-title">Service History (${serviceLog.length} records)</div>
+          ${serviceLog.length ? `<table><thead><tr><th>Date</th><th>Type</th><th>Notes</th></tr></thead><tbody>${serviceLog.map(l => `<tr><td>${l.date}</td><td>${this.esc(l.type||'Service')}</td><td>${this.esc(l.notes||'')}</td></tr>`).join('')}</tbody></table>` : '<p class="meta">No service records.</p>'}
+        </div>
+        <div class="section"><div class="section-title">Inspection History (${inspectionLog.length} records)</div>
+          ${inspectionLog.length ? `<table><thead><tr><th>Date</th><th>Inspector</th><th>Notes</th></tr></thead><tbody>${inspectionLog.map(l => `<tr><td>${l.date}</td><td>${this.esc(l.inspector||'')}</td><td>${this.esc(l.notes||'')}</td></tr>`).join('')}</tbody></table>` : '<p class="meta">No inspection records.</p>'}
+        </div>
+        <div class="section"><div class="section-title">Washdown Log (${washdownLog.length} records)</div>
+          ${washdownLog.length ? `<table><thead><tr><th>Date</th><th>Location</th><th>Operator</th></tr></thead><tbody>${washdownLog.map(l => `<tr><td>${l.date}</td><td>${this.esc(l.location||'')}</td><td>${this.esc(l.operator||'')}</td></tr>`).join('')}</tbody></table>` : '<p class="meta">No washdown records.</p>'}
+        </div>
+        ${crewLogs.length ? `<div class="section"><div class="section-title">Crew Servicing Log (${crewLogs.length} entries)</div>
+          <table><thead><tr><th>Date</th><th>Task</th><th>Crew</th><th>Notes</th></tr></thead><tbody>${crewLogs.slice(-20).reverse().map(l => `<tr><td>${new Date(l.timestamp).toLocaleDateString('en-AU')}</td><td>${this.esc(l.type||'')}</td><td>${this.esc(l.employeeName||'')}</td><td>${this.esc(l.notes||'')}</td></tr>`).join('')}</tbody></table>
+        </div>` : ''}
+        <div class="section"><div class="section-title">Compliance Note</div>
+          <p class="meta">This equipment maintenance report is maintained in accordance with Work Health & Safety Regulation 2011 (QLD), Reg 213-214. Records must be kept for the life of the plant or 2 years after disposal.</p>
+        </div>
+      `
+      this.generatePdf(`Equipment Report — ${eq.name}`, content)
+      this.addAudit('Equipment report generated', eq.name)
     },
 
     /* ── CARBON & ESG ─────────────────────────────────── */
