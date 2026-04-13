@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <link rel="stylesheet" href="../shared/css/tokens.css">
   <link rel="stylesheet" href="../shared/css/reset.css">
   <link rel="stylesheet" href="../shared/css/typography.css">
@@ -1867,6 +1868,63 @@
      APPLICATION LOGIC
      ══════════════════════════════════════════════════════ -->
 <script>
+/* ── SUPABASE AUTH GATE ─────────────────────────────── */
+/* Checks if user is logged in via Supabase before showing anything */
+(function() {
+  const SUPABASE_URL = 'https://duhbidexfgcqyqkxgwou.supabase.co'
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1aGJpZGV4ZmdjcXlxa3hnd291Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNTM0NzQsImV4cCI6MjA5MTYyOTQ3NH0.2VTRY6c9NhG-n3y8G-n4fQALUHoHvknW-11ZEu_R1VQ'
+
+  // Make Supabase client available globally
+  window._supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+  // Auth check — redirect to login if not authenticated
+  window._supabase.auth.getSession().then(({ data: { session } }) => {
+    if (!session) {
+      // Not logged in — redirect to SaaS login
+      window.location.href = '/steady-eco-app-login.html'
+      return
+    }
+
+    // Store session info for the app
+    window._authUser = session.user
+    window._authReady = true
+
+    // Load tenant config from profile
+    window._supabase
+      .from('profiles')
+      .select('name, role, is_platform_admin, tenant_id')
+      .eq('id', session.user.id)
+      .single()
+      .then(({ data: profile }) => {
+        if (profile) {
+          window._userProfile = profile
+          // Load tenant details
+          window._supabase
+            .from('tenants')
+            .select('*')
+            .eq('id', profile.tenant_id)
+            .single()
+            .then(({ data: tenant }) => {
+              if (tenant) {
+                window._tenant = tenant
+                // Update TENANT_CONFIG dynamically
+                window._tenantConfig = {
+                  businessName: tenant.name || 'My Company',
+                  abn: tenant.abn || '',
+                  phone: tenant.phone || '',
+                  email: tenant.email || '',
+                  location: [tenant.address_line1, tenant.address_suburb, tenant.address_state, tenant.address_postcode].filter(Boolean).join(', ') || '',
+                  owner: profile.name || '',
+                }
+              }
+            })
+        }
+      })
+  })
+})();
+</script>
+
+<script>
 // Polyfill for Samsung Internet < 15 and older browsers
 if (!crypto.randomUUID) { crypto.randomUUID = function() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }); }; }
 
@@ -1917,6 +1975,17 @@ if (!crypto.randomUUID) { crypto.randomUUID = function() { return 'xxxxxxxx-xxxx
       // Register service worker
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').catch(() => {})
+      }
+
+      // If authenticated via Supabase, skip the PIN pad
+      if (window._authReady && window._authUser) {
+        // Update greeting with actual name
+        const greeting = document.querySelector('.login__greeting')
+        if (greeting && window._userProfile) {
+          greeting.textContent = 'Welcome back, ' + window._userProfile.name
+        }
+        // Auto-unlock after brief delay (show the login animation briefly)
+        setTimeout(() => this.unlock(), 600)
       }
     },
 
@@ -2112,7 +2181,8 @@ if (!crypto.randomUUID) { crypto.randomUUID = function() { return 'xxxxxxxx-xxxx
       const date = new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })
       const jobCount = this.getStore('jobs').filter(j => j.scheduledStart && j.scheduledStart.startsWith(new Date().toISOString().split('T')[0])).length
 
-      document.getElementById('dash-greeting').textContent = `${greeting}, Sam.`
+      const userName = window._userProfile?.name || window._tenantConfig?.owner || 'Sam'
+      document.getElementById('dash-greeting').textContent = `${greeting}, ${userName}.`
       document.getElementById('dash-subtitle').textContent = `${date} — ${jobCount} job${jobCount !== 1 ? 's' : ''} scheduled today`
 
       // Revenue metrics
