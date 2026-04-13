@@ -40,7 +40,7 @@
   --se-text-primary:  #e8ede6;
   --se-text-secondary:#a8bba4;
   --se-text-muted:    #7a8f76;
-  --se-text-faint:    #6a8066;   /* WCAG AA compliant (3.8:1) */
+  --se-text-faint:    #8a9f86;   /* WCAG AA compliant (4.5:1 on #0a0f0a) */
   --se-text-inverse:  #0a0f0a;
 
   /* Borders */

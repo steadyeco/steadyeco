@@ -1477,19 +1477,29 @@ if (!crypto.randomUUID) { crypto.randomUUID = function() { return 'xxxxxxxx-xxxx
       this.toast('Compliance pack generated', 'success')
     },
 
-    _apiEndpoint: 'https://x267gkoc7k.execute-api.ap-southeast-2.amazonaws.com',
-    _apiKey: 'se_1ee51b3fbc8d58a9f6cabbf98591958b',
+    /* API endpoint + key read from localStorage — never hardcode secrets in client code */
+    _getApiConfig() {
+      const endpoint = localStorage.getItem('se_cloud_endpoint')?.replace('/sync', '')
+      const key = localStorage.getItem('se_cloud_key')
+      return { endpoint, key }
+    },
 
     async requestPaymentDetails(invoiceRef) {
       // Try Stripe checkout first
       const inv = this.getStore('invoices').find(i => i.reference === invoiceRef)
       if (!inv) { this.toast('Invoice not found', 'error'); return }
 
+      const config = this._getApiConfig()
+      if (!config.endpoint || !config.key) {
+        this.toast('Payment not configured — contact the business', 'warning')
+        return
+      }
+
       this.toast('Creating payment link...', 'info')
       try {
-        const res = await fetch(`${this._apiEndpoint}/stripe/checkout`, {
+        const res = await fetch(`${config.endpoint}/stripe/checkout`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Api-Key': this._apiKey },
+          headers: { 'Content-Type': 'application/json', 'X-Api-Key': config.key },
           body: JSON.stringify({
             invoiceId: inv.id,
             reference: inv.reference,

@@ -1671,6 +1671,22 @@
             <button class="btn btn-primary btn-sm mt-4" onclick="App.saveApiKey()" style="align-self:flex-start">Save Key</button>
           </div>
 
+          <!-- Cloud Sync Config -->
+          <div class="settings-section">
+            <h3 class="settings-section__title">Cloud Sync (AWS)</h3>
+            <div class="flex flex-col gap-4">
+              <div class="form-group">
+                <label class="form-label">Sync Endpoint URL</label>
+                <input class="form-input" id="set-cloud-endpoint" type="url" placeholder="https://your-api.execute-api.ap-southeast-2.amazonaws.com/sync">
+              </div>
+              <div class="form-group">
+                <label class="form-label">API Key</label>
+                <input class="form-input" id="set-cloud-key" type="password" placeholder="Your API key">
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="App.saveCloudConfig()" style="align-self:flex-start">Save Cloud Config</button>
+            </div>
+          </div>
+
           <!-- Business Details -->
           <div class="settings-section">
             <h3 class="settings-section__title">Business Details</h3>
@@ -6476,6 +6492,10 @@ if (!crypto.randomUUID) { crypto.randomUUID = function() { return 'xxxxxxxx-xxxx
       const bank = JSON.parse(localStorage.getItem('se_bank') || '{}')
       document.getElementById('set-bsb').value = bank.bsb || ''
       document.getElementById('set-acct').value = bank.account || ''
+
+      // Load cloud sync config
+      document.getElementById('set-cloud-endpoint').value = localStorage.getItem('se_cloud_endpoint') || ''
+      document.getElementById('set-cloud-key').value = localStorage.getItem('se_cloud_key') || ''
     },
 
     async changePin() {
@@ -6506,6 +6526,16 @@ if (!crypto.randomUUID) { crypto.randomUUID = function() { return 'xxxxxxxx-xxxx
       const key = document.getElementById('set-api-key').value.trim()
       this.safeSet('se_ai_key', key)
       this.toast(key ? 'API key saved' : 'API key cleared', 'success')
+    },
+
+    saveCloudConfig() {
+      const endpoint = document.getElementById('set-cloud-endpoint').value.trim()
+      const key = document.getElementById('set-cloud-key').value.trim()
+      if (endpoint) localStorage.setItem('se_cloud_endpoint', endpoint)
+      else localStorage.removeItem('se_cloud_endpoint')
+      if (key) localStorage.setItem('se_cloud_key', key)
+      else localStorage.removeItem('se_cloud_key')
+      this.toast(endpoint && key ? 'Cloud config saved' : 'Cloud config cleared', 'success')
     },
 
     saveRateCards() {
@@ -6546,9 +6576,17 @@ if (!crypto.randomUUID) { crypto.randomUUID = function() { return 'xxxxxxxx-xxxx
     },
 
     /* ── CLOUD SYNC (AWS DynamoDB) ──────────────────── */
+    /* Endpoint + key read from localStorage settings — never hardcode secrets in client code */
 
-    _cloudEndpoint: 'https://x267gkoc7k.execute-api.ap-southeast-2.amazonaws.com/sync',
-    _cloudKey: 'se_1ee51b3fbc8d58a9f6cabbf98591958b',
+    _getCloudConfig() {
+      const endpoint = localStorage.getItem('se_cloud_endpoint')
+      const key = localStorage.getItem('se_cloud_key')
+      if (!endpoint || !key) {
+        this.toast('Cloud sync not configured — set endpoint and key in Settings', 'warning')
+        return null
+      }
+      return { endpoint, key }
+    },
 
     _getAllData() {
       const data = {}
@@ -6558,15 +6596,17 @@ if (!crypto.randomUUID) { crypto.randomUUID = function() { return 'xxxxxxxx-xxxx
     },
 
     async cloudPush() {
+      const config = this._getCloudConfig()
+      if (!config) return
       this.toast('Syncing to cloud...', 'info')
       try {
         const data = this._getAllData()
         data._syncedAt = new Date().toISOString()
         data._source = 'command-centre'
 
-        const res = await fetch(this._cloudEndpoint, {
+        const res = await fetch(config.endpoint, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Api-Key': this._cloudKey },
+          headers: { 'Content-Type': 'application/json', 'X-Api-Key': config.key },
           body: JSON.stringify(data)
         })
 
@@ -6584,11 +6624,13 @@ if (!crypto.randomUUID) { crypto.randomUUID = function() { return 'xxxxxxxx-xxxx
     },
 
     async cloudPull() {
+      const config = this._getCloudConfig()
+      if (!config) return
       this.toast('Loading from cloud...', 'info')
       try {
-        const res = await fetch(this._cloudEndpoint, {
+        const res = await fetch(config.endpoint, {
           method: 'GET',
-          headers: { 'X-Api-Key': this._cloudKey }
+          headers: { 'X-Api-Key': config.key }
         })
 
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
