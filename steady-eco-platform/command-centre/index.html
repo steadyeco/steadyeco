@@ -6,6 +6,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Steady Eco — Command Centre</title>
   <meta name="description" content="Steady Eco business operations platform">
   <meta name="theme-color" content="#0a0f0a">
@@ -7044,8 +7047,13 @@ if (!crypto.randomUUID) { crypto.randomUUID = function() { return 'xxxxxxxx-xxxx
   // Expose to global scope for onclick handlers
   window.App = App
 
-  // Boot
-  App.init()
+  // Boot with error recovery (prevents iOS white screen on JS failure)
+  try {
+    App.init()
+  } catch (e) {
+    console.error('App init failed:', e)
+    document.getElementById('login-screen').style.display = 'flex'
+  }
 
 })()
 </script>
