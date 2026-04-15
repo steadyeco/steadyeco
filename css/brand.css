@@ -258,6 +258,20 @@ nav.scrolled {
   color: var(--text) !important;
 }
 
+.nav-signin {
+  color: var(--text-muted) !important;
+  border: 1px solid rgba(255,255,255,0.15) !important;
+  padding: 8px 16px !important;
+  font-size: 0.85rem !important;
+  letter-spacing: 0.03em;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.nav-signin::after { display: none !important; }
+.nav-signin:hover {
+  border-color: var(--green-accent) !important;
+  color: var(--text) !important;
+}
+
 .hamburger {
   display: none;
   flex-direction: column;

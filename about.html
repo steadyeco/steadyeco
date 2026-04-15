@@ -99,6 +99,9 @@
     .nav-cta { color: var(--green-accent) !important; border: 1px solid var(--green-mid) !important; padding: 8px 20px !important; }
     .nav-cta::after { display: none !important; }
     .nav-cta:hover { background: var(--green-mid) !important; color: var(--text) !important; }
+    .nav-signin { color: rgba(232,237,230,0.5) !important; font-size: 0.85rem; letter-spacing: 0.03em; padding: 8px 14px !important; border: 1px solid rgba(255,255,255,0.12) !important; transition: all 0.3s ease; }
+    .nav-signin::after { display: none !important; }
+    .nav-signin:hover { color: var(--text) !important; border-color: var(--green-accent) !important; }
     .hamburger { display: none; flex-direction: column; gap: 6px; cursor: pointer; padding: 12px; min-width: 44px; min-height: 44px; align-items: center; justify-content: center; }
     .hamburger span { display: block; width: 22px; height: 1px; background: var(--text); transition: 0.3s; }
     .mobile-menu { display: none; flex-direction: column; background: var(--bg); border-top: 1px solid var(--border); padding: 32px; gap: 28px; }
@@ -192,6 +195,7 @@
         <li><a href="/land-regeneration">Land Regeneration</a></li>
         <li><a href="/about" style="color:var(--text);">About</a></li>
         <li><a href="/land-regeneration/contact">Enquire</a></li>
+        <li><a href="https://hub.steadyeco.com" class="nav-signin">Sign In</a></li>
       </ul>
       <div class="hamburger" onclick="toggleMenu()" aria-label="Open menu">
         <span></span><span></span><span></span>
@@ -202,6 +206,7 @@
       <a href="/land-regeneration" onclick="toggleMenu()">Land Regeneration</a>
       <a href="/about" onclick="toggleMenu()">About</a>
       <a href="/land-regeneration/contact" onclick="toggleMenu()">Enquire</a>
+      <a href="https://hub.steadyeco.com" onclick="toggleMenu()" style="color:rgba(232,237,230,0.5);font-size:1.2rem;">Sign In</a>
     </div>
   </nav>
 
